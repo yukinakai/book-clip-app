@@ -17,10 +17,26 @@ jest.mock('react-native', () => {
       create: (styles) => styles,
       absoluteFillObject: {},
     },
-    View: ({ testID, style, children }) => React.createElement('view', { testID, style }, children),
-    Text: ({ children, style }) => React.createElement('text', { style }, children),
-    TouchableOpacity: ({ onPress, children }) => React.createElement('button', { onClick: onPress }, children),
-    SafeAreaView: ({ children, style }) => React.createElement('div', { style }, children),
+    View: ({ testID, style, children }) => 
+      React.createElement('view', { testID, style }, children),
+    Text: ({ testID, children, style }) => 
+      React.createElement('text', { testID, style }, children),
+    TextInput: ({ testID, style, placeholder, value, onChangeText, secureTextEntry, autoCapitalize, keyboardType }) =>
+      React.createElement('input', {
+        testID,
+        style,
+        placeholder,
+        value,
+        onChange: (e) => onChangeText(e.target.value),
+        type: secureTextEntry ? 'password' : 'text',
+        autoCapitalize,
+      }),
+    TouchableOpacity: ({ testID, onPress, disabled, style, children }) =>
+      React.createElement('button', { testID, onClick: onPress, disabled, style }, children),
+    ActivityIndicator: ({ testID, color }) =>
+      React.createElement('div', { testID, style: { color } }, 'Loading...'),
+    SafeAreaView: ({ testID, children, style }) =>
+      React.createElement('div', { testID, style }, children),
     Platform: {
       select: jest.fn((obj) => obj.ios),
       OS: 'ios',
@@ -40,7 +56,8 @@ jest.mock('react-native-safe-area-context', () => {
   
   return {
     SafeAreaProvider: ({ children }) => children,
-    SafeAreaView: ({ children, style }) => React.createElement('div', { style }, children),
+    SafeAreaView: ({ testID, children, style }) => 
+      React.createElement('div', { testID, style }, children),
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
