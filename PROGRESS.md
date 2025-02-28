@@ -11,10 +11,20 @@ book-clip-appは、本の引用や感想を管理するモバイルアプリケ�
 - プロダクト要件定義（PRD）の作成
 - アーキテクチャ設計の完了
 - プロダクト概要の文書化
+- 必要なライブラリのインストール
+  - @react-navigation/native
+  - @react-navigation/native-stack
+  - @supabase/supabase-js
+  - expo-barcode-scanner
+  - react-native-vision-camera
+  - テスト関連ライブラリ
+- テスト環境のセットアップ
+  - Jestの設定
+  - テストカバレッジの設定（80%以上）
+  - テスト実行スクリプトの追加
 
 ### 進行中の機能
 - Supabaseのセットアップ
-- バーコードスキャン機能の実装
 
 ### 今後の実装予定
 1. 認証機能の実装
@@ -43,11 +53,6 @@ book-clip-appは、本の引用や感想を管理するモバイルアプリケ�
 3. OCR機能の実装方法の詳細検討が必要
 
 ## 次のステップ
-1. 必要なライブラリのインストール
-   - @react-navigation/native
-   - @react-navigation/native-stack
-   - @supabase/supabase-js
-   - expo-barcode-scanner
-   - react-native-vision-camera
-2. Supabaseプロジェクトの作成と環境変数の設定
-3. テスト環境のセットアップ（Jest + Testing Library）
+1. Supabaseプロジェクトの作成と環境変数の設定
+2. バーコードスキャン機能の実装
+3. 認証機能の実装
