@@ -15,8 +15,9 @@ const COLUMN_COUNT = 3;
 const GRID_SPACING = 10;
 const ASPECT_RATIO = 1.5; // 一般的な本の縦横比
 
-const calculateDimensions = () => {
-  const { width } = Dimensions.get('window');
+import { useWindowDimensions } from '@/hooks/useWindowDimensions';
+
+const getItemDimensions = (width: number) => {
   const itemWidth = (width - GRID_SPACING * (COLUMN_COUNT + 1)) / COLUMN_COUNT;
   const itemHeight = itemWidth * ASPECT_RATIO;
   return { itemWidth, itemHeight };
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     paddingBottom: 80, // FABの下にスペースを確保
   },
   bookItem: {
-    width: calculateDimensions().itemWidth,
+    width: getItemDimensions(useWindowDimensions().width).itemWidth,
     marginHorizontal: GRID_SPACING / 2,
     marginBottom: GRID_SPACING,
   },
@@ -116,8 +117,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   bookCover: {
-    width: calculateDimensions().itemWidth,
-    height: calculateDimensions().itemHeight,
+    width: getItemDimensions(useWindowDimensions().width).itemWidth,
+    height: getItemDimensions(useWindowDimensions().width).itemHeight,
     borderRadius: 4,
     backgroundColor: '#f0f0f0',
   },
