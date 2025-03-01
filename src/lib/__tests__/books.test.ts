@@ -1,6 +1,6 @@
 import { supabase } from '../supabase';
 import { createBook, getBook, updateBook, deleteBook } from '../books';
-import { Book, CreateBookInput, UpdateBookInput } from '../../types/book';
+import { Book, CreateBookInput, UpdateBookInput } from '@/types/book';
 
 jest.mock('../supabase');
 
