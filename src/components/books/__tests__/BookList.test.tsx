@@ -1,7 +1,13 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { Dimensions } from 'react-native';
 import { BookList } from '../BookList';
 import { Book } from '@/types/book';
+
+// Dimensionsのモック
+jest.mock('react-native/Libraries/Utilities/Dimensions', () => ({
+  get: jest.fn().mockReturnValue({ width: 400, height: 800 })
+}));
 
 describe('BookList', () => {
   const mockBooks: Book[] = [
