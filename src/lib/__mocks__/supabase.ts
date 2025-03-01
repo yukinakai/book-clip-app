@@ -1,3 +1,20 @@
-import { createClient } from '@supabase/supabase-js';
-
-export const supabase = createClient('https://mock-supabase-url.com', 'mock-anon-key');
+export const supabase = {
+  auth: {
+    getSession: jest.fn().mockResolvedValue({
+      data: { session: null },
+      error: null,
+    }),
+    signOut: jest.fn().mockResolvedValue({
+      error: null,
+    }),
+    onAuthStateChange: jest.fn((callback) => {
+      return {
+        data: {
+          subscription: {
+            unsubscribe: jest.fn(),
+          },
+        },
+      };
+    }),
+  },
+};

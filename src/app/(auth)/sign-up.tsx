@@ -5,13 +5,20 @@ import { SignUpForm } from '../../components/auth/SignUpForm';
 
 export default function SignUp() {
   const handleSignUpSuccess = () => {
-    // サインアップ成功後、メール確認画面に遷移する予定
+    // サインアップ成功時にメイン画面に遷移
     router.replace('/(tabs)');
+  };
+
+  const handleSignInPress = () => {
+    router.push('/sign-in');
   };
 
   return (
     <View style={styles.container}>
-      <SignUpForm onSuccess={handleSignUpSuccess} />
+      <SignUpForm 
+        onSuccess={handleSignUpSuccess}
+        onSignInPress={handleSignInPress}
+      />
     </View>
   );
 }

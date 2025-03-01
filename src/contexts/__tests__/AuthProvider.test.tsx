@@ -7,9 +7,16 @@ import { supabase } from '../../lib/supabase';
 jest.mock('../../lib/supabase', () => ({
   supabase: {
     auth: {
-      getSession: jest.fn(),
+      // getSession は常に data プロパティを持つオブジェクトを返す
+      getSession: jest.fn().mockResolvedValue({
+        data: { session: null },
+        error: null,
+      }),
       signOut: jest.fn(),
-      onAuthStateChange: jest.fn(),
+      // onAuthStateChange も data プロパティを持つオブジェクトを返す
+      onAuthStateChange: jest.fn().mockReturnValue({
+        data: { subscription: { unsubscribe: jest.fn() } },
+      }),
     },
   },
 }));

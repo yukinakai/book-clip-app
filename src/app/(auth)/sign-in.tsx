@@ -9,9 +9,16 @@ export default function SignInScreen() {
     router.replace('/(tabs)');
   };
 
+  const handleSignUpPress = () => {
+    router.push('/sign-up');
+  };
+
   return (
     <View style={styles.container}>
-      <SignInForm onSuccess={handleSignInSuccess} />
+      <SignInForm 
+        onSuccess={handleSignInSuccess} 
+        onSignUpPress={handleSignUpPress}
+      />
     </View>
   );
 }

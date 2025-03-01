@@ -13,13 +13,16 @@ jest.mock('../../../lib/supabase', () => ({
 
 describe('SignUpForm', () => {
   const mockOnSuccess = jest.fn();
+  const mockOnSignInPress = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('メールアドレスとパスワードの入力フィールドを表示する', () => {
-    const { getByTestId } = render(<SignUpForm onSuccess={mockOnSuccess} />);
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
     
     expect(getByTestId('email-input')).toBeTruthy();
     expect(getByTestId('password-input')).toBeTruthy();
@@ -27,19 +30,25 @@ describe('SignUpForm', () => {
   });
 
   it('サインアップボタンを表示する', () => {
-    const { getByTestId } = render(<SignUpForm onSuccess={mockOnSuccess} />);
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
     
     expect(getByTestId('signup-button')).toBeTruthy();
   });
 
   it('サインインへのリンクを表示する', () => {
-    const { getByTestId } = render(<SignUpForm onSuccess={mockOnSuccess} />);
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
     
     expect(getByTestId('signin-link')).toBeTruthy();
   });
 
   it('入力値が空の場合にエラーメッセージを表示する', async () => {
-    const { getByTestId } = render(<SignUpForm onSuccess={mockOnSuccess} />);
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
     
     fireEvent.press(getByTestId('signup-button'));
 
@@ -51,7 +60,9 @@ describe('SignUpForm', () => {
   });
 
   it('パスワードが一致しない場合にエラーメッセージを表示する', async () => {
-    const { getByTestId } = render(<SignUpForm onSuccess={mockOnSuccess} />);
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
     
     fireEvent.changeText(getByTestId('email-input'), 'test@example.com');
     fireEvent.changeText(getByTestId('password-input'), 'password123');
@@ -70,7 +81,9 @@ describe('SignUpForm', () => {
     };
     (supabase.auth.signUp as jest.Mock).mockResolvedValueOnce(mockSignUpResponse);
 
-    const { getByTestId } = render(<SignUpForm onSuccess={mockOnSuccess} />);
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
     
     fireEvent.changeText(getByTestId('email-input'), 'test@example.com');
     fireEvent.changeText(getByTestId('password-input'), 'password123');
@@ -93,7 +106,9 @@ describe('SignUpForm', () => {
     };
     (supabase.auth.signUp as jest.Mock).mockResolvedValueOnce(mockSignUpResponse);
 
-    const { getByTestId } = render(<SignUpForm onSuccess={mockOnSuccess} />);
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
     
     fireEvent.changeText(getByTestId('email-input'), 'test@example.com');
     fireEvent.changeText(getByTestId('password-input'), 'password123');
@@ -104,5 +119,14 @@ describe('SignUpForm', () => {
       expect(getByTestId('auth-error')).toBeTruthy();
     });
     expect(mockOnSuccess).not.toHaveBeenCalled();
+  });
+
+  it('サインインリンクをクリックするとonSignInPressが呼ばれる', () => {
+    const { getByTestId } = render(
+      <SignUpForm onSuccess={mockOnSuccess} onSignInPress={mockOnSignInPress} />
+    );
+    
+    fireEvent.press(getByTestId('signin-link'));
+    expect(mockOnSignInPress).toHaveBeenCalled();
   });
 });
