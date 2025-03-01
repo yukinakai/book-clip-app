@@ -7,13 +7,14 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@lib/supabase';
 
 type SignInFormProps = {
   onSuccess: () => void;
+  onSignUpPress: () => void;
 };
 
-export const SignInForm: React.FC<SignInFormProps> = ({ onSuccess }) => {
+export const SignInForm: React.FC<SignInFormProps> = ({ onSuccess, onSignUpPress }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -116,7 +117,11 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSuccess }) => {
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.linkButton} testID="signup-link">
+      <TouchableOpacity 
+        style={styles.linkButton} 
+        testID="signup-link"
+        onPress={onSignUpPress}
+      >
         <Text style={styles.linkText}>アカウントをお持ちでない方はこちら</Text>
       </TouchableOpacity>
     </View>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { SignInForm } from '../../components/auth/SignInForm';
+import { SignInForm } from '@components/auth/SignInForm';
 
 export default function SignInScreen() {
   const handleSignInSuccess = () => {
@@ -9,9 +9,16 @@ export default function SignInScreen() {
     router.replace('/(tabs)');
   };
 
+  const handleSignUpPress = () => {
+    router.push('/sign-up');
+  };
+
   return (
     <View style={styles.container}>
-      <SignInForm onSuccess={handleSignInSuccess} />
+      <SignInForm 
+        onSuccess={handleSignInSuccess} 
+        onSignUpPress={handleSignUpPress}
+      />
     </View>
   );
 }
