@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { SignInForm } from '../../components/auth/SignInForm';
+import { SignInForm } from '@components/auth/SignInForm';
 
 export default function SignInScreen() {
   const handleSignInSuccess = () => {

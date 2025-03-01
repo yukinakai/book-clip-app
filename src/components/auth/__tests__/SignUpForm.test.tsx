@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { SignUpForm } from '../SignUpForm';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '@lib/supabase';
 
-jest.mock('../../../lib/supabase', () => ({
+jest.mock('@lib/supabase', () => ({
   supabase: {
     auth: {
       signUp: jest.fn()

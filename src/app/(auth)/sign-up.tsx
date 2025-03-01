@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { SignUpForm } from '../../components/auth/SignUpForm';
+import { SignUpForm } from '@components/auth/SignUpForm';
 
 export default function SignUp() {
   const handleSignUpSuccess = () => {

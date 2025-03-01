@@ -1,8 +1,8 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useAuth } from '../useAuth';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({
+jest.mock('@lib/supabase', () => ({
   supabase: {
     auth: {
       getSession: jest.fn().mockResolvedValue({

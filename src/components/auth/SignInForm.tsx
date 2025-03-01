@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@lib/supabase';
 
 type SignInFormProps = {
   onSuccess: () => void;

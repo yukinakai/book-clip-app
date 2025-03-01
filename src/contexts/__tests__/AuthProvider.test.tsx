@@ -2,9 +2,9 @@ import React from 'react';
 import { render, act, waitFor } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { AuthProvider, useAuthContext } from '../AuthProvider';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({
+jest.mock('@lib/supabase', () => ({
   supabase: {
     auth: {
       // getSession は常に data プロパティを持つオブジェクトを返す
