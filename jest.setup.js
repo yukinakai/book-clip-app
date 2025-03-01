@@ -7,6 +7,9 @@ if (typeof StyleSheet.flatten !== 'function') {
 // グローバル設定
 jest.setTimeout(10000);
 
+// supabaseのモック
+jest.mock('./src/lib/supabase');
+
 // React Nativeコンポーネントのモック
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native');
@@ -61,6 +64,13 @@ jest.mock('react-native-safe-area-context', () => {
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
+
+// expo-routerのモック
+jest.mock('expo-router', () => ({
+  router: {
+    replace: jest.fn(),
+  },
+}));
 
 // コンソールエラーの無視設定
 const originalConsoleError = global.console.error;
