@@ -51,7 +51,7 @@
 - PRODUCT_OVERVIEW.md: プロダクト概要
 - PROGRESS.md: 進捗管理
 
-## プロジェクトのツリー構造
+## プロジェクトのツリー構造 run `tree -I "node_modules" >> .clinerules` to update
 .
 ├── PROGRESS.md
 ├── README.md
