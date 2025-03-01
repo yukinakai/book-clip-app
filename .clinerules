@@ -50,3 +50,86 @@
 - Architecture.md: アーキテクチャ設計
 - PRODUCT_OVERVIEW.md: プロダクト概要
 - PROGRESS.md: 進捗管理
+
+## プロジェクトのツリー構造
+.
+├── PROGRESS.md
+├── README.md
+├── app.config.ts
+├── docs
+│   ├── ARCHITECTURE.md
+│   ├── PRD.md
+│   └── PRODUCT_OVERVIEW.md
+├── jest.config.js
+├── jest.setup.js
+├── package-lock.json
+├── package.json
+├── src
+│   ├── app
+│   │   ├── (auth)
+│   │   │   ├── __tests__
+│   │   │   │   ├── sign-in.test.tsx
+│   │   │   │   └── sign-up.test.tsx
+│   │   │   ├── sign-in.tsx
+│   │   │   └── sign-up.tsx
+│   │   ├── (tabs)
+│   │   │   ├── __tests__
+│   │   │   │   └── scan.test.tsx
+│   │   │   ├── _layout.tsx
+│   │   │   ├── explore.tsx
+│   │   │   ├── index.tsx
+│   │   │   └── scan.tsx
+│   │   ├── +not-found.tsx
+│   │   └── _layout.tsx
+│   ├── app.json
+│   ├── assets
+│   │   ├── fonts
+│   │   │   └── SpaceMono-Regular.ttf
+│   │   └── images
+│   │       ├── adaptive-icon.png
+│   │       ├── book-placeholder.png
+│   │       ├── book-placeholder.svg
+│   │       ├── book-placeholder@2x.png
+│   │       ├── book-placeholder@3x.png
+│   │       ├── favicon.png
+│   │       ├── icon.png
+│   │       ├── partial-react-logo.png
+│   │       ├── react-logo.png
+│   │       ├── react-logo@2x.png
+│   │       ├── react-logo@3x.png
+│   │       └── splash-icon.png
+│   ├── components
+│   │   ├── BarcodeScanner.tsx
+│   │   ├── __tests__
+│   │   │   └── BarcodeScanner.test.tsx
+│   │   ├── auth
+│   │   │   ├── SignInForm.tsx
+│   │   │   ├── SignUpForm.tsx
+│   │   │   └── __tests__
+│   │   │       ├── SignInForm.test.tsx
+│   │   │       └── SignUpForm.test.tsx
+│   │   └── books
+│   │       ├── BookList.tsx
+│   │       └── __tests__
+│   │           └── BookList.test.tsx
+│   ├── constants
+│   ├── contexts
+│   │   ├── AuthProvider.tsx
+│   │   └── __tests__
+│   │       └── AuthProvider.test.tsx
+│   ├── hooks
+│   │   ├── __tests__
+│   │   │   └── useAuth.test.ts
+│   │   ├── useAuth.ts
+│   │   └── useWindowDimensions.ts
+│   ├── lib
+│   │   ├── __mocks__
+│   │   │   └── supabase.ts
+│   │   ├── __tests__
+│   │   │   └── books.test.ts
+│   │   ├── books.ts
+│   │   └── supabase.ts
+│   ├── types
+│   │   └── book.ts
+│   └── utils
+└── tsconfig.json
