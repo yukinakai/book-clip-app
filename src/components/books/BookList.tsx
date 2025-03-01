@@ -11,12 +11,16 @@ import {
 import { Book } from '@/types/book';
 import { FontAwesome } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 3;
 const GRID_SPACING = 10;
-const ITEM_WIDTH = (width - GRID_SPACING * (COLUMN_COUNT + 1)) / COLUMN_COUNT;
 const ASPECT_RATIO = 1.5; // 一般的な本の縦横比
-const ITEM_HEIGHT = ITEM_WIDTH * ASPECT_RATIO;
+
+const calculateDimensions = () => {
+  const { width } = Dimensions.get('window');
+  const itemWidth = (width - GRID_SPACING * (COLUMN_COUNT + 1)) / COLUMN_COUNT;
+  const itemHeight = itemWidth * ASPECT_RATIO;
+  return { itemWidth, itemHeight };
+};
 
 interface BookListProps {
   books: Book[];
@@ -104,7 +108,7 @@ const styles = StyleSheet.create({
     paddingBottom: 80, // FABの下にスペースを確保
   },
   bookItem: {
-    width: ITEM_WIDTH,
+    width: calculateDimensions().itemWidth,
     marginHorizontal: GRID_SPACING / 2,
     marginBottom: GRID_SPACING,
   },
@@ -112,8 +116,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   bookCover: {
-    width: ITEM_WIDTH,
-    height: ITEM_HEIGHT,
+    width: calculateDimensions().itemWidth,
+    height: calculateDimensions().itemHeight,
     borderRadius: 4,
     backgroundColor: '#f0f0f0',
   },
