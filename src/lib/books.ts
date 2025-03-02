@@ -12,7 +12,7 @@ export async function createBook(input: CreateBookInput): Promise<Book | null> {
     .insert([input]);
 
   if (error || !data) {
-    console.error('Failed to create book:', error);
+    console.error('Failed to create book: ', error);
     return null;
   }
 
@@ -33,7 +33,7 @@ export async function getBook(id: string): Promise<Book | null> {
 
   if (error || !data) {
     if (error) {
-      console.error('Failed to get book:', error);
+      console.error('Failed to get book: ', error);
     }
     return null;
   }
@@ -56,7 +56,7 @@ export async function updateBook(id: string, input: UpdateBookInput): Promise<Bo
     .single();
 
   if (error || !data) {
-    console.error('Failed to update book:', error);
+    console.error('Failed to update book: ', error);
     return null;
   }
 
@@ -75,7 +75,7 @@ export async function deleteBook(id: string): Promise<boolean> {
     .eq('id', id);
 
   if (error) {
-    console.error('Failed to delete book:', error);
+    console.error('Failed to delete book: ', error);
     return false;
   }
 
