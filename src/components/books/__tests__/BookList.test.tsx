@@ -1,40 +1,52 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import { BookList } from '../BookList';
-import { Book } from '@/types/book';
+import React from "react";
+import { render, fireEvent } from "@testing-library/react-native";
+import { BookList } from "../BookList";
+import { Book } from "@/types/book";
 
-// useWindowDimensionsのモック
-jest.mock('@/hooks/useWindowDimensions', () => ({
+// Expo Vector Icons のモックを追加
+jest.mock("@expo/vector-icons", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    FontAwesome: (props: any) => <View {...props}>{props.children}</View>,
+  };
+});
+
+// useWindowDimensions のモック
+jest.mock("@/hooks/useWindowDimensions", () => ({
   useWindowDimensions: () => ({
     width: 400,
     height: 800,
   }),
 }));
 
-describe('BookList', () => {
+// Image のモック
+jest.mock('@/assets/images/book-placeholder.png', () => 'book-placeholder');
+
+describe("BookList", () => {
   const mockBooks: Book[] = [
     {
-      id: '1',
-      title: 'テスト本1',
-      author: 'テスト著者1',
-      thumbnailUrl: 'https://example.com/thumbnail1.jpg',
-      isbn: '1234567890123',
-      publisher: 'テスト出版社1',
+      id: "1",
+      title: "テスト本1",
+      author: "テスト著者1",
+      thumbnailUrl: "https://example.com/thumbnail1.jpg",
+      isbn: "1234567890123",
+      publisher: "テスト出版社1",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      userId: 'test-user-1'
+      userId: "test-user-1",
     },
     {
-      id: '2',
-      title: 'テスト本2',
-      author: 'テスト著者2',
-      thumbnailUrl: 'https://example.com/thumbnail2.jpg',
-      isbn: '1234567890124',
-      publisher: 'テスト出版社2',
+      id: "2",
+      title: "テスト本2",
+      author: "テスト著者2",
+      thumbnailUrl: "https://example.com/thumbnail2.jpg",
+      isbn: "1234567890124",
+      publisher: "テスト出版社2",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      userId: 'test-user-1'
-    }
+      userId: "test-user-1",
+    },
   ];
 
   const mockOnBookPress = jest.fn();
@@ -45,8 +57,8 @@ describe('BookList', () => {
     jest.clearAllMocks();
   });
 
-  it('書籍一覧を正しく表示する', () => {
-    const { getByText } = render(
+  it("書籍一覧を正しく表示する", () => {
+    const { getByTestId } = render(
       <BookList
         books={mockBooks}
         onBookPress={mockOnBookPress}
@@ -55,14 +67,14 @@ describe('BookList', () => {
       />
     );
 
-    expect(getByText('テスト本1')).toBeTruthy();
-    expect(getByText('テスト著者1')).toBeTruthy();
-    expect(getByText('テスト本2')).toBeTruthy();
-    expect(getByText('テスト著者2')).toBeTruthy();
+    expect(getByTestId(`book-title-${mockBooks[0].id}`)).toHaveTextContent("テスト本1");
+    expect(getByTestId(`book-author-${mockBooks[0].id}`)).toHaveTextContent("テスト著者1");
+    expect(getByTestId(`book-title-${mockBooks[1].id}`)).toHaveTextContent("テスト本2");
+    expect(getByTestId(`book-author-${mockBooks[1].id}`)).toHaveTextContent("テスト著者2");
   });
 
-  it('空の状態を正しく表示する', () => {
-    const { getByText } = render(
+  it("空の状態を正しく表示する", () => {
+    const { getByTestId } = render(
       <BookList
         books={[]}
         onBookPress={mockOnBookPress}
@@ -71,11 +83,11 @@ describe('BookList', () => {
       />
     );
 
-    expect(getByText('登録されている書籍はありません')).toBeTruthy();
+    expect(getByTestId("empty-message")).toHaveTextContent("登録されている書籍はありません");
   });
 
-  it('書籍をタップした時にonBookPressが呼ばれる', () => {
-    const { getByText } = render(
+  it("書籍をタップした時にonBookPressが呼ばれる", () => {
+    const { getByTestId } = render(
       <BookList
         books={mockBooks}
         onBookPress={mockOnBookPress}
@@ -84,12 +96,12 @@ describe('BookList', () => {
       />
     );
 
-    fireEvent.press(getByText('テスト本1'));
+    fireEvent.press(getByTestId(`book-item-${mockBooks[0].id}`));
     expect(mockOnBookPress).toHaveBeenCalledWith(mockBooks[0]);
   });
 
-  it('削除ボタンをタップした時にonDeletePressが呼ばれる', () => {
-    const { getAllByLabelText } = render(
+  it("削除ボタンをタップした時にonDeletePressが呼ばれる", () => {
+    const { getByTestId } = render(
       <BookList
         books={mockBooks}
         onBookPress={mockOnBookPress}
@@ -98,12 +110,12 @@ describe('BookList', () => {
       />
     );
 
-    fireEvent.press(getAllByLabelText('削除')[0]);
+    fireEvent.press(getByTestId(`delete-button-${mockBooks[0].id}`));
     expect(mockOnDeletePress).toHaveBeenCalledWith(mockBooks[0].id);
   });
 
-  it('追加ボタンをタップした時にonAddPressが呼ばれる', () => {
-    const { getByLabelText } = render(
+  it("追加ボタンをタップした時にonAddPressが呼ばれる", () => {
+    const { getByTestId } = render(
       <BookList
         books={mockBooks}
         onBookPress={mockOnBookPress}
@@ -112,12 +124,12 @@ describe('BookList', () => {
       />
     );
 
-    fireEvent.press(getByLabelText('追加'));
+    fireEvent.press(getByTestId("add-button"));
     expect(mockOnAddPress).toHaveBeenCalled();
   });
 
-  it('空の状態でも追加ボタンが表示される', () => {
-    const { getByLabelText } = render(
+  it("空の状態でも追加ボタンが表示される", () => {
+    const { getByTestId } = render(
       <BookList
         books={[]}
         onBookPress={mockOnBookPress}
@@ -126,6 +138,6 @@ describe('BookList', () => {
       />
     );
 
-    expect(getByLabelText('追加')).toBeTruthy();
+    expect(getByTestId("add-button")).toBeTruthy();
   });
 });
