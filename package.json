@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest",
+    "test": "cp .gitignore .clineignore && jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:update": "jest -u",
