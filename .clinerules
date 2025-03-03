@@ -51,10 +51,12 @@
 - PRODUCT_OVERVIEW.md: プロダクト概要
 - PROGRESS.md: 進捗管理
 
-## プロジェクトのツリー構造 run `tree -I "node_modules" >> .clinerules` to update
+## プロジェクトのツリー構造 run `tree -I "node_modules|coverage" >> .clinerules` to update
 .
 ├── PROGRESS.md
 ├── README.md
+├── __mocks__
+│   └── fileMock.ts
 ├── app.config.ts
 ├── docs
 │   ├── ARCHITECTURE.md
@@ -112,14 +114,14 @@
 │   │       ├── BookList.tsx
 │   │       └── __tests__
 │   │           └── BookList.test.tsx
-│   ├── constants
 │   ├── contexts
 │   │   ├── AuthProvider.tsx
 │   │   └── __tests__
 │   │       └── AuthProvider.test.tsx
 │   ├── hooks
 │   │   ├── __tests__
-│   │   │   └── useAuth.test.ts
+│   │   │   ├── useAuth.test.ts
+│   │   │   └── useWindowDimensions.test.ts
 │   │   ├── useAuth.ts
 │   │   └── useWindowDimensions.ts
 │   ├── lib
@@ -129,7 +131,8 @@
 │   │   │   └── books.test.ts
 │   │   ├── books.ts
 │   │   └── supabase.ts
-│   ├── types
-│   │   └── book.ts
-│   └── utils
+│   └── types
+│       └── book.ts
 └── tsconfig.json
+
+26 directories, 56 files
