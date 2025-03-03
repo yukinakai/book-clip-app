@@ -40,5 +40,9 @@ module.exports = {
         ]
       }
     ]
+  },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(jpg|jpeg|png|svg)$': '<rootDir>/__mocks__/fileMock.ts'
   }
 };

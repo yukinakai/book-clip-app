@@ -1,57 +1,50 @@
-import { StyleSheet } from 'react-native';
-
-if (typeof StyleSheet.flatten !== 'function') {
-  StyleSheet.flatten = (style) => style;
-}
-
 // グローバル設定
 jest.setTimeout(10000);
 
+// 必須の分離されたReact Nativeコンポーネントのモック
+jest.mock('react-native/Libraries/Components/ProgressBarAndroid/ProgressBarAndroid', () => ({
+  default: () => null,
+}));
+
+jest.mock('react-native/Libraries/Components/Clipboard/Clipboard', () => ({
+  getString: jest.fn(),
+  setString: jest.fn(),
+}));
+
+jest.mock('react-native/Libraries/PushNotificationIOS/PushNotificationIOS', () => ({
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+  requestPermissions: jest.fn(),
+  abandonPermissions: jest.fn(),
+  checkPermissions: jest.fn(),
+  getInitialNotification: jest.fn(),
+  constructor: jest.fn(),
+  finish: jest.fn(),
+  getMessage: jest.fn(),
+  getSound: jest.fn(),
+  getAlert: jest.fn(),
+  getBadgeCount: jest.fn(),
+  getData: jest.fn(),
+}));
+
+// 基本的なモック値の定義
+const mockDimensions = {
+  window: {
+    width: 400,
+    height: 800,
+    scale: 2,
+    fontScale: 2,
+  },
+  screen: {
+    width: 400,
+    height: 800,
+    scale: 2,
+    fontScale: 2,
+  },
+};
+
 // supabaseのモック
 jest.mock('./src/lib/supabase');
-
-// React Nativeコンポーネントのモック
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  const React = require('react');
-  
-  return {
-    StyleSheet: {
-      create: (styles) => styles,
-      absoluteFillObject: {},
-    },
-    View: ({ testID, style, children }) => 
-      React.createElement('view', { testID, style }, children),
-    Text: ({ testID, children, style }) => 
-      React.createElement('text', { testID, style }, children),
-    TextInput: ({ testID, style, placeholder, value, onChangeText, secureTextEntry, autoCapitalize, keyboardType }) =>
-      React.createElement('input', {
-        testID,
-        style,
-        placeholder,
-        value,
-        onChange: (e) => onChangeText(e.target.value),
-        type: secureTextEntry ? 'password' : 'text',
-        autoCapitalize,
-      }),
-    TouchableOpacity: ({ testID, onPress, disabled, style, children }) =>
-      React.createElement('button', { testID, onClick: onPress, disabled, style }, children),
-    ActivityIndicator: ({ testID, color }) =>
-      React.createElement('div', { testID, style: { color } }, 'Loading...'),
-    SafeAreaView: ({ testID, children, style }) =>
-      React.createElement('div', { testID, style }, children),
-    Platform: {
-      select: jest.fn((obj) => obj.ios),
-      OS: 'ios',
-    },
-    NativeModules: {
-      ...RN.NativeModules,
-      SettingsManager: {
-        settings: {},
-      },
-    },
-  };
-});
 
 // SafeAreaContextのモック
 jest.mock('react-native-safe-area-context', () => {
@@ -72,11 +65,117 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-// コンソールエラーの無視設定
-const originalConsoleError = global.console.error;
-global.console.error = (...args) => {
-  if (typeof args[0] === 'string' && args[0].startsWith('Warning:')) {
-    return;
-  }
-  originalConsoleError.apply(global.console, args);
-};
+// React Native全体のモック（分離されたコンポーネントへの参照を除去）
+jest.mock('react-native', () => {
+  const React = require('react');
+  
+  const NativeEventEmitter = function() {
+    this.addListener = jest.fn();
+    this.removeListener = jest.fn();
+  };
+  
+  return {
+    NativeEventEmitter,
+    NativeModules: {
+      SettingsManager: {
+        getConstants: () => ({}),
+        settings: {},
+        addListener: jest.fn(),
+        removeListeners: jest.fn(),
+      },
+      DeviceInfo: {
+        getConstants: () => ({
+          window: mockDimensions.window,
+          screen: mockDimensions.screen,
+        }),
+      },
+      SoundManager: {
+        playTouchSound: jest.fn(),
+      },
+      PlatformConstants: {
+        getConstants: () => ({
+          forceTouchAvailable: false,
+          interfaceIdiom: 'phone',
+          isTesting: true,
+          osVersion: '14.0',
+          systemName: 'iOS',
+          isDisableAnimations: true,
+        }),
+      },
+      Keyboard: {
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        dismiss: jest.fn(),
+      },
+    },
+    StyleSheet: {
+      create: (styles) => styles,
+      hairlineWidth: 1,
+      absoluteFillObject: {},
+      flatten: (style) => style,
+    },
+    Dimensions: {
+      get: jest.fn((dim) => mockDimensions[dim]),
+      set: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    },
+    PixelRatio: {
+      get: () => mockDimensions.window.scale,
+      getFontScale: () => mockDimensions.window.fontScale,
+      getPixelSizeForLayoutSize: (size) => size * mockDimensions.window.scale,
+      roundToNearestPixel: (size) => size,
+    },
+    Platform: {
+      select: jest.fn((obj) => obj.ios),
+      OS: 'ios',
+      constants: {
+        forceTouchAvailable: false,
+        interfaceIdiom: 'phone',
+        isTesting: true,
+        osVersion: '14.0',
+        systemName: 'iOS',
+        isDisableAnimations: true,
+      },
+    },
+    // UIコンポーネントのモック
+    View: ({ testID, style, children }) => 
+      React.createElement('view', { testID, style }, children),
+    Text: ({ testID, children, style }) => 
+      React.createElement('text', { testID, style }, children),
+    Image: ({ testID, source, style, resizeMode }) =>
+      React.createElement('img', { 
+        testID,
+        src: typeof source === 'number' ? source : source?.uri,
+        style: { ...style, objectFit: resizeMode },
+      }),
+    TextInput: ({ testID, style, placeholder, value, onChangeText, secureTextEntry, autoCapitalize, keyboardType }) =>
+      React.createElement('input', {
+        testID,
+        style,
+        placeholder,
+        value,
+        onChange: (e) => onChangeText(e.target.value),
+        type: secureTextEntry ? 'password' : 'text',
+        autoCapitalize,
+        keyboardType,
+      }),
+    TouchableOpacity: ({ testID, onPress, disabled, style, children }) =>
+      React.createElement('button', { testID, onClick: onPress, disabled, style }, children),
+    ActivityIndicator: ({ testID, color }) =>
+      React.createElement('div', { testID, style: { color } }, 'Loading...'),
+    SafeAreaView: ({ testID, children, style }) => 
+      React.createElement('div', { testID, style }, children),
+    KeyboardAvoidingView: ({ testID, style, children }) =>
+      React.createElement('div', { testID, style }, children),
+    FlatList: ({ data, renderItem, keyExtractor, numColumns, contentContainerStyle, ListEmptyComponent }) => {
+      const items = data.map((item, index) => {
+        const element = renderItem({ item, index });
+        return React.cloneElement(element, { key: keyExtractor ? keyExtractor(item, index) : index });
+      });
+      return React.createElement('view', { style: contentContainerStyle }, 
+        data.length === 0 && ListEmptyComponent ? ListEmptyComponent() : items
+      );
+    },
+  };
+});
