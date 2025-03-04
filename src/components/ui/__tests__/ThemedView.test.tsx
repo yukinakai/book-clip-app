@@ -33,11 +33,12 @@ describe('ThemedView', () => {
 
   it('renders children correctly', () => {
     mockUseColorScheme.mockReturnValue('light');
-    const { getByText } = render(
+    const { getByTestId } = render(
       <ThemedView>
-        <ThemedText>Child Content</ThemedText>
+        <ThemedText testID="child-text">Child Content</ThemedText>
       </ThemedView>
     );
-    expect(getByText('Child Content')).toBeTruthy();
+    const textElement = getByTestId('child-text');
+    expect(textElement.props.children).toBe('Child Content');
   });
 });

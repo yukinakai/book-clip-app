@@ -142,7 +142,12 @@ jest.mock('react-native', () => {
     View: ({ testID, style, children }) => 
       React.createElement('view', { testID, style }, children),
     Text: ({ testID, children, style }) => 
-      React.createElement('text', { testID, style }, children),
+      React.createElement('div', { 
+        testID, 
+        style, 
+        children,
+        textContent: typeof children === 'string' ? children : undefined
+      }, children),
     Image: ({ testID, source, style, resizeMode }) =>
       React.createElement('img', { 
         testID,
