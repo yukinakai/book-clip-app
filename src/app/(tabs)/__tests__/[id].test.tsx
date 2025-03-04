@@ -7,8 +7,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/hooks/useAuth';
 
 // モック設定
-jest.mock('expo-router');
-jest.mock('@tanstack/react-query');
+jest.mock('expo-router', () => require('@/__mocks__/expo-router'));
+jest.mock('@tanstack/react-query', () => require('@/__mocks__/@tanstack/react-query'));
 jest.mock('@/hooks/useColorScheme');
 jest.mock('@/hooks/useAuth');
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ViewProps } from 'react-native';
-import { useColorScheme } from '@hooks/useColorScheme';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 interface ThemedViewProps extends ViewProps {
   children?: React.ReactNode;
