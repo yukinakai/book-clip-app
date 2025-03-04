@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Modal, StyleSheet, View, TextInput, TouchableOpacity, TextInputProps } from 'react-native';
-import { ThemedView } from '../ThemedView';
-import { ThemedText } from '../ThemedText';
+import { ThemedView } from './ThemedView';
+import { ThemedText } from './ThemedText';
 
 interface DialogProps {
   title: string;

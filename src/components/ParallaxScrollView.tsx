@@ -7,8 +7,8 @@ import {
   Dimensions,
   ImageSourcePropType,
 } from 'react-native';
-import { ThemedView } from './ThemedView';
-import { ThemedText } from './ThemedText';
+import { ThemedView } from './ui/ThemedView';
+import { ThemedText } from './ui/ThemedText';
 
 interface Props {
   children: ReactNode;

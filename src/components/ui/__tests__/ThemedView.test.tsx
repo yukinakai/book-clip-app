@@ -1,0 +1,43 @@
+import React from 'react';
+import { render } from '@testing-library/react-native';
+import { ThemedView } from '../ThemedView';
+import { ThemedText } from '../ThemedText';
+import { useColorScheme } from '@/hooks/useColorScheme';
+
+jest.mock('@/hooks/useColorScheme');
+const mockUseColorScheme = useColorScheme as jest.MockedFunction<typeof useColorScheme>;
+
+describe('ThemedView', () => {
+  it('renders view with light theme colors', () => {
+    mockUseColorScheme.mockReturnValue('light');
+    const { getByTestId } = render(<ThemedView testID="themed-view" />);
+    const view = getByTestId('themed-view');
+    expect(view.props.style).toContainEqual({ backgroundColor: '#fff' });
+  });
+
+  it('renders view with dark theme colors', () => {
+    mockUseColorScheme.mockReturnValue('dark');
+    const { getByTestId } = render(<ThemedView testID="themed-view" />);
+    const view = getByTestId('themed-view');
+    expect(view.props.style).toContainEqual({ backgroundColor: '#000' });
+  });
+
+  it('applies custom styles', () => {
+    mockUseColorScheme.mockReturnValue('light');
+    const { getByTestId } = render(
+      <ThemedView testID="themed-view" style={{ padding: 20 }} />
+    );
+    const view = getByTestId('themed-view');
+    expect(view.props.style).toContainEqual({ padding: 20 });
+  });
+
+  it('renders children correctly', () => {
+    mockUseColorScheme.mockReturnValue('light');
+    const { getByText } = render(
+      <ThemedView>
+        <ThemedText>Child Content</ThemedText>
+      </ThemedView>
+    );
+    expect(getByText('Child Content')).toBeTruthy();
+  });
+});

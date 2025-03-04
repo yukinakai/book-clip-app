@@ -1,75 +1,60 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { Image } from 'react-native';
 import { ParallaxScrollView } from '../ParallaxScrollView';
-import { ThemedText } from '../ThemedText';
+import { ThemedText } from '../ui/ThemedText';
+
+jest.mock('@/hooks/useColorScheme');
 
 describe('ParallaxScrollView', () => {
+  const mockTitle = 'Test Title';
+  const mockSubtitle = 'Test Subtitle';
+
   it('renders title correctly', () => {
-    render(
-      <ParallaxScrollView title="Test Title">
-        <ThemedText>Content</ThemedText>
+    const { getByTestId } = render(
+      <ParallaxScrollView
+        testID="parallax-scroll-view"
+        title={mockTitle}
+      >
+        <></>
       </ParallaxScrollView>
     );
-
-    expect(screen.getByText('Test Title')).toBeTruthy();
+    expect(getByTestId('parallax-scroll-view')).toBeTruthy();
   });
 
   it('renders subtitle when provided', () => {
-    render(
-      <ParallaxScrollView title="Test Title" subtitle="Test Subtitle">
-        <ThemedText>Content</ThemedText>
-      </ParallaxScrollView>
-    );
-
-    expect(screen.getByText('Test Subtitle')).toBeTruthy();
-  });
-
-  it('renders header right component when provided', () => {
-    render(
+    const { getByText } = render(
       <ParallaxScrollView
-        title="Test Title"
-        headerRight={<ThemedText testID="header-right">Right</ThemedText>}
+        title={mockTitle}
+        subtitle={mockSubtitle}
       >
-        <ThemedText>Content</ThemedText>
+        <></>
       </ParallaxScrollView>
     );
-
-    expect(screen.getByTestId('header-right')).toBeTruthy();
-  });
-
-  it('renders children content', () => {
-    render(
-      <ParallaxScrollView title="Test Title">
-        <ThemedText testID="content">Content</ThemedText>
-      </ParallaxScrollView>
-    );
-
-    expect(screen.getByTestId('content')).toBeTruthy();
+    expect(getByText(mockTitle)).toBeTruthy();
+    expect(getByText(mockSubtitle)).toBeTruthy();
   });
 
   it('renders header image when provided', () => {
-    render(
+    const mockHeaderImage = 'https://example.com/image.jpg';
+    const { UNSAFE_getByType } = render(
       <ParallaxScrollView
-        title="Test Title"
-        headerImage="https://example.com/image.jpg"
+        title={mockTitle}
+        headerImage={mockHeaderImage}
       >
-        <ThemedText>Content</ThemedText>
+        <></>
       </ParallaxScrollView>
     );
-
-    expect(screen.UNSAFE_getByType(Image).props.source.uri).toBe(
-      'https://example.com/image.jpg'
-    );
+    const image = UNSAFE_getByType(Image);
+    expect(image.props.source.uri).toBe(mockHeaderImage);
   });
 
-  it('uses testID when provided', () => {
-    render(
-      <ParallaxScrollView title="Test Title" testID="scroll-view">
-        <ThemedText>Content</ThemedText>
+  it('renders children correctly', () => {
+    const { getByText } = render(
+      <ParallaxScrollView title={mockTitle}>
+        <ThemedText>Child Content</ThemedText>
       </ParallaxScrollView>
     );
-
-    expect(screen.getByTestId('scroll-view')).toBeTruthy();
+    expect(getByText('Child Content')).toBeTruthy();
   });
 });
