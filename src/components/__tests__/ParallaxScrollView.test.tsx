@@ -7,11 +7,21 @@ import { ThemedText } from '../ui/ThemedText';
 jest.mock('@/hooks/useColorScheme');
 
 // ScrollViewをモック
-jest.mock('react-native/Libraries/Components/ScrollView/ScrollView', () => {
-  const { View } = require('react-native');
+jest.mock('react-native', () => {
+  const RN = jest.requireActual('react-native');
   return {
-    __esModule: true,
-    default: View,
+    ...RN,
+    ScrollView: ({ 
+      children, 
+      testID,
+      stickyHeaderIndices 
+    }: { 
+      children: React.ReactNode; 
+      testID?: string;
+      stickyHeaderIndices?: number[];
+    }) => (
+      <RN.View testID={testID}>{children}</RN.View>
+    ),
   };
 });
 

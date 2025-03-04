@@ -9,7 +9,9 @@ import { Book, CreateBookInput, UpdateBookInput } from '@/types/book';
 export async function createBook(input: CreateBookInput): Promise<Book | null> {
   const { data, error } = await supabase
     .from('books')
-    .insert([input]);
+    .insert([input])
+    .select()
+    .single();
 
   if (error || !data) {
     console.error('Failed to create book: ', error);
