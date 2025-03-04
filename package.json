@@ -16,7 +16,7 @@
     "lint": "expo lint"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.0.2",
+    "@expo/vector-icons": "^14.0.4",
     "@react-native-clipboard/clipboard": "^1.16.1",
     "@react-native-community/progress-bar-android": "^1.0.5",
     "@react-native-community/push-notification-ios": "^1.11.0",
