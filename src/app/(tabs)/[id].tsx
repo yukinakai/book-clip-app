@@ -1,160 +1,115 @@
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { BookWithQuotes, Quote } from '@/types/book';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { BookWithQuotes } from '@/types/book';
+import { Quote, QuoteFormData } from '@/types/quote';
 import { useAuth } from '@/hooks/useAuth';
 import { getBook, updateBook } from '@/lib/books';
 import { createQuote, updateQuote, deleteQuote } from '@/lib/quotes';
 import { Dialog } from '@/components/ui/Dialog';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ui/ThemedText';
+import { ThemedView } from '@/components/ui/ThemedView';
 import { ParallaxScrollView } from '@/components/ParallaxScrollView';
 import { Tag } from '@/types/tag';
 
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
-  const [book, setBook] = useState<BookWithQuotes | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditBookDialogOpen, setIsEditBookDialogOpen] = useState(false);
-  const [editingBook, setEditingBook] = useState(book);
+  const [editingBook, setEditingBook] = useState<BookWithQuotes | null>(null);
 
-  // 書籍データの取得
-  useEffect(() => {
-    const fetchBook = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getBook(id);
-        setBook(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '書籍の取得に失敗しました');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const queryClient = useQueryClient();
 
-    fetchBook();
-  }, [id]);
+  // 書籍情報の取得
+  const {
+    data: book,
+    isLoading,
+    error
+  } = useQuery<BookWithQuotes, Error, BookWithQuotes>({
+    queryKey: ['book', id],
+    queryFn: async () => {
+      const data = await getBook(id);
+      if (!data) throw new Error('書籍が見つかりませんでした');
+      return data as BookWithQuotes;
+    }
+  });
 
-  // 引用の追加
-  const handleCreateQuote = async (data: { content: string; page?: number; memo?: string; tags?: string[] }) => {
-    if (!user || !book) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const newQuote = await createQuote({
-        bookId: book.id,
+  // 引用の作成
+  const createQuoteMutation = useMutation({
+    mutationFn: async (data: QuoteFormData) =>
+      createQuote({
+        bookId: book!.id,
         content: data.content,
         page: data.page,
         memo: data.memo,
         tags: data.tags?.map(tagId => ({ id: tagId })) as Tag[],
-      });
-
-      // 成功した場合、書籍の引用リストを更新
-      setBook(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          quotes: [newQuote, ...(prev.quotes || [])],
-        };
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '引用の追加に失敗しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['book', id] });
+    },
+  });
 
   // 引用の更新
-  const handleUpdateQuote = async (quoteId: string, data: { content?: string; page?: number; memo?: string; tags?: string[] }) => {
-    if (!user || !book) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const updatedQuote = await updateQuote(quoteId, {
+  const updateQuoteMutation = useMutation({
+    mutationFn: async ({
+      quoteId,
+      data,
+    }: {
+      quoteId: string;
+      data: Partial<QuoteFormData>;
+    }) => {
+      if (!quoteId) throw new Error('引用IDが指定されていません');
+      const result = await updateQuote(quoteId, {
         content: data.content,
         page: data.page,
         memo: data.memo,
         tags: data.tags?.map(tagId => ({ id: tagId })) as Tag[],
       });
-
-      // 成功した場合、書籍の引用リストを更新
-      setBook(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          quotes: prev.quotes?.map(q => (q.id === quoteId ? updatedQuote : q)),
-        };
-      });
-
+      if (!result) throw new Error('引用の更新に失敗しました');
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['book', id] });
       setEditingQuote(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '引用の更新に失敗しました');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  });
 
   // 引用の削除
-  const handleDeleteQuote = async (quoteId: string) => {
-    if (!user || !book) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
+  const deleteQuoteMutation = useMutation({
+    mutationFn: async (quoteId: string) => {
       const result = await deleteQuote(quoteId);
-
-      if (result) {
-        // 成功した場合、書籍の引用リストから削除
-        setBook(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            quotes: prev.quotes?.filter(q => q.id !== quoteId),
-          };
-        });
-      }
-
+      if (!result) throw new Error('引用の削除に失敗しました');
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['book', id] });
       setIsDeleteDialogOpen(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '引用の削除に失敗しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
   // 書籍情報の更新
-  const handleUpdateBook = async (data: { title?: string; description?: string }) => {
-    if (!user || !book) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const updatedBook = await updateBook(book.id, data);
-      setBook(updatedBook);
+  const updateBookMutation = useMutation({
+    mutationFn: async (data: { title?: string; description?: string }) => {
+      if (!book?.id) throw new Error('書籍IDが指定されていません');
+      const result = await updateBook(book.id, data);
+      if (!result) throw new Error('書籍の更新に失敗しました');
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['book', id] });
       setIsEditBookDialogOpen(false);
       setEditingBook(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '書籍の更新に失敗しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
-  if (isLoading) {
+  if (isLoading || createQuoteMutation.isPending || updateQuoteMutation.isPending || deleteQuoteMutation.isPending || updateBookMutation.isPending) {
     return (
-      <ThemedView style={styles.container}>
-        <ThemedText>読み込み中...</ThemedText>
+      <ThemedView style={styles.container} testID="loading-indicator">
+        <ActivityIndicator size="large" />
       </ThemedView>
     );
   }
@@ -162,12 +117,12 @@ export default function BookDetailScreen() {
   if (error) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={styles.error}>{error}</ThemedText>
+        <ThemedText style={styles.error}>{error.message}</ThemedText>
       </ThemedView>
     );
   }
 
-  if (!book) {
+  if (!book || !user) {
     return (
       <ThemedView style={styles.container}>
         <ThemedText>書籍が見つかりませんでした</ThemedText>
@@ -208,7 +163,17 @@ export default function BookDetailScreen() {
             <IconSymbol
               name="add"
               onPress={() => {
-                setEditingQuote({ bookId: book.id } as Quote);
+                setEditingQuote({
+                  bookId: book.id,
+                  content: '',
+                  page: undefined,
+                  memo: undefined,
+                  tags: [],
+                  id: '',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  userId: user.id
+                });
               }}
             />
           </View>
@@ -258,7 +223,7 @@ export default function BookDetailScreen() {
               label="引用"
               value={editingQuote?.content}
               onChangeText={text =>
-                setEditingQuote(prev => ({
+                setEditingQuote((prev: Quote | null) => ({
                   ...prev!,
                   content: text,
                 }))
@@ -270,7 +235,7 @@ export default function BookDetailScreen() {
               label="ページ番号"
               value={editingQuote?.page?.toString()}
               onChangeText={text =>
-                setEditingQuote(prev => ({
+                setEditingQuote((prev: Quote | null) => ({
                   ...prev!,
                   page: text ? parseInt(text, 10) : undefined,
                 }))
@@ -282,7 +247,7 @@ export default function BookDetailScreen() {
               label="メモ"
               value={editingQuote?.memo}
               onChangeText={text =>
-                setEditingQuote(prev => ({
+                setEditingQuote((prev: Quote | null) => ({
                   ...prev!,
                   memo: text,
                 }))
@@ -301,10 +266,20 @@ export default function BookDetailScreen() {
             <Dialog.Button
               label={editingQuote?.id ? '更新' : '保存'}
               onPress={() => {
+                const quoteData: QuoteFormData = {
+                  content: editingQuote!.content,
+                  page: editingQuote!.page,
+                  memo: editingQuote!.memo,
+                  tags: editingQuote!.tags?.map(tag => tag.id),
+                };
+
                 if (editingQuote?.id) {
-                  handleUpdateQuote(editingQuote.id, editingQuote);
+                  updateQuoteMutation.mutate({
+                    quoteId: editingQuote.id,
+                    data: quoteData,
+                  });
                 } else if (editingQuote) {
-                  handleCreateQuote(editingQuote);
+                  createQuoteMutation.mutate(quoteData);
                 }
               }}
             />
@@ -328,7 +303,7 @@ export default function BookDetailScreen() {
             />
             <Dialog.Button
               label="削除"
-              onPress={() => editingQuote && handleDeleteQuote(editingQuote.id)}
+              onPress={() => editingQuote && deleteQuoteMutation.mutate(editingQuote.id)}
               destructive
             />
           </>
@@ -349,7 +324,7 @@ export default function BookDetailScreen() {
               label="タイトル"
               value={editingBook?.title}
               onChangeText={text =>
-                setEditingBook(prev => ({
+                setEditingBook((prev: BookWithQuotes | null) => ({
                   ...prev!,
                   title: text,
                 }))
@@ -360,7 +335,7 @@ export default function BookDetailScreen() {
               label="説明"
               value={editingBook?.description}
               onChangeText={text =>
-                setEditingBook(prev => ({
+                setEditingBook((prev: BookWithQuotes | null) => ({
                   ...prev!,
                   description: text,
                 }))
@@ -383,7 +358,7 @@ export default function BookDetailScreen() {
               label="更新"
               onPress={() =>
                 editingBook &&
-                handleUpdateBook({
+                updateBookMutation.mutate({
                   title: editingBook.title,
                   description: editingBook.description,
                 })
