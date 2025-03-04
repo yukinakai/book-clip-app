@@ -13,14 +13,14 @@ describe("ThemedText", () => {
     mockUseColorScheme.mockReturnValue("light");
     const { getByText } = render(<ThemedText>Test Text</ThemedText>);
     const text = getByText("Test Text");
-    expect(text.props.style).toContainEqual({ color: "#000" });
+    expect(text.props.style[0]).toEqual({ color: "#000" });
   });
 
   it("renders text with dark theme colors", () => {
     mockUseColorScheme.mockReturnValue("dark");
     const { getByText } = render(<ThemedText>Test Text</ThemedText>);
     const text = getByText("Test Text");
-    expect(text.props.style).toContainEqual({ color: "#fff" });
+    expect(text.props.style[0]).toEqual({ color: "#fff" });
   });
 
   it("applies custom styles", () => {
@@ -29,6 +29,6 @@ describe("ThemedText", () => {
       <ThemedText style={{ fontSize: 20 }}>Test Text</ThemedText>
     );
     const text = getByText("Test Text");
-    expect(text.props.style).toContainEqual({ fontSize: 20 });
+    expect(text.props.style[1]).toEqual({ fontSize: 20 });
   });
 });

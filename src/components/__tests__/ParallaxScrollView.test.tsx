@@ -1,10 +1,19 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { Image } from 'react-native';
+import { Image, ScrollView } from 'react-native';
 import { ParallaxScrollView } from '../ParallaxScrollView';
 import { ThemedText } from '../ui/ThemedText';
 
 jest.mock('@/hooks/useColorScheme');
+
+// ScrollViewをモック
+jest.mock('react-native/Libraries/Components/ScrollView/ScrollView', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: View,
+  };
+});
 
 describe('ParallaxScrollView', () => {
   const mockTitle = 'Test Title';

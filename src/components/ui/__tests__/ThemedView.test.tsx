@@ -12,14 +12,14 @@ describe('ThemedView', () => {
     mockUseColorScheme.mockReturnValue('light');
     const { getByTestId } = render(<ThemedView testID="themed-view" />);
     const view = getByTestId('themed-view');
-    expect(view.props.style).toContainEqual({ backgroundColor: '#fff' });
+    expect(view.props.style[0]).toEqual({ backgroundColor: '#fff' });
   });
 
   it('renders view with dark theme colors', () => {
     mockUseColorScheme.mockReturnValue('dark');
     const { getByTestId } = render(<ThemedView testID="themed-view" />);
     const view = getByTestId('themed-view');
-    expect(view.props.style).toContainEqual({ backgroundColor: '#000' });
+    expect(view.props.style[0]).toEqual({ backgroundColor: '#000' });
   });
 
   it('applies custom styles', () => {
@@ -28,7 +28,7 @@ describe('ThemedView', () => {
       <ThemedView testID="themed-view" style={{ padding: 20 }} />
     );
     const view = getByTestId('themed-view');
-    expect(view.props.style).toContainEqual({ padding: 20 });
+    expect(view.props.style[1]).toEqual({ padding: 20 });
   });
 
   it('renders children correctly', () => {
