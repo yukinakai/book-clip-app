@@ -75,7 +75,6 @@ book-clip-appは、本の引用や感想を管理するモバイルアプリケ�
 
 ### 進行中の機能
 - failするテストの修正
-  - src/components/ui/__tests__/ThemedView.test.tsx
   - src/components/__tests__/ParallaxScrollView.test.tsx
   - src/app/(tabs)/__tests__/[id].test.tsx
   - src/components/ui/__tests__/ThemedText.test.tsx
