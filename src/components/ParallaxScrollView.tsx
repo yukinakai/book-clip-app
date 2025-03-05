@@ -18,7 +18,9 @@ interface Props {
   children: ReactNode;
   headerImage?: string;
   title: string;
+  titleTestID?: string;
   subtitle?: string;
+  subtitleTestID?: string;
   headerRight?: ReactNode;
   testID?: string;
 }
@@ -31,7 +33,9 @@ export function ParallaxScrollView({
   children,
   headerImage,
   title,
+  titleTestID,
   subtitle,
+  subtitleTestID,
   headerRight,
   testID,
 }: Props) {
@@ -52,11 +56,11 @@ export function ParallaxScrollView({
       <ThemedView style={styles.titleContainer}>
         <View style={styles.titleContent}>
           <View style={styles.titleTextContainer}>
-            <ThemedText numberOfLines={1} style={styles.title}>
+            <ThemedText numberOfLines={1} style={styles.title} testID={titleTestID}>
               {title}
             </ThemedText>
             {subtitle && (
-              <ThemedText numberOfLines={1} style={styles.subtitle}>
+              <ThemedText numberOfLines={1} style={styles.subtitle} testID={subtitleTestID}>
                 {subtitle}
               </ThemedText>
             )}

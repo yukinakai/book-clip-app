@@ -117,7 +117,7 @@ export default function BookDetailScreen() {
   if (error) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={styles.error}>{error.message}</ThemedText>
+        <ThemedText style={styles.error} testID="error-message">{error.message}</ThemedText>
       </ThemedView>
     );
   }
@@ -125,7 +125,7 @@ export default function BookDetailScreen() {
   if (!book || !user) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText>書籍が見つかりませんでした</ThemedText>
+        <ThemedText testID="not-found-message">書籍が見つかりませんでした</ThemedText>
       </ThemedView>
     );
   }
@@ -134,7 +134,9 @@ export default function BookDetailScreen() {
     <ParallaxScrollView
       headerImage={book.thumbnailUrl}
       title={book.title}
+      titleTestID="book-title"
       subtitle={book.author}
+      subtitleTestID="book-author"
       headerRight={
         <IconSymbol
           name="pencil"
@@ -146,22 +148,23 @@ export default function BookDetailScreen() {
       }
     >
       <ThemedView style={styles.container}>
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>書籍情報</ThemedText>
-          <ThemedText>出版社: {book.publisher}</ThemedText>
+        <View style={styles.section} testID="book-info-section">
+          <ThemedText style={styles.sectionTitle} testID="book-info-title">書籍情報</ThemedText>
+          <ThemedText testID="book-publisher">出版社: {book.publisher}</ThemedText>
           {book.publishedDate && (
-            <ThemedText>出版日: {book.publishedDate}</ThemedText>
+            <ThemedText testID="book-published-date">出版日: {book.publishedDate}</ThemedText>
           )}
           {book.description && (
-            <ThemedText style={styles.description}>{book.description}</ThemedText>
+            <ThemedText style={styles.description} testID="book-description">{book.description}</ThemedText>
           )}
         </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>引用一覧</ThemedText>
+            <ThemedText style={styles.sectionTitle} testID="quotes-section-title">引用一覧</ThemedText>
             <IconSymbol
               name="add"
+              testID="add-quote-button"
               onPress={() => {
                 setEditingQuote({
                   bookId: book.id,
@@ -179,17 +182,17 @@ export default function BookDetailScreen() {
           </View>
 
           {book.quotes?.map(quote => (
-            <ThemedView key={quote.id} style={styles.quoteCard}>
-              <ThemedText>{quote.content}</ThemedText>
-              {quote.page && <ThemedText>P.{quote.page}</ThemedText>}
+            <ThemedView key={quote.id} style={styles.quoteCard} testID={`quote-item-${quote.id}`}>
+              <ThemedText testID={`quote-content-${quote.id}`}>{quote.content}</ThemedText>
+              {quote.page && <ThemedText testID={`quote-page-${quote.id}`}>P.{quote.page}</ThemedText>}
               {quote.memo && (
-                <ThemedText style={styles.memo}>{quote.memo}</ThemedText>
+                <ThemedText style={styles.memo} testID={`quote-memo-${quote.id}`}>{quote.memo}</ThemedText>
               )}
               {quote.tags && quote.tags.length > 0 && (
                 <View style={styles.tags}>
                   {quote.tags.map(tag => (
                     <ThemedView key={tag.id} style={styles.tag}>
-                      <ThemedText>{tag.name}</ThemedText>
+                      <ThemedText testID={`quote-tag-${tag.id}`}>{tag.name}</ThemedText>
                     </ThemedView>
                   ))}
                 </View>
@@ -197,10 +200,12 @@ export default function BookDetailScreen() {
               <View style={styles.quoteActions}>
                 <IconSymbol
                   name="pencil"
+                  testID={`edit-quote-${quote.id}`}
                   onPress={() => setEditingQuote(quote)}
                 />
                 <IconSymbol
                   name="trash"
+                  testID={`delete-quote-${quote.id}`}
                   onPress={() => {
                     setEditingQuote(quote);
                     setIsDeleteDialogOpen(true);
