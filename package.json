@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll",
+   "test": "cp .gitignore .clineignore && tree -a -I 'node_modules|coverage|.git' > docs/DIRECTORY.md &&jest --watchAll",
     "lint": "expo lint"
   },
   "jest": {
