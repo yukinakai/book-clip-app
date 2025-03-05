@@ -1,109 +1,165 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import React, { useCallback, useState, useEffect } from "react";
+import { StyleSheet } from "react-native";
+import { ParallaxScrollView } from "@/components/ParallaxScrollView";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { TagList } from "@/components/tags/TagList";
+import { TagForm } from "@/components/tags/TagForm";
+import { Dialog } from "@/components/ui/Dialog";
+import { Tag } from "@/types/tag";
+import { createTag, deleteTag, getAllTags, updateTag } from "@/lib/tags";
+import { useAuth } from "@/hooks/useAuth";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+export default function ExploreScreen() {
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
+  const { user } = useAuth();
 
-export default function TabTwoScreen() {
+  const loadTags = useCallback(async () => {
+    if (!user) return;
+    const fetchedTags = await getAllTags();
+    setTags(fetchedTags);
+  }, [user]);
+
+  useEffect(() => {
+    loadTags();
+  }, [loadTags]);
+
+  const handleAddTag = useCallback(() => {
+    setSelectedTag(null);
+    setIsFormVisible(true);
+  }, []);
+
+  const handleEditTag = useCallback((tag: Tag) => {
+    setSelectedTag(tag);
+    setIsFormVisible(true);
+  }, []);
+
+  const handleDeleteTag = useCallback((tag: Tag) => {
+    setSelectedTag(tag);
+    setIsDeleteDialogVisible(true);
+  }, []);
+
+  const handleFormSubmit = useCallback(
+    async (name: string) => {
+      if (selectedTag) {
+        await updateTag(selectedTag.id, name);
+      } else {
+        await createTag(name);
+      }
+      loadTags();
+      setIsFormVisible(false);
+    },
+    [selectedTag, loadTags]
+  );
+
+  const handleFormClose = useCallback(() => {
+    setIsFormVisible(false);
+    setSelectedTag(null);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (selectedTag) {
+      await deleteTag(selectedTag.id);
+      loadTags();
+    }
+    setIsDeleteDialogVisible(false);
+    setSelectedTag(null);
+  }, [selectedTag, loadTags]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setIsDeleteDialogVisible(false);
+    setSelectedTag(null);
+  }, []);
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      title="タグ管理"
+      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
       headerImage={
         <IconSymbol
           size={310}
           color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
+          name="tag"
           style={styles.headerImage}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
+      }
+    >
+      <ThemedView style={styles.container}>
+        <ThemedView style={styles.titleContainer}>
+          <ThemedText type="title">タグ管理</ThemedText>
+          <IconSymbol
+            name="plus.curcle"
+            size={24}
+            onPress={handleAddTag}
+            testID="add-tag-button"
+          />
+        </ThemedView>
+
+        <TagList
+          tags={tags}
+          onEditTag={handleEditTag}
+          onDeleteTag={handleDeleteTag}
+          testID="tag-list"
+        />
+
+        <TagForm
+          visible={isFormVisible}
+          onClose={handleFormClose}
+          onSubmit={handleFormSubmit}
+          tag={selectedTag || undefined}
+        />
+
+        <Dialog
+          visible={isDeleteDialogVisible}
+          onClose={handleDeleteCancel}
+          title="タグの削除"
+          testID="delete-dialog"
+          content={
             <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
+              {selectedTag?.name}
+              を削除してもよろしいですか？削除すると、このタグが付けられた引用からも削除されます。
             </ThemedText>
-          ),
-        })}
-      </Collapsible>
+          }
+          actions={
+            <>
+              <Dialog.Button
+                label="キャンセル"
+                onPress={handleDeleteCancel}
+                testID="delete-cancel-button"
+              />
+              <Dialog.Button
+                label="削除"
+                onPress={handleDeleteConfirm}
+                testID="delete-confirm-button"
+                destructive
+              />
+            </>
+          }
+        />
+      </ThemedView>
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    gap: 16,
+  },
   headerImage: {
-    color: '#808080',
+    color: "#808080",
     bottom: -90,
     left: -35,
-    position: 'absolute',
+    position: "absolute",
   },
   titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingRight: 16,
   },
 });

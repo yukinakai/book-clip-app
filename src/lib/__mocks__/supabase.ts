@@ -1,45 +1,42 @@
-const defaultResponse = {
-  data: null,
-  error: null
-};
-
-// メソッドチェーン用の共通ヘルパー
-const createChainableMethod = (returnValue = defaultResponse) => {
-  const fn = jest.fn();
-  fn.mockReturnValue({
-    eq: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(returnValue),
-    ...returnValue // レスポンスをマージして柔軟な上書きを可能に
-  });
-  return fn;
-};
-
+// Mock implementation of supabase client
 export const supabase = {
-  auth: {
-    getSession: jest.fn().mockResolvedValue({
-      data: { session: null },
-      error: null
-    }),
-    signOut: jest.fn().mockResolvedValue({
-      error: null
-    }),
-    onAuthStateChange: jest.fn((callback) => {
-      return {
-        data: {
-          subscription: {
-            unsubscribe: jest.fn()
-          }
-        }
-      };
-    })
-  },
   from: jest.fn().mockReturnValue({
-    insert: createChainableMethod(),
-    select: createChainableMethod(),
-    update: createChainableMethod(),
-    delete: createChainableMethod(),
-    eq: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(defaultResponse)
+    select: jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({ 
+          data: { id: '1', name: 'Test Tag' }, 
+          error: null 
+        })
+      }),
+      order: jest.fn().mockResolvedValue({
+        data: [{ id: '1', name: 'Test Tag' }],
+        error: null
+      })
+    }),
+    insert: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: { id: '1', name: 'New Tag' },
+          error: null
+        })
+      })
+    }),
+    update: jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: { id: '1', name: 'Updated Tag' },
+            error: null
+          })
+        })
+      })
+    }),
+    delete: jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({
+          error: null
+        })
+      })
+    })
   })
 };

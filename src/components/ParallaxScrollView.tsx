@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from "react";
 import {
   View,
   Image,
@@ -7,16 +7,17 @@ import {
   ScrollView,
   ImageSourcePropType,
   Platform,
-} from 'react-native';
-import { ThemedView } from './ui/ThemedView';
-import { ThemedText } from './ui/ThemedText';
+} from "react-native";
+import { ThemedView } from "./ui/ThemedView";
+import { ThemedText } from "./ui/ThemedText";
 
 // Use View component for testing, ScrollView for real use
-const ScrollableView = process.env.NODE_ENV === 'test' ? View : ScrollView;
+const ScrollableView = process.env.NODE_ENV === "test" ? View : ScrollView;
 
 interface Props {
   children: ReactNode;
-  headerImage?: string;
+  headerImage?: string | React.ReactNode;
+  headerBackgroundColor: { light: string; dark: string };
   title: string;
   titleTestID?: string;
   subtitle?: string;
@@ -25,7 +26,7 @@ interface Props {
   testID?: string;
 }
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get("window");
 const HEADER_HEIGHT = height * 0.4;
 const TITLE_HEIGHT = 72;
 
@@ -43,11 +44,15 @@ export function ParallaxScrollView({
     <ScrollableView testID={testID} stickyHeaderIndices={[1]}>
       <View style={styles.header}>
         {headerImage ? (
-          <Image
-            source={{ uri: headerImage }}
-            style={styles.headerImage}
-            resizeMode="cover"
-          />
+          typeof headerImage === "string" ? (
+            <Image
+              source={{ uri: headerImage }}
+              style={styles.headerImage}
+              resizeMode="cover"
+            />
+          ) : (
+            headerImage
+          )
         ) : (
           <ThemedView style={styles.headerPlaceholder} />
         )}
@@ -56,11 +61,19 @@ export function ParallaxScrollView({
       <ThemedView style={styles.titleContainer}>
         <View style={styles.titleContent}>
           <View style={styles.titleTextContainer}>
-            <ThemedText numberOfLines={1} style={styles.title} testID={titleTestID}>
+            <ThemedText
+              numberOfLines={1}
+              style={styles.title}
+              testID={titleTestID}
+            >
               {title}
             </ThemedText>
             {subtitle && (
-              <ThemedText numberOfLines={1} style={styles.subtitle} testID={subtitleTestID}>
+              <ThemedText
+                numberOfLines={1}
+                style={styles.subtitle}
+                testID={subtitleTestID}
+              >
                 {subtitle}
               </ThemedText>
             )}
@@ -77,24 +90,24 @@ export function ParallaxScrollView({
 const styles = StyleSheet.create({
   header: {
     height: HEADER_HEIGHT,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   headerImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   headerPlaceholder: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   titleContainer: {
     height: TITLE_HEIGHT,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   titleContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
   },
   titleTextContainer: {
@@ -103,14 +116,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   subtitle: {
     fontSize: 14,
     marginTop: 4,
   },
   headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

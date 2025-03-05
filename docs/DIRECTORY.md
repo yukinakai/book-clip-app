@@ -11,9 +11,9 @@
 ├── app.config.ts
 ├── docs
 │   ├── ARCHITECTURE.md
+│   ├── DIRECTORY.md
 │   ├── PRD.md
-│   ├── PRODUCT_OVERVIEW.md
-│   └── PROJECT_TREE.md
+│   └── PRODUCT_OVERVIEW.md
 ├── jest.config.js
 ├── jest.setup.js
 ├── package-lock.json
@@ -60,6 +60,7 @@
 │   │       └── splash-icon.png
 │   ├── components
 │   │   ├── BarcodeScanner.tsx
+│   │   ├── HelloWave.tsx
 │   │   ├── ParallaxScrollView.tsx
 │   │   ├── __tests__
 │   │   │   ├── BarcodeScanner.test.tsx
@@ -74,15 +75,24 @@
 │   │   │   ├── BookList.tsx
 │   │   │   └── __tests__
 │   │   │       └── BookList.test.tsx
+│   │   ├── tags
+│   │   │   ├── TagForm.tsx
+│   │   │   ├── TagList.tsx
+│   │   │   └── __tests__
+│   │   │       ├── TagForm.test.tsx
+│   │   │       └── TagList.test.tsx
 │   │   └── ui
 │   │       ├── Dialog.tsx
 │   │       ├── IconSymbol.tsx
 │   │       ├── ThemedText.tsx
 │   │       ├── ThemedView.tsx
 │   │       ├── __mocks__
-│   │       │   └── @expo
-│   │       │       └── vector-icons.tsx
+│   │       │   ├── @expo
+│   │       │   │   └── vector-icons.tsx
+│   │       │   ├── Dialog.tsx
+│   │       │   └── IconSymbol.tsx
 │   │       └── __tests__
+│   │           ├── Dialog.test.tsx
 │   │           ├── IconSymbol.test.tsx
 │   │           ├── ThemedText.test.tsx
 │   │           └── ThemedView.test.tsx
@@ -103,14 +113,16 @@
 │   │   ├── __mocks__
 │   │   │   └── supabase.ts
 │   │   ├── __tests__
-│   │   │   └── books.test.ts
+│   │   │   ├── books.test.ts
+│   │   │   └── tags.test.ts
 │   │   ├── books.ts
 │   │   ├── quotes.ts
-│   │   └── supabase.ts
+│   │   ├── supabase.ts
+│   │   └── tags.ts
 │   └── types
 │       ├── book.ts
 │       ├── quote.ts
 │       └── tag.ts
 └── tsconfig.json
 
-33 directories, 81 files
+35 directories, 91 files

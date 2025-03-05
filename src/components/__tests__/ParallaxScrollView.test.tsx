@@ -54,9 +54,14 @@ describe('ParallaxScrollView', () => {
   const mockTitle = 'Test Title';
   const mockSubtitle = 'Test Subtitle';
 
+  const defaultProps = {
+    headerBackgroundColor: { light: '#D0D0D0', dark: '#353636' },
+    title: mockTitle,
+  };
+
   it('renders title correctly', () => {
     const { UNSAFE_getAllByType } = render(
-      <ParallaxScrollView title={mockTitle}>
+      <ParallaxScrollView {...defaultProps}>
         <></>
       </ParallaxScrollView>
     );
@@ -73,7 +78,7 @@ describe('ParallaxScrollView', () => {
 
   it('renders title and subtitle when subtitle is provided', () => {
     const { UNSAFE_getAllByType } = render(
-      <ParallaxScrollView title={mockTitle} subtitle={mockSubtitle}>
+      <ParallaxScrollView {...defaultProps} subtitle={mockSubtitle}>
         <></>
       </ParallaxScrollView>
     );
@@ -99,7 +104,7 @@ describe('ParallaxScrollView', () => {
   it('renders header image when provided', () => {
     const mockHeaderImage = 'https://example.com/image.jpg';
     const { UNSAFE_getByType } = render(
-      <ParallaxScrollView title={mockTitle} headerImage={mockHeaderImage}>
+      <ParallaxScrollView {...defaultProps} headerImage={mockHeaderImage}>
         <></>
       </ParallaxScrollView>
     );
@@ -110,7 +115,7 @@ describe('ParallaxScrollView', () => {
   it('renders headerRight when provided', () => {
     const mockHeaderRight = <View testID="header-right" />;
     const { getByTestId } = render(
-      <ParallaxScrollView title={mockTitle} headerRight={mockHeaderRight}>
+      <ParallaxScrollView {...defaultProps} headerRight={mockHeaderRight}>
         <></>
       </ParallaxScrollView>
     );
@@ -119,7 +124,7 @@ describe('ParallaxScrollView', () => {
 
   it('renders children correctly', () => {
     const { UNSAFE_getAllByType } = render(
-      <ParallaxScrollView title={mockTitle}>
+      <ParallaxScrollView {...defaultProps} >
         <ThemedText testID="child-content">Child Content</ThemedText>
       </ParallaxScrollView>
     );
@@ -141,7 +146,7 @@ describe('ParallaxScrollView', () => {
     // テスト環境では ScrollView を View に置き換えているため、stickyHeaderIndices の動作はチェックできませんが、
     // コンポーネントがレンダリングされるかを確認しています
     const { getByTestId } = render(
-      <ParallaxScrollView testID="parallax-scroll-view" title={mockTitle}>
+      <ParallaxScrollView {...defaultProps}  testID="parallax-scroll-view">
         <></>
       </ParallaxScrollView>
     );
