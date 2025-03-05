@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { View, Text, Pressable as RNPressable, TextInput, Modal, KeyboardTypeOptions } from 'react-native';
+import { View, Text, Pressable as RNPressable, TextInput, Modal, KeyboardTypeOptions, StyleProp, TextStyle } from 'react-native';
 
 // Create a local Pressable component to ensure it's properly defined
 const Pressable = RNPressable;
@@ -23,6 +23,12 @@ export interface DialogInputProps {
   autoFocus?: boolean;
 }
 
+export interface DialogMessageProps {
+  children: ReactNode;
+  style?: StyleProp<TextStyle>;
+  testID?: string;
+}
+
 export interface DialogProps {
   visible: boolean;
   onClose: () => void;
@@ -36,6 +42,7 @@ export interface DialogProps {
 const Dialog: React.FC<DialogProps> & {
   Button: React.FC<DialogButtonProps>;
   Input: React.FC<DialogInputProps>;
+  Message: React.FC<DialogMessageProps>;
 } = ({ visible, onClose, children, actions, testID = 'dialog', title, content }) => {
   if (!visible) return null;
 
@@ -57,7 +64,7 @@ Dialog.Button = ({ label, onPress, testID, destructive, disabled }) => (
   <Pressable 
     testID={testID} 
     onPress={onPress}
-    accessibilityState={{ disabled: !!disabled }}
+    accessibilityState={{ disabled }}
     disabled={disabled}
   >
     <Text style={destructive ? { color: '#FF3B30' } : undefined}>{label}</Text>
@@ -87,6 +94,12 @@ Dialog.Input = ({
       autoFocus={autoFocus}
     />
   </View>
+);
+
+Dialog.Message = ({ children, style, testID }) => (
+  <Text style={style} testID={testID}>
+    {children}
+  </Text>
 );
 
 export default Dialog;

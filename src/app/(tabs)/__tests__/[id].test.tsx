@@ -230,12 +230,12 @@ describe("BookDetailPage", () => {
     
     // 編集ボタンをクリック
     const editButton = getByTestId(`edit-quote-${mockQuote.id}`);
-    editButton.props.onPress();
+    fireEvent.press(editButton);
 
     // フォームに初期値が設定されていることを確認
-    const quoteInput = getByLabelText('引用文');
-    const pageInput = getByLabelText('ページ');
-    const memoInput = getByLabelText('メモ');
+    const quoteInput = getByTestId('content-input');
+    const pageInput = getByTestId('page-input');
+    const memoInput = getByTestId('memo-input');
     expect(quoteInput.props.value).toBe('テスト引用1');
     expect(pageInput.props.value).toBe('1');
     expect(memoInput.props.value).toBe('メモ1');
@@ -246,8 +246,8 @@ describe("BookDetailPage", () => {
     fireEvent.changeText(pageInput, '2');
     fireEvent.changeText(memoInput, '更新されたメモ');
 
-    // 保存ボタンをクリック
-    const saveButton = getByText('保存');
+    // 更新ボタンをクリック
+    const saveButton = getByTestId('submit-button');
     fireEvent.press(saveButton);
 
     // ミューテーションが呼ばれたことを確認
@@ -280,7 +280,7 @@ describe("BookDetailPage", () => {
 
     // 削除ボタンをクリック
     const deleteButton = getByTestId(`delete-quote-${mockQuote.id}`);
-    deleteButton.props.onPress();
+    fireEvent.press(deleteButton);
 
     // 削除確認ダイアログが表示されることを確認
     const confirmDialog = getByText('この引用を削除してもよろしいですか？');
@@ -319,12 +319,12 @@ describe("BookDetailPage", () => {
 
     // 追加ボタンをクリック
     const addButton = getByTestId("add-quote-button");
-    addButton.props.onPress();
+    fireEvent.press(addButton);
 
     // フォームに値を入力
-    const quoteInput = getByLabelText('引用文');
-    const pageInput = getByLabelText('ページ');
-    const memoInput = getByLabelText('メモ');
+    const quoteInput = getByTestId('content-input');
+    const pageInput = getByTestId('page-input');
+    const memoInput = getByTestId('memo-input');
 
     fireEvent.changeText(quoteInput, '新しい引用');
     fireEvent.changeText(pageInput, '3');
@@ -334,8 +334,8 @@ describe("BookDetailPage", () => {
     const tag1 = getByText('タグ1');
     fireEvent.press(tag1);
 
-    // 保存ボタンをクリック
-    const saveButton = getByText('保存');
+    // 追加ボタンをクリック
+    const saveButton = getByTestId('submit-button');
     fireEvent.press(saveButton);
 
     // ミューテーションが呼ばれたことを確認
