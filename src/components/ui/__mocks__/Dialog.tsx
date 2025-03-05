@@ -9,6 +9,7 @@ export interface DialogButtonProps {
   onPress: () => void;
   testID?: string;
   destructive?: boolean;
+  disabled?: boolean;
 }
 
 export interface DialogInputProps {
@@ -52,8 +53,13 @@ const Dialog: React.FC<DialogProps> & {
   );
 };
 
-Dialog.Button = ({ label, onPress, testID, destructive }) => (
-  <Pressable testID={testID} onPress={onPress}>
+Dialog.Button = ({ label, onPress, testID, destructive, disabled }) => (
+  <Pressable 
+    testID={testID} 
+    onPress={onPress}
+    accessibilityState={{ disabled: !!disabled }}
+    disabled={disabled}
+  >
     <Text style={destructive ? { color: '#FF3B30' } : undefined}>{label}</Text>
   </Pressable>
 );
