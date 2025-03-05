@@ -38,7 +38,8 @@
 │   │   │   ├── _layout.tsx
 │   │   │   ├── explore.tsx
 │   │   │   ├── index.tsx
-│   │   │   └── scan.tsx
+│   │   │   ├── scan.tsx
+│   │   │   └── tags.tsx
 │   │   ├── +not-found.tsx
 │   │   └── _layout.tsx
 │   ├── app.json
@@ -75,6 +76,10 @@
 │   │   │   ├── BookList.tsx
 │   │   │   └── __tests__
 │   │   │       └── BookList.test.tsx
+│   │   ├── quotes
+│   │   │   ├── QuoteForm.tsx
+│   │   │   └── __tests__
+│   │   │       └── QuoteForm.test.tsx
 │   │   ├── tags
 │   │   │   ├── TagForm.tsx
 │   │   │   ├── TagList.tsx
@@ -125,4 +130,4 @@
 │       └── tag.ts
 └── tsconfig.json
 
-35 directories, 91 files
+37 directories, 94 files

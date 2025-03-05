@@ -1,11 +1,12 @@
 import React, { ReactNode } from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, TextInput, KeyboardTypeOptions } from 'react-native';
+import { Modal, View, Text, StyleSheet, Pressable, TextInput, KeyboardTypeOptions, StyleProp, TextStyle } from 'react-native';
 
 export interface DialogButtonProps {
   label: string;
   onPress: () => void;
   testID?: string;
   destructive?: boolean;
+  disabled?: boolean;
 }
 
 export interface DialogInputProps {
@@ -29,9 +30,16 @@ export interface DialogProps {
   content?: ReactNode;
 }
 
+export interface DialogMessageProps {
+  children: ReactNode;
+  style?: StyleProp<TextStyle>;
+  testID?: string;
+}
+
 export const Dialog: React.FC<DialogProps> & {
   Button: React.FC<DialogButtonProps>;
   Input: React.FC<DialogInputProps>;
+  Message: React.FC<DialogMessageProps>;
 } = ({ visible, onClose, children, actions, testID, title, content }) => {
   return (
     <Modal
@@ -54,7 +62,7 @@ export const Dialog: React.FC<DialogProps> & {
   );
 };
 
-Dialog.Button = ({ label, onPress, testID, destructive }) => (
+Dialog.Button = ({ label, onPress, testID, destructive, disabled }) => (
   <Pressable
     style={({ pressed }) => [
       styles.button,
@@ -62,6 +70,7 @@ Dialog.Button = ({ label, onPress, testID, destructive }) => (
     ]}
     onPress={onPress}
     testID={testID}
+    disabled={disabled}
   >
     <Text
       style={[
@@ -97,6 +106,12 @@ Dialog.Input = ({
       autoFocus={autoFocus}
     />
   </View>
+);
+
+Dialog.Message = ({ children, style, testID }) => (
+  <Text style={[styles.message, style]} testID={testID}>
+    {children}
+  </Text>
 );
 
 const styles = StyleSheet.create({
@@ -150,5 +165,10 @@ const styles = StyleSheet.create({
   multilineInput: {
     minHeight: 80,
     textAlignVertical: 'top',
+  },
+  message: {
+    fontSize: 16,
+    marginBottom: 16,
+    color: '#333',
   },
 });
