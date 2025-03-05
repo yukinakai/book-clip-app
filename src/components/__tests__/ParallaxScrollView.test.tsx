@@ -1,23 +1,33 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { Image, View, Text } from 'react-native';
+import { Image, View, Text, Platform } from 'react-native';
 import { ParallaxScrollView } from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ui/ThemedText';
 
 // Create test environment
 jest.mock('react-native', () => {
   const rn = jest.requireActual('react-native');
-  const mockedRN = {
+  return {
     ...rn,
     Platform: {
       ...rn.Platform,
       OS: 'test',
     },
-    ScrollView: function ScrollView(props) {
-      return <rn.View testID={props.testID} stickyHeaderIndices={props.stickyHeaderIndices} {...props}>{props.children}</rn.View>;
-    }
+    ScrollView: function ScrollView(
+      props: React.ComponentProps<typeof rn.View> & { stickyHeaderIndices?: number[] }
+    ) {
+      return (
+        <rn.View
+          testID={props.testID}
+          // 型チェックのために、stickyHeaderIndices の型を拡張した props として扱っています
+          stickyHeaderIndices={props.stickyHeaderIndices}
+          {...props}
+        >
+          {props.children}
+        </rn.View>
+      );
+    },
   };
-  return mockedRN;
 });
 
 jest.mock('@/hooks/useColorScheme');
@@ -25,7 +35,7 @@ jest.mock('@/hooks/useColorScheme');
 jest.mock('@/components/ui/ThemedText', () => {
   const { Text } = require('react-native');
   return {
-    ThemedText: ({ children, ...props }: any) => (
+    ThemedText: ({ children, ...props }: React.ComponentProps<typeof Text>) => (
       <Text {...props}>{children}</Text>
     ),
   };
@@ -34,7 +44,7 @@ jest.mock('@/components/ui/ThemedText', () => {
 jest.mock('@/components/ui/ThemedView', () => {
   const { View } = require('react-native');
   return {
-    ThemedView: ({ children, ...props }: any) => (
+    ThemedView: ({ children, ...props }: React.ComponentProps<typeof View>) => (
       <View {...props}>{children}</View>
     ),
   };
@@ -45,12 +55,12 @@ describe('ParallaxScrollView', () => {
   const mockSubtitle = 'Test Subtitle';
 
   it('renders title correctly', () => {
-    const { getByText, UNSAFE_getAllByType } = render(
+    const { UNSAFE_getAllByType } = render(
       <ParallaxScrollView title={mockTitle}>
         <></>
       </ParallaxScrollView>
     );
-    // Check title exists in one of the Text components
+    // Text コンポーネント内にタイトルが存在するかチェック
     const textElements = UNSAFE_getAllByType(Text);
     let titleFound = false;
     textElements.forEach(element => {
@@ -63,15 +73,12 @@ describe('ParallaxScrollView', () => {
 
   it('renders title and subtitle when subtitle is provided', () => {
     const { UNSAFE_getAllByType } = render(
-      <ParallaxScrollView
-        title={mockTitle}
-        subtitle={mockSubtitle}
-      >
+      <ParallaxScrollView title={mockTitle} subtitle={mockSubtitle}>
         <></>
       </ParallaxScrollView>
     );
     
-    // Check title and subtitle exist in one of the Text components
+    // Text コンポーネント内にタイトルとサブタイトルが存在するかチェック
     const textElements = UNSAFE_getAllByType(Text);
     let titleFound = false;
     let subtitleFound = false;
@@ -92,10 +99,7 @@ describe('ParallaxScrollView', () => {
   it('renders header image when provided', () => {
     const mockHeaderImage = 'https://example.com/image.jpg';
     const { UNSAFE_getByType } = render(
-      <ParallaxScrollView
-        title={mockTitle}
-        headerImage={mockHeaderImage}
-      >
+      <ParallaxScrollView title={mockTitle} headerImage={mockHeaderImage}>
         <></>
       </ParallaxScrollView>
     );
@@ -106,10 +110,7 @@ describe('ParallaxScrollView', () => {
   it('renders headerRight when provided', () => {
     const mockHeaderRight = <View testID="header-right" />;
     const { getByTestId } = render(
-      <ParallaxScrollView
-        title={mockTitle}
-        headerRight={mockHeaderRight}
-      >
+      <ParallaxScrollView title={mockTitle} headerRight={mockHeaderRight}>
         <></>
       </ParallaxScrollView>
     );
@@ -123,7 +124,7 @@ describe('ParallaxScrollView', () => {
       </ParallaxScrollView>
     );
     
-    // Check if child content exists
+    // 子コンテンツが存在するかチェック
     const textElements = UNSAFE_getAllByType(Text);
     let childContentFound = false;
     
@@ -137,13 +138,10 @@ describe('ParallaxScrollView', () => {
   });
 
   it('applies sticky header styles', () => {
-    // Since we're using View instead of ScrollView in tests, we can't effectively 
-    // test sticky header indices, so we'll just verify the component renders
+    // テスト環境では ScrollView を View に置き換えているため、stickyHeaderIndices の動作はチェックできませんが、
+    // コンポーネントがレンダリングされるかを確認しています
     const { getByTestId } = render(
-      <ParallaxScrollView
-        testID="parallax-scroll-view"
-        title={mockTitle}
-      >
+      <ParallaxScrollView testID="parallax-scroll-view" title={mockTitle}>
         <></>
       </ParallaxScrollView>
     );
