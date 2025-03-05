@@ -9,7 +9,9 @@ type IconName =
   | 'chevron-forward'
   | 'close'
   | 'search'
-  | 'scan';
+  | 'scan'
+  | 'tag'
+  | 'plus.curcle';
 
 interface IconSymbolProps {
   name: IconName;

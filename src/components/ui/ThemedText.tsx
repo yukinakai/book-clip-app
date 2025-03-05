@@ -3,6 +3,7 @@ import { Text, TextProps } from 'react-native';
 import { useColorScheme } from '@hooks/useColorScheme';
 
 interface ThemedTextProps extends TextProps {
+  type?: 'title'|'subtitle'|'defaultSemiBold';
   children: React.ReactNode;
 }
 

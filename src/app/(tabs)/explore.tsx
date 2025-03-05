@@ -1,15 +1,15 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import { ParallaxScrollView } from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ui/ThemedText';
-import { ThemedView } from '@/components/ui/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { TagList } from '@/components/tags/TagList';
-import { TagForm } from '@/components/tags/TagForm';
-import { Dialog } from '@/components/ui/Dialog';
-import { Tag } from '@/types/tag';
-import { createTag, deleteTag, getAllTags, updateTag } from '@/lib/tags';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useCallback, useState, useEffect } from "react";
+import { StyleSheet } from "react-native";
+import { ParallaxScrollView } from "@/components/ParallaxScrollView";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { TagList } from "@/components/tags/TagList";
+import { TagForm } from "@/components/tags/TagForm";
+import { Dialog } from "@/components/ui/Dialog";
+import { Tag } from "@/types/tag";
+import { createTag, deleteTag, getAllTags, updateTag } from "@/lib/tags";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ExploreScreen() {
   const [tags, setTags] = useState<Tag[]>([]);
@@ -43,15 +43,18 @@ export default function ExploreScreen() {
     setIsDeleteDialogVisible(true);
   }, []);
 
-  const handleFormSubmit = useCallback(async (name: string) => {
-    if (selectedTag) {
-      await updateTag(selectedTag.id, name);
-    } else {
-      await createTag(name);
-    }
-    loadTags();
-    setIsFormVisible(false);
-  }, [selectedTag, loadTags]);
+  const handleFormSubmit = useCallback(
+    async (name: string) => {
+      if (selectedTag) {
+        await updateTag(selectedTag.id, name);
+      } else {
+        await createTag(name);
+      }
+      loadTags();
+      setIsFormVisible(false);
+    },
+    [selectedTag, loadTags]
+  );
 
   const handleFormClose = useCallback(() => {
     setIsFormVisible(false);
@@ -74,7 +77,8 @@ export default function ExploreScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      title="タグ管理"
+      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
       headerImage={
         <IconSymbol
           size={310}
@@ -82,12 +86,13 @@ export default function ExploreScreen() {
           name="tag"
           style={styles.headerImage}
         />
-      }>
+      }
+    >
       <ThemedView style={styles.container}>
         <ThemedView style={styles.titleContainer}>
           <ThemedText type="title">タグ管理</ThemedText>
           <IconSymbol
-            name="plus.circle"
+            name="plus.curcle"
             size={24}
             onPress={handleAddTag}
             testID="add-tag-button"
@@ -146,15 +151,15 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   headerImage: {
-    color: '#808080',
+    color: "#808080",
     bottom: -90,
     left: -35,
-    position: 'absolute',
+    position: "absolute",
   },
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingRight: 16,
   },
 });

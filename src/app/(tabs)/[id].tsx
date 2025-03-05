@@ -137,6 +137,7 @@ export default function BookDetailScreen() {
       titleTestID="book-title"
       subtitle={book.author}
       subtitleTestID="book-author"
+      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }} 
       headerRight={
         <IconSymbol
           name="pencil"

@@ -10,7 +10,9 @@ type IconName =
   | 'chevron-forward'
   | 'close'
   | 'search'
-  | 'scan';
+  | 'scan'
+  | 'tag'
+  | 'plus.curcle';
 
 interface IconSymbolProps {
   name: IconName;
@@ -30,6 +32,8 @@ const iconMap: Record<IconName, keyof typeof Ionicons['glyphMap']> = {
   close: 'close',
   search: 'search',
   scan: 'scan',
+  tag: 'pricetag',
+  'plus.curcle': 'add-circle',
 };
 
 export function IconSymbol({
