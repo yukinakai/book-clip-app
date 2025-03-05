@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
-import { Quote, CreateQuoteInput, UpdateQuoteInput } from '@/types/quote';
+import { Quote, CreateQuoteInput, UpdateQuoteInput, QuoteSearchOptions } from '@/types/quote';
+import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 
 /**
  * 引用を作成
@@ -15,6 +16,55 @@ export const createQuote = async (input: CreateQuoteInput): Promise<Quote> => {
   if (!data) throw new Error('引用の作成に失敗しました');
 
   return data;
+};
+
+/**
+ * 引用を検索
+ */
+export const searchQuotes = async (options: QuoteSearchOptions = {}): Promise<Quote[]> => {
+  try {
+    let query = supabase
+      .from('quotes')
+      .select(options.tagIds?.length ? `
+        *,
+        tags!inner (*)
+      ` : `
+        *,
+        tags (*)
+      `);
+
+    // キーワード検索
+    if (options.query) {
+      query = query.ilike('content', `%${options.query}%`);
+    }
+
+    // タグによる絞り込み
+    if (options.tagIds?.length) {
+      query = query.in('tags.id', options.tagIds);
+    }
+
+    // ソート順
+    if (options.orderBy) {
+      query = query.order(options.orderBy, { ascending: options.ascending ?? false });
+    }
+
+    // ページネーション
+    if (options.limit !== undefined && options.offset !== undefined) {
+      const from = options.offset;
+      const to = options.offset + options.limit - 1;
+      query = query.range(from, to);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    if (!data) return [];
+
+    return data;
+  } catch (error) {
+    console.error('引用の検索に失敗しました:', error);
+    return [];
+  }
 };
 
 /**

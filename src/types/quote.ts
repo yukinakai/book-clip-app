@@ -22,3 +22,12 @@ export interface QuoteFormData {
   memo?: string;
   tags?: string[];
 }
+
+export interface QuoteSearchOptions {
+  query?: string;
+  tagIds?: string[];
+  orderBy?: 'createdAt' | 'updatedAt' | 'page';
+  ascending?: boolean;
+  limit?: number;
+  offset?: number;
+}
