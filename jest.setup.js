@@ -154,7 +154,7 @@ jest.mock('react-native', () => {
         src: typeof source === 'number' ? source : source?.uri,
         style: { ...style, objectFit: resizeMode },
       }),
-    TextInput: ({ testID, style, placeholder, value, onChangeText, secureTextEntry, autoCapitalize, keyboardType }) =>
+    TextInput: ({ testID, style, placeholder, value, onChangeText, secureTextEntry, autoCapitalize, keyboardType, multiline }) =>
       React.createElement('input', {
         testID,
         style,
@@ -164,7 +164,10 @@ jest.mock('react-native', () => {
         type: secureTextEntry ? 'password' : 'text',
         autoCapitalize,
         keyboardType,
+        multiline,
       }),
+    Pressable: ({ testID, onPress, style, children }) =>
+      React.createElement('button', { testID, onClick: onPress, style }, children),
     TouchableOpacity: ({ testID, onPress, disabled, style, children }) =>
       React.createElement('button', { testID, onClick: onPress, disabled, style }, children),
     ActivityIndicator: ({ testID, color }) =>

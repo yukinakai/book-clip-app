@@ -1,45 +1,25 @@
+// Mock SupabaseClient
+const mockSingle = jest.fn(() => Promise.resolve({ data: { id: '1', name: 'Test Item' }, error: null }));
+const mockSelect = jest.fn(() => ({ single: mockSingle }));
+const mockEq = jest.fn(() => ({ select: mockSelect, eq: jest.fn(() => Promise.resolve({ error: null })) }));
+const mockOrder = jest.fn(() => Promise.resolve({ data: [{ id: '1', name: 'Test Item' }], error: null }));
+const mockInsert = jest.fn(() => ({ select: mockSelect }));
+
+// Main mock
 export const supabase = {
-  from: (table: string) => ({
-    insert: (data: any) => ({
-      select: () => ({
-        single: async () => ({
-          data: data[0],
-          error: null
-        })
-      })
-    }),
-    update: (data: any) => ({
-      eq: (field: string, value: any) => ({
-        select: () => ({
-          single: async () => ({
-            data,
-            error: null
-          })
-        })
-      })
-    }),
-    delete: () => ({
-      eq: (field: string, value: any) => ({
-        eq: (field: string, value: any) => ({
-          single: async () => ({
-            error: null
-          })
-        })
-      })
-    }),
-    select: (query?: string) => ({
-      eq: (field: string, value: any) => ({
-        single: async () => ({
-          data: { id: '1', name: 'Test Tag' },
-          error: null
-        })
-      }),
-      order: (field: string) => ({
-        then: async () => ({
-          data: [{ id: '1', name: 'Test Tag' }],
-          error: null
-        })
-      })
-    })
-  })
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({ 
+      eq: jest.fn(() => ({ 
+        single: mockSingle 
+      })),
+      order: mockOrder
+    })),
+    insert: mockInsert,
+    update: jest.fn(() => ({ 
+      eq: mockEq 
+    })),
+    delete: jest.fn(() => ({ 
+      eq: mockEq 
+    }))
+  }))
 };
