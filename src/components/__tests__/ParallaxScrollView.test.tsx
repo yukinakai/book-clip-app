@@ -1,29 +1,28 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { Image, ScrollView, View } from 'react-native';
+import { Image, ScrollView, View, Text } from 'react-native';
 import { ParallaxScrollView } from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ui/ThemedText';
+import { ThemedView } from '@/components/ui/ThemedView';
 
 jest.mock('@/hooks/useColorScheme');
 
-// ScrollViewをモック
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    ScrollView: ({ 
-      children, 
-      testID,
-      stickyHeaderIndices 
-    }: { 
-      children: React.ReactNode; 
-      testID?: string;
-      stickyHeaderIndices?: number[];
-    }) => (
-      <RN.View testID={testID}>{children}</RN.View>
-    ),
-  };
+jest.mock('react-native/Libraries/Components/ScrollView/ScrollView', () => {
+  const { View } = require('react-native');
+  return View;
 });
+
+jest.mock('@/components/ui/ThemedText', () => ({
+  ThemedText: ({ children, ...props }: { children: React.ReactNode }) => (
+    <Text {...props}>{children}</Text>
+  ),
+}));
+
+jest.mock('@/components/ui/ThemedView', () => ({
+  ThemedView: ({ children, ...props }: { children: React.ReactNode }) => (
+    <View {...props}>{children}</View>
+  ),
+}));
 
 describe('ParallaxScrollView', () => {
   const mockTitle = 'Test Title';
