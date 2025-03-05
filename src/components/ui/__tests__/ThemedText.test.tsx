@@ -11,24 +11,24 @@ const mockUseColorScheme = useColorScheme as jest.MockedFunction<
 describe("ThemedText", () => {
   it("renders text with light theme colors", () => {
     mockUseColorScheme.mockReturnValue("light");
-    const { getByText } = render(<ThemedText>Test Text</ThemedText>);
-    const text = getByText("Test Text");
-    expect(text.props.style[0]).toEqual({ color: "#000" });
+    const { getByTestId } = render(<ThemedText testID="themed-text">Test Text</ThemedText>);
+    const textElement = getByTestId("themed-text");
+    expect(textElement.props.style[0]).toEqual({ color: "#000" });
   });
 
   it("renders text with dark theme colors", () => {
     mockUseColorScheme.mockReturnValue("dark");
-    const { getByText } = render(<ThemedText>Test Text</ThemedText>);
-    const text = getByText("Test Text");
-    expect(text.props.style[0]).toEqual({ color: "#fff" });
+    const { getByTestId } = render(<ThemedText testID="themed-text">Test Text</ThemedText>);
+    const textElement = getByTestId("themed-text");
+    expect(textElement.props.style[0]).toEqual({ color: "#fff" });
   });
 
   it("applies custom styles", () => {
     mockUseColorScheme.mockReturnValue("light");
-    const { getByText } = render(
-      <ThemedText style={{ fontSize: 20 }}>Test Text</ThemedText>
+    const { getByTestId } = render(
+      <ThemedText testID="themed-text" style={{ fontSize: 20 }}>Test Text</ThemedText>
     );
-    const text = getByText("Test Text");
-    expect(text.props.style[1]).toEqual({ fontSize: 20 });
+    const textElement = getByTestId("themed-text");
+    expect(textElement.props.style[1]).toEqual({ fontSize: 20 });
   });
 });
