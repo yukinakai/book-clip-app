@@ -1,8 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { Image, ScrollView } from 'react-native';
-import { ParallaxScrollView } from '../ParallaxScrollView';
-import { ThemedText } from '../ui/ThemedText';
+import { Image, ScrollView, View } from 'react-native';
+import { ParallaxScrollView } from '@/components/ParallaxScrollView';
+import { ThemedText } from '@/components/ui/ThemedText';
 
 jest.mock('@/hooks/useColorScheme');
 
@@ -30,18 +30,15 @@ describe('ParallaxScrollView', () => {
   const mockSubtitle = 'Test Subtitle';
 
   it('renders title correctly', () => {
-    const { getByTestId } = render(
-      <ParallaxScrollView
-        testID="parallax-scroll-view"
-        title={mockTitle}
-      >
+    const { getByText } = render(
+      <ParallaxScrollView title={mockTitle}>
         <></>
       </ParallaxScrollView>
     );
-    expect(getByTestId('parallax-scroll-view')).toBeTruthy();
+    expect(getByText(mockTitle)).toBeTruthy();
   });
 
-  it('renders subtitle when provided', () => {
+  it('renders title and subtitle when subtitle is provided', () => {
     const { getByText } = render(
       <ParallaxScrollView
         title={mockTitle}
@@ -68,6 +65,19 @@ describe('ParallaxScrollView', () => {
     expect(image.props.source.uri).toBe(mockHeaderImage);
   });
 
+  it('renders headerRight when provided', () => {
+    const mockHeaderRight = <View testID="header-right" />;
+    const { getByTestId } = render(
+      <ParallaxScrollView
+        title={mockTitle}
+        headerRight={mockHeaderRight}
+      >
+        <></>
+      </ParallaxScrollView>
+    );
+    expect(getByTestId('header-right')).toBeTruthy();
+  });
+
   it('renders children correctly', () => {
     const { getByText } = render(
       <ParallaxScrollView title={mockTitle}>
@@ -75,5 +85,18 @@ describe('ParallaxScrollView', () => {
       </ParallaxScrollView>
     );
     expect(getByText('Child Content')).toBeTruthy();
+  });
+
+  it('applies sticky header styles', () => {
+    const { getByTestId } = render(
+      <ParallaxScrollView
+        testID="parallax-scroll-view"
+        title={mockTitle}
+      >
+        <></>
+      </ParallaxScrollView>
+    );
+    const scrollView = getByTestId('parallax-scroll-view');
+    expect(scrollView.props.stickyHeaderIndices).toEqual([1]);
   });
 });
