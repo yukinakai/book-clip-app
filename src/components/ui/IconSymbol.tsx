@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 type IconName =
@@ -18,6 +18,7 @@ interface IconSymbolProps {
   color?: string;
   onPress?: () => void;
   testID?: string;
+  style?: ViewStyle;
 }
 
 const iconMap: Record<IconName, keyof typeof Ionicons['glyphMap']> = {
@@ -37,6 +38,7 @@ export function IconSymbol({
   color = '#000',
   onPress,
   testID,
+  style,
 }: IconSymbolProps) {
   const mappedName = iconMap[name];
 
@@ -44,7 +46,7 @@ export function IconSymbol({
     <TouchableOpacity
       onPress={onPress}
       disabled={!onPress}
-      style={styles.container}
+      style={[styles.container, style]}
       testID={testID}
     >
       <Ionicons name={mappedName} size={size} color={color} />
