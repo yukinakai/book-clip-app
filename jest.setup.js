@@ -173,6 +173,18 @@ jest.mock('react-native', () => {
       React.createElement('div', { testID, style }, children),
     KeyboardAvoidingView: ({ testID, style, children }) =>
       React.createElement('div', { testID, style }, children),
+    Modal: ({ testID, visible, transparent, animationType, onRequestClose, children }) =>
+      visible ? React.createElement('div', { 
+        testID, 
+        style: { 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0,
+          backgroundColor: transparent ? 'transparent' : '#fff'
+        }
+      }, children) : null,
     FlatList: ({ data, renderItem, keyExtractor, numColumns, contentContainerStyle, ListEmptyComponent }) => {
       const items = data.map((item, index) => {
         const element = renderItem({ item, index });
