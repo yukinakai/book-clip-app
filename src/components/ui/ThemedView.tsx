@@ -1,16 +1,17 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
+import { View, ViewProps, Pressable } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-interface ThemedViewProps extends ViewProps {
+export interface ThemedViewProps extends ViewProps {
   children?: React.ReactNode;
+  onPress?: () => void;
 }
 
-export function ThemedView({ style, ...props }: ThemedViewProps) {
+export function ThemedView({ style, onPress, ...props }: ThemedViewProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  return (
+  const content = (
     <View
       style={[
         { backgroundColor: isDark ? '#000' : '#fff' },
@@ -19,4 +20,10 @@ export function ThemedView({ style, ...props }: ThemedViewProps) {
       {...props}
     />
   );
+
+  if (onPress) {
+    return <Pressable onPress={onPress}>{content}</Pressable>;
+  }
+
+  return content;
 }

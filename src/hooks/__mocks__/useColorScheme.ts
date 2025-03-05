@@ -1,3 +1,13 @@
 import { ColorScheme } from '../useColorScheme';
 
-export const useColorScheme = jest.fn<ColorScheme, []>(() => 'light');
+// モックの型定義
+type UseColorScheme = () => ColorScheme;
+
+// React Nativeのモジュールをモック
+jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
+  __esModule: true,
+  default: () => 'light'
+}));
+
+// フックの実装
+export const useColorScheme: UseColorScheme = () => 'light';

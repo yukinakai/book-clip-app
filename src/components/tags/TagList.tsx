@@ -7,23 +7,36 @@ import { ThemedView } from '../ui/ThemedView';
 
 interface TagListProps {
   tags: Tag[];
+  selectedTags?: string[];
+  onTagPress?: (tag: Tag) => void;
   onEditTag?: (tag: Tag) => void;
   onDeleteTag?: (tag: Tag) => void;
+  showActions?: boolean;
   testID?: string;
 }
 
 export const TagList: React.FC<TagListProps> = ({
   tags,
+  selectedTags = [],
+  onTagPress,
   onEditTag,
   onDeleteTag,
+  showActions = true,
   testID,
 }) => {
   return (
     <View testID={testID} style={styles.container}>
       {tags.map((tag) => (
-        <ThemedView key={tag.id} style={styles.tagContainer}>
+        <ThemedView
+          key={tag.id}
+          style={[
+            styles.tagContainer,
+            selectedTags.includes(tag.id) && styles.selectedTag,
+          ]}
+          onPress={onTagPress ? () => onTagPress(tag) : undefined}
+        >
           <ThemedText>{tag.name}</ThemedText>
-          {onEditTag && (
+          {showActions && onEditTag && (
             <IconSymbol
               name="pencil"
               size={16}
@@ -32,7 +45,7 @@ export const TagList: React.FC<TagListProps> = ({
               style={styles.icon}
             />
           )}
-          {onDeleteTag && (
+          {showActions && onDeleteTag && (
             <IconSymbol
               name="trash"
               size={16}
@@ -48,6 +61,9 @@ export const TagList: React.FC<TagListProps> = ({
 };
 
 const styles = StyleSheet.create({
+  selectedTag: {
+    backgroundColor: '#007AFF20',
+  },
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',

@@ -67,10 +67,12 @@ Dialog.Button = ({ label, onPress, testID, destructive, disabled }) => (
     style={({ pressed }) => [
       styles.button,
       pressed && styles.buttonPressed,
+      disabled && styles.buttonDisabled,
     ]}
     onPress={onPress}
     testID={testID}
     disabled={disabled}
+    accessibilityState={{ disabled }}
   >
     <Text
       style={[
@@ -152,6 +154,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#007AFF',
     textAlign: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.3,
   },
   destructiveButtonText: {
     color: '#FF3B30',
