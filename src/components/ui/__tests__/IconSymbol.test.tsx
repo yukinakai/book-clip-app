@@ -19,7 +19,7 @@ describe('IconSymbol', () => {
   it('is disabled when no onPress is provided', () => {
     render(<IconSymbol name="pencil" testID="icon" />);
     const touchable = screen.getByTestId('icon');
-    expect(touchable.props.accessibilityState.disabled).toBe(true);
+    expect(touchable.props.disabled).toBe(true);
   });
 
   it('renders with custom size', () => {

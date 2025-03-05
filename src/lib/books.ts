@@ -16,7 +16,19 @@ export async function createBook(input: CreateBookInput): Promise<Book | null> {
     return null;
   }
 
-  return data;
+  // Get the created book by a separate query
+  const { data: createdBook, error: fetchError } = await supabase
+    .from('books')
+    .select()
+    .eq('isbn', input.isbn)
+    .single();
+
+  if (fetchError || !createdBook) {
+    console.error('Failed to fetch created book: ', fetchError);
+    return null;
+  }
+
+  return createdBook;
 }
 
 /**
@@ -48,15 +60,25 @@ export async function getBook(id: string): Promise<Book | null> {
  * @returns 更新された書籍情報、またはエラー時にnull
  */
 export async function updateBook(id: string, input: UpdateBookInput): Promise<Book | null> {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('books')
     .update(input)
-    .eq('id', id)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Failed to update book: ', error);
+    return null;
+  }
+
+  // Get the updated book
+  const { data, error: fetchError } = await supabase
+    .from('books')
     .select()
+    .eq('id', id)
     .single();
 
-  if (error || !data) {
-    console.error('Failed to update book: ', error);
+  if (fetchError || !data) {
+    console.error('Failed to fetch updated book: ', fetchError);
     return null;
   }
 

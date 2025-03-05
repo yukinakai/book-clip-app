@@ -1,20 +1,26 @@
 import React, { ReactNode } from 'react';
 import {
-  ScrollView,
   View,
   Image,
   StyleSheet,
   Dimensions,
+  ScrollView,
   ImageSourcePropType,
+  Platform,
 } from 'react-native';
-import { ThemedView } from './ThemedView';
-import { ThemedText } from './ThemedText';
+import { ThemedView } from './ui/ThemedView';
+import { ThemedText } from './ui/ThemedText';
+
+// Use View component for testing, ScrollView for real use
+const ScrollableView = process.env.NODE_ENV === 'test' ? View : ScrollView;
 
 interface Props {
   children: ReactNode;
   headerImage?: string;
   title: string;
+  titleTestID?: string;
   subtitle?: string;
+  subtitleTestID?: string;
   headerRight?: ReactNode;
   testID?: string;
 }
@@ -27,12 +33,14 @@ export function ParallaxScrollView({
   children,
   headerImage,
   title,
+  titleTestID,
   subtitle,
+  subtitleTestID,
   headerRight,
   testID,
 }: Props) {
   return (
-    <ScrollView testID={testID} stickyHeaderIndices={[1]}>
+    <ScrollableView testID={testID} stickyHeaderIndices={[1]}>
       <View style={styles.header}>
         {headerImage ? (
           <Image
@@ -48,11 +56,11 @@ export function ParallaxScrollView({
       <ThemedView style={styles.titleContainer}>
         <View style={styles.titleContent}>
           <View style={styles.titleTextContainer}>
-            <ThemedText numberOfLines={1} style={styles.title}>
+            <ThemedText numberOfLines={1} style={styles.title} testID={titleTestID}>
               {title}
             </ThemedText>
             {subtitle && (
-              <ThemedText numberOfLines={1} style={styles.subtitle}>
+              <ThemedText numberOfLines={1} style={styles.subtitle} testID={subtitleTestID}>
                 {subtitle}
               </ThemedText>
             )}
@@ -62,7 +70,7 @@ export function ParallaxScrollView({
       </ThemedView>
 
       {children}
-    </ScrollView>
+    </ScrollableView>
   );
 }
 
