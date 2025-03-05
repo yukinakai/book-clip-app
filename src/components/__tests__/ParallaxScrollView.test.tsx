@@ -1,16 +1,18 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { Image, ScrollView, View, Text, ViewProps, TextProps } from 'react-native';
+import { Image, ScrollView, View, Text, ViewProps, TextProps, ScrollViewProps } from 'react-native';
 import { ParallaxScrollView } from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ui/ThemedText';
 import { ThemedView } from '@/components/ui/ThemedView';
 
 jest.mock('@/hooks/useColorScheme');
 
+// ScrollViewのモックを正しく設定
+const MockScrollView: React.FC<ScrollViewProps> = ({ children, ...props }) => (
+  <View {...props}>{children}</View>
+);
+
 jest.mock('react-native/Libraries/Components/ScrollView/ScrollView', () => {
-  const MockScrollView = ({ children, ...props }: { children: React.ReactNode } & ViewProps) => (
-    <View {...props}>{children}</View>
-  );
   return {
     ScrollView: MockScrollView,
   };
