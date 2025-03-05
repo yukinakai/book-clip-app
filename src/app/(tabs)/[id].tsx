@@ -13,6 +13,8 @@ import { ThemedText } from '@/components/ui/ThemedText';
 import { ThemedView } from '@/components/ui/ThemedView';
 import { ParallaxScrollView } from '@/components/ParallaxScrollView';
 import { Tag } from '@/types/tag';
+import { getAllTags } from '@/lib/tags';
+import { QuoteForm } from '@/components/quotes/QuoteForm';
 
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +25,12 @@ export default function BookDetailScreen() {
   const [editingBook, setEditingBook] = useState<BookWithQuotes | null>(null);
 
   const queryClient = useQueryClient();
+
+  // タグ一覧の取得
+  const { data: tags = [] } = useQuery<Tag[]>({
+    queryKey: ['tags'],
+    queryFn: getAllTags,
+  });
 
   // 書籍情報の取得
   const {
@@ -218,77 +226,29 @@ export default function BookDetailScreen() {
         </View>
       </ThemedView>
 
-      {/* 引用の編集/作成ダイアログ */}
-      <Dialog
-        title={editingQuote?.id ? '引用を編集' : '引用を追加'}
+      {/* 引用の作成/編集フォーム */}
+      <QuoteForm
         visible={!!editingQuote}
         onClose={() => setEditingQuote(null)}
-      >
-        <View>
-          <Dialog.Input
-            label="引用"
-            value={editingQuote?.content}
-            onChangeText={text =>
-              setEditingQuote((prev: Quote | null) => ({
-                ...prev!,
-                content: text,
-              }))
-            }
-            placeholder="引用を入力"
-            multiline
-          />
-          <Dialog.Input
-            label="ページ番号"
-            value={editingQuote?.page?.toString()}
-            onChangeText={text =>
-              setEditingQuote((prev: Quote | null) => ({
-                ...prev!,
-                page: text ? parseInt(text, 10) : undefined,
-              }))
-            }
-            placeholder="ページ番号"
-            keyboardType="number-pad"
-          />
-          <Dialog.Input
-            label="メモ"
-            value={editingQuote?.memo}
-            onChangeText={text =>
-              setEditingQuote((prev: Quote | null) => ({
-                ...prev!,
-                memo: text,
-              }))
-            }
-            placeholder="メモ"
-            multiline
-          />
-        </View>
-        <View style={styles.dialogActions}>
-          <Dialog.Button
-            label="キャンセル"
-            onPress={() => setEditingQuote(null)}
-          />
-          <Dialog.Button
-            label={editingQuote?.id ? '更新' : '保存'}
-            onPress={() => {
-              const quoteData: QuoteFormData = {
-                content: editingQuote!.content,
-                page: editingQuote!.page,
-                memo: editingQuote!.memo,
-                tags: editingQuote!.tags?.map(tag => tag.id),
-              };
-
-              if (editingQuote?.id) {
-                updateQuoteMutation.mutate({
-                  quoteId: editingQuote.id,
-                  data: quoteData,
-                });
-              } else if (editingQuote) {
-                createQuoteMutation.mutate(quoteData);
-              }
-            }}
-          />
-        </View>
-      </Dialog>
+        onSubmit={(data) => {
+          if (editingQuote?.id) {
+            updateQuoteMutation.mutate({
+              quoteId: editingQuote.id,
+              data,
+            });
+          } else {
+            createQuoteMutation.mutate(data);
+          }
+          setEditingQuote(null);
+        }}
+        availableTags={tags}
+        initialValues={editingQuote ? {
+          content: editingQuote.content,
+          page: editingQuote.page,
+          memo: editingQuote.memo,
+          tags: editingQuote.tags?.map(tag => tag.id) || [],
+        } : undefined}
+      />
 
       {/* 引用の削除確認ダイアログ */}
       <Dialog
