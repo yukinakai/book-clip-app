@@ -1,21 +1,33 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { QuoteSearch } from '../QuoteSearch';
+import { QuoteSearch } from '@/components/quotes/QuoteSearch';
 import { searchQuotes } from '@/lib/quotes';
+import { getAllTags } from '@/lib/tags';
 import { useQuery } from '@tanstack/react-query';
 
 jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
+  useQueryClient: jest.fn(),
 }));
 
 jest.mock('@/lib/quotes', () => ({
   searchQuotes: jest.fn(),
 }));
 
+jest.mock('@/lib/tags', () => ({
+  getAllTags: jest.fn(),
+}));
+
 const mockSearchQuotes = searchQuotes as jest.Mock;
+const mockGetAllTags = getAllTags as jest.Mock;
 const mockUseQuery = useQuery as jest.Mock;
 
 describe('QuoteSearch', () => {
+  const mockTags = [
+    { id: 'tag1', name: 'タグ1', userId: 'user1', createdAt: '', updatedAt: '' },
+    { id: 'tag2', name: 'タグ2', userId: 'user1', createdAt: '', updatedAt: '' },
+  ];
+
   const mockQuotes = [
     {
       id: '1',
@@ -43,11 +55,21 @@ describe('QuoteSearch', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseQuery.mockImplementation(() => ({
-      data: mockQuotes,
-      isLoading: false,
-      error: null,
-    }));
+    mockUseQuery.mockImplementation(({ queryKey }) => {
+      if (queryKey[0] === 'tags') {
+        return {
+          data: mockTags,
+          isLoading: false,
+          error: null,
+        };
+      }
+      return {
+        data: mockQuotes,
+        isLoading: false,
+        error: null,
+      };
+    });
+    mockGetAllTags.mockResolvedValue(mockTags);
   });
 
   it('検索フォームが表示される', () => {
@@ -83,20 +105,41 @@ describe('QuoteSearch', () => {
   });
 
   it('タグフィルターで絞り込みができる', async () => {
-    mockSearchQuotes.mockResolvedValueOnce([mockQuotes[0]]);
+    const filteredQuotes = [mockQuotes[0]];
+    mockUseQuery.mockImplementation(({ queryKey }) => {
+      if (queryKey[0] === 'tags') {
+        return {
+          data: mockTags,
+          isLoading: false,
+          error: null,
+        };
+      }
+      if (queryKey[2]?.includes('tag1')) {
+        return {
+          data: filteredQuotes,
+          isLoading: false,
+          error: null,
+        };
+      }
+      return {
+        data: mockQuotes,
+        isLoading: false,
+        error: null,
+      };
+    });
     
-    const { getByTestId, getByText } = render(<QuoteSearch />);
+    const { getByTestId, getAllByText, queryByText } = render(<QuoteSearch />);
     const tagFilter = getByTestId('tag-filter');
     
     fireEvent.press(tagFilter);
-    fireEvent.press(getByText('タグ1')); // タグを選択
+
+    // ダイアログ内のタグをクリック
+    const tagButtons = getAllByText('タグ1');
+    fireEvent.press(tagButtons[0]);
     
     await waitFor(() => {
-      expect(mockSearchQuotes).toHaveBeenCalledWith(expect.objectContaining({
-        tagIds: ['tag1'],
-      }));
-      expect(getByText('テスト引用1')).toBeTruthy();
-      expect(() => getByText('テスト引用2')).toThrow();
+      expect(getByTestId('quote-item-1')).toBeTruthy();
+      expect(queryByText('テスト引用2')).toBeNull();
     });
   });
 

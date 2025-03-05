@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
-import { QuoteForm } from '../QuoteForm';
+import { QuoteForm } from '@/components/quotes/QuoteForm';
 import { Tag } from '@/types/tag';
 
 describe('QuoteForm', () => {
@@ -32,7 +32,7 @@ describe('QuoteForm', () => {
     const { getByTestId } = render(<QuoteForm {...defaultProps} />);
     const submitButton = getByTestId('submit-button');
     
-    expect(submitButton.props.accessibilityState.disabled).toBe(true);
+    expect(submitButton.props.disabled).toBe(true);
   });
 
   it('必須項目が入力された場合、送信ボタンが有効になること', () => {
@@ -42,7 +42,7 @@ describe('QuoteForm', () => {
     fireEvent.changeText(contentInput, 'テスト引用');
 
     const submitButton = getByTestId('submit-button');
-    expect(submitButton.props.accessibilityState.disabled).toBe(false);
+    expect(submitButton.props.disabled).toBe(false);
   });
 
   it('フォーム送信時に正しい値が渡されること', () => {
