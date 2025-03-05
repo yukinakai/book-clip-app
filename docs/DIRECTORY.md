@@ -60,6 +60,7 @@
 │   │       └── splash-icon.png
 │   ├── components
 │   │   ├── BarcodeScanner.tsx
+│   │   ├── HelloWave.tsx
 │   │   ├── ParallaxScrollView.tsx
 │   │   ├── __tests__
 │   │   │   ├── BarcodeScanner.test.tsx
@@ -124,4 +125,4 @@
 │       └── tag.ts
 └── tsconfig.json
 
-35 directories, 90 files
+35 directories, 91 files
