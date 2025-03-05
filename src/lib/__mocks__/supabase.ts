@@ -1,45 +1,45 @@
-const defaultResponse = {
-  data: null,
-  error: null
-};
-
-// メソッドチェーン用の共通ヘルパー
-const createChainableMethod = (returnValue = defaultResponse) => {
-  const fn = jest.fn();
-  fn.mockReturnValue({
-    eq: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(returnValue),
-    ...returnValue // レスポンスをマージして柔軟な上書きを可能に
-  });
-  return fn;
-};
-
 export const supabase = {
-  auth: {
-    getSession: jest.fn().mockResolvedValue({
-      data: { session: null },
-      error: null
+  from: (table: string) => ({
+    insert: (data: any) => ({
+      select: () => ({
+        single: async () => ({
+          data: data[0],
+          error: null
+        })
+      })
     }),
-    signOut: jest.fn().mockResolvedValue({
-      error: null
+    update: (data: any) => ({
+      eq: (field: string, value: any) => ({
+        select: () => ({
+          single: async () => ({
+            data,
+            error: null
+          })
+        })
+      })
     }),
-    onAuthStateChange: jest.fn((callback) => {
-      return {
-        data: {
-          subscription: {
-            unsubscribe: jest.fn()
-          }
-        }
-      };
+    delete: () => ({
+      eq: (field: string, value: any) => ({
+        eq: (field: string, value: any) => ({
+          single: async () => ({
+            error: null
+          })
+        })
+      })
+    }),
+    select: (query?: string) => ({
+      eq: (field: string, value: any) => ({
+        single: async () => ({
+          data: { id: '1', name: 'Test Tag' },
+          error: null
+        })
+      }),
+      order: (field: string) => ({
+        then: async () => ({
+          data: [{ id: '1', name: 'Test Tag' }],
+          error: null
+        })
+      })
     })
-  },
-  from: jest.fn().mockReturnValue({
-    insert: createChainableMethod(),
-    select: createChainableMethod(),
-    update: createChainableMethod(),
-    delete: createChainableMethod(),
-    eq: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(defaultResponse)
   })
 };

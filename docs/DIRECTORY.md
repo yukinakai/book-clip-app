@@ -11,9 +11,9 @@
 ├── app.config.ts
 ├── docs
 │   ├── ARCHITECTURE.md
+│   ├── DIRECTORY.md
 │   ├── PRD.md
-│   ├── PRODUCT_OVERVIEW.md
-│   └── PROJECT_TREE.md
+│   └── PRODUCT_OVERVIEW.md
 ├── jest.config.js
 ├── jest.setup.js
 ├── package-lock.json
@@ -74,6 +74,12 @@
 │   │   │   ├── BookList.tsx
 │   │   │   └── __tests__
 │   │   │       └── BookList.test.tsx
+│   │   ├── tags
+│   │   │   ├── TagForm.tsx
+│   │   │   ├── TagList.tsx
+│   │   │   └── __tests__
+│   │   │       ├── TagForm.test.tsx
+│   │   │       └── TagList.test.tsx
 │   │   └── ui
 │   │       ├── Dialog.tsx
 │   │       ├── IconSymbol.tsx
@@ -103,14 +109,16 @@
 │   │   ├── __mocks__
 │   │   │   └── supabase.ts
 │   │   ├── __tests__
-│   │   │   └── books.test.ts
+│   │   │   ├── books.test.ts
+│   │   │   └── tags.test.ts
 │   │   ├── books.ts
 │   │   ├── quotes.ts
-│   │   └── supabase.ts
+│   │   ├── supabase.ts
+│   │   └── tags.ts
 │   └── types
 │       ├── book.ts
 │       ├── quote.ts
 │       └── tag.ts
 └── tsconfig.json
 
-33 directories, 81 files
+35 directories, 87 files

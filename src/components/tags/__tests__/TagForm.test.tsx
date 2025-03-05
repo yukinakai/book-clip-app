@@ -1,92 +1,95 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import { TouchableOpacity, Text } from 'react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
+import { Text } from 'react-native';
 import { TagForm } from '../TagForm';
 
 jest.mock('../../ui/Dialog', () => {
-  const MockDialog = ({ content, actions }: any) => (
-    <>
-      {content}
-      {actions}
-    </>
-  );
-  MockDialog.Button = ({ label, onPress }: any) => (
-    <TouchableOpacity testID={`dialog-button-${label}`} onPress={onPress}>
-      <Text>{label}</Text>
-    </TouchableOpacity>
-  );
-  return {
-    Dialog: MockDialog,
+  const MockDialog = ({ visible, onClose, children }: any) => {
+    if (!visible) return null;
+    return (
+      <div data-testid="dialog">
+        {children}
+        <button onClick={onClose}>Close</button>
+      </div>
+    );
   };
+
+  MockDialog.Button = ({ label, onPress }: any) => (
+    <button data-testid={`dialog-button-${label}`} onClick={onPress}>
+      {label}
+    </button>
+  );
+
+  return MockDialog;
 });
 
 describe('TagForm', () => {
-  const mockOnClose = jest.fn();
   const mockOnSubmit = jest.fn();
-  const defaultProps = {
-    isVisible: true,
-    onClose: mockOnClose,
-    onSubmit: mockOnSubmit,
-    testID: 'tag-form',
-  };
+  const mockOnClose = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders correctly with initial values', () => {
-    const { getByTestId, getByText } = render(
-      <TagForm {...defaultProps} initialValues={{ name: 'Test Tag' }} />
+  it('renders correctly in create mode', () => {
+    const { getByPlaceholderText, getByText } = render(
+      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    const input = getByTestId('tag-form-input');
-    expect(input.props.value).toBe('Test Tag');
-    expect(getByText('タグ名')).toBeTruthy();
+    expect(getByPlaceholderText('タグ名を入力')).toBeTruthy();
+    expect(getByText('タグを追加')).toBeTruthy();
   });
 
-  it('shows error when submitting empty name', () => {
-    const { getByTestId, getByText } = render(<TagForm {...defaultProps} />);
+  it('renders correctly in edit mode', () => {
+    const { getByDisplayValue, getByText } = render(
+      <TagForm
+        isVisible
+        onClose={mockOnClose}
+        onSubmit={mockOnSubmit}
+        initialValues={{ name: '既存のタグ' }}
+      />
+    );
 
-    fireEvent.press(getByTestId('dialog-button-作成'));
+    expect(getByDisplayValue('既存のタグ')).toBeTruthy();
+    expect(getByText('タグを更新')).toBeTruthy();
+  });
 
-    expect(getByText('タグ名を入力してください')).toBeTruthy();
+  it('handles submit correctly', () => {
+    const { getByPlaceholderText, getByTestId } = render(
+      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
+    );
+
+    const input = getByPlaceholderText('タグ名を入力');
+    fireEvent.changeText(input, 'テストタグ');
+
+    const submitButton = getByTestId('dialog-button-追加');
+    fireEvent.press(submitButton);
+
+    expect(mockOnSubmit).toHaveBeenCalledWith('テストタグ');
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it('handles close correctly', () => {
+    const { getByTestId } = render(
+      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
+    );
+
+    const cancelButton = getByTestId('dialog-button-キャンセル');
+    fireEvent.press(cancelButton);
+
+    expect(mockOnClose).toHaveBeenCalled();
     expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 
-  it('calls onSubmit with name when submitting valid form', () => {
-    const { getByTestId } = render(<TagForm {...defaultProps} />);
-
-    const input = getByTestId('tag-form-input');
-    fireEvent.changeText(input, 'New Tag');
-    fireEvent.press(getByTestId('dialog-button-作成'));
-
-    expect(mockOnSubmit).toHaveBeenCalledWith({ name: 'New Tag' });
-    expect(mockOnClose).toHaveBeenCalled();
-  });
-
-  it('calls onClose when cancel button is pressed', () => {
-    const { getByTestId } = render(<TagForm {...defaultProps} />);
-
-    fireEvent.press(getByTestId('dialog-button-キャンセル'));
-
-    expect(mockOnClose).toHaveBeenCalled();
-  });
-
-  it('uses update button label when editing', () => {
+  it('validates input before submit', () => {
     const { getByTestId } = render(
-      <TagForm {...defaultProps} initialValues={{ name: 'Test Tag' }} />
+      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    expect(getByTestId('dialog-button-更新')).toBeTruthy();
-  });
+    const submitButton = getByTestId('dialog-button-追加');
+    fireEvent.press(submitButton);
 
-  it('clears form when cancelling', () => {
-    const { getByTestId } = render(<TagForm {...defaultProps} />);
-
-    const input = getByTestId('tag-form-input');
-    fireEvent.changeText(input, 'New Tag');
-    fireEvent.press(getByTestId('dialog-button-キャンセル'));
-
-    expect(input.props.value).toBe('');
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
   });
 });

@@ -1,21 +1,42 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { TagList } from '../TagList';
+import { Tag } from '@/types/tag';
+
+jest.mock('@/hooks/useColorScheme');
+
+jest.mock('@/components/ui/ThemedText', () => ({
+  ThemedText: ({ children }: any) => children,
+}));
+
+jest.mock('@/components/ui/ThemedView', () => ({
+  ThemedView: ({ children, testID }: any) => (
+    <div data-testid={testID}>{children}</div>
+  ),
+}));
+
+jest.mock('@/components/ui/IconSymbol', () => ({
+  IconSymbol: ({ name, onPress, testID }: any) => (
+    <button data-testid={testID} onClick={onPress}>
+      {name}
+    </button>
+  ),
+}));
 
 describe('TagList', () => {
-  const mockTags = [
+  const mockTags: Tag[] = [
     {
       id: '1',
-      name: 'tag1',
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      name: 'タグ1',
+      createdAt: '2024-03-05T00:00:00Z',
+      updatedAt: '2024-03-05T00:00:00Z',
       userId: 'user1',
     },
     {
       id: '2',
-      name: 'tag2',
-      createdAt: '2024-01-02T00:00:00.000Z',
-      updatedAt: '2024-01-02T00:00:00.000Z',
+      name: 'タグ2',
+      createdAt: '2024-03-05T00:00:00Z',
+      updatedAt: '2024-03-05T00:00:00Z',
       userId: 'user1',
     },
   ];
@@ -23,28 +44,32 @@ describe('TagList', () => {
   it('renders tags correctly', () => {
     const { getByText } = render(<TagList tags={mockTags} />);
 
-    expect(getByText('tag1')).toBeTruthy();
-    expect(getByText('tag2')).toBeTruthy();
+    expect(getByText('タグ1')).toBeTruthy();
+    expect(getByText('タグ2')).toBeTruthy();
   });
 
-  it('calls onEditTag when edit button is pressed', () => {
+  it('handles edit button click', () => {
     const mockOnEditTag = jest.fn();
     const { getByTestId } = render(
       <TagList tags={mockTags} onEditTag={mockOnEditTag} />
     );
 
-    fireEvent.press(getByTestId('edit-tag-1'));
+    const editButton = getByTestId('edit-tag-1');
+    fireEvent.press(editButton);
+
     expect(mockOnEditTag).toHaveBeenCalledWith(mockTags[0]);
   });
 
-  it('calls onDeleteTag when delete button is pressed', () => {
+  it('handles delete button click', () => {
     const mockOnDeleteTag = jest.fn();
     const { getByTestId } = render(
       <TagList tags={mockTags} onDeleteTag={mockOnDeleteTag} />
     );
 
-    fireEvent.press(getByTestId('delete-tag-2'));
-    expect(mockOnDeleteTag).toHaveBeenCalledWith(mockTags[1]);
+    const deleteButton = getByTestId('delete-tag-1');
+    fireEvent.press(deleteButton);
+
+    expect(mockOnDeleteTag).toHaveBeenCalledWith(mockTags[0]);
   });
 
   it('does not render edit/delete buttons when handlers are not provided', () => {
@@ -52,5 +77,17 @@ describe('TagList', () => {
 
     expect(queryByTestId('edit-tag-1')).toBeNull();
     expect(queryByTestId('delete-tag-1')).toBeNull();
+  });
+
+  it('renders empty list when no tags are provided', () => {
+    const { toJSON } = render(<TagList tags={[]} />);
+    expect(toJSON()).toBeTruthy();
+  });
+
+  it('accepts testID prop', () => {
+    const { getByTestId } = render(
+      <TagList tags={mockTags} testID="test-tag-list" />
+    );
+    expect(getByTestId('test-tag-list')).toBeTruthy();
   });
 });
