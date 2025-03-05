@@ -86,9 +86,12 @@
 │   │       ├── ThemedText.tsx
 │   │       ├── ThemedView.tsx
 │   │       ├── __mocks__
-│   │       │   └── @expo
-│   │       │       └── vector-icons.tsx
+│   │       │   ├── @expo
+│   │       │   │   └── vector-icons.tsx
+│   │       │   ├── Dialog.tsx
+│   │       │   └── IconSymbol.tsx
 │   │       └── __tests__
+│   │           ├── Dialog.test.tsx
 │   │           ├── IconSymbol.test.tsx
 │   │           ├── ThemedText.test.tsx
 │   │           └── ThemedView.test.tsx
@@ -121,4 +124,4 @@
 │       └── tag.ts
 └── tsconfig.json
 
-35 directories, 87 files
+35 directories, 90 files

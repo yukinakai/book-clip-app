@@ -1,25 +1,42 @@
-// Mock SupabaseClient
-const mockSingle = jest.fn(() => Promise.resolve({ data: { id: '1', name: 'Test Item' }, error: null }));
-const mockSelect = jest.fn(() => ({ single: mockSingle }));
-const mockEq = jest.fn(() => ({ select: mockSelect, eq: jest.fn(() => Promise.resolve({ error: null })) }));
-const mockOrder = jest.fn(() => Promise.resolve({ data: [{ id: '1', name: 'Test Item' }], error: null }));
-const mockInsert = jest.fn(() => ({ select: mockSelect }));
-
-// Main mock
+// Mock implementation of supabase client
 export const supabase = {
-  from: jest.fn(() => ({
-    select: jest.fn(() => ({ 
-      eq: jest.fn(() => ({ 
-        single: mockSingle 
-      })),
-      order: mockOrder
-    })),
-    insert: mockInsert,
-    update: jest.fn(() => ({ 
-      eq: mockEq 
-    })),
-    delete: jest.fn(() => ({ 
-      eq: mockEq 
-    }))
-  }))
+  from: jest.fn().mockReturnValue({
+    select: jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({ 
+          data: { id: '1', name: 'Test Tag' }, 
+          error: null 
+        })
+      }),
+      order: jest.fn().mockResolvedValue({
+        data: [{ id: '1', name: 'Test Tag' }],
+        error: null
+      })
+    }),
+    insert: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: { id: '1', name: 'New Tag' },
+          error: null
+        })
+      })
+    }),
+    update: jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: { id: '1', name: 'Updated Tag' },
+            error: null
+          })
+        })
+      })
+    }),
+    delete: jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({
+          error: null
+        })
+      })
+    })
+  })
 };

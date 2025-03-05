@@ -16,6 +16,7 @@ export interface DialogInputProps {
   multiline?: boolean;
   keyboardType?: KeyboardTypeOptions;
   label?: string;
+  autoFocus?: boolean;
 }
 
 export interface DialogProps {
@@ -81,6 +82,7 @@ Dialog.Input = ({
   multiline,
   keyboardType,
   label,
+  autoFocus,
 }) => (
   <View>
     {label && <Text style={styles.label}>{label}</Text>}
@@ -92,6 +94,7 @@ Dialog.Input = ({
       testID={testID}
       multiline={multiline}
       keyboardType={keyboardType}
+      autoFocus={autoFocus}
     />
   </View>
 );

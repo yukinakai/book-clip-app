@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { TagForm } from '../TagForm';
-import { View } from 'react-native';
 import { Tag } from '@/types/tag';
 
 jest.mock('@/hooks/useColorScheme');
@@ -24,16 +23,17 @@ describe('TagForm', () => {
   });
 
   it('renders correctly in create mode', () => {
-    const { getByPlaceholderText, queryByDisplayValue } = render(
+    const { getByTestId } = render(
       <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    expect(getByPlaceholderText('タグ名')).toBeTruthy();
-    expect(queryByDisplayValue('テストタグ')).toBeNull();
+    const input = getByTestId('tag-name-input');
+    expect(input.props.placeholder).toBe('タグの名前を入力');
+    expect(input.props.value).toBe('');
   });
 
   it('renders correctly in edit mode', () => {
-    const { getByDisplayValue } = render(
+    const { getByTestId } = render(
       <TagForm
         visible
         onClose={mockOnClose}
@@ -42,18 +42,19 @@ describe('TagForm', () => {
       />
     );
 
-    expect(getByDisplayValue('テストタグ')).toBeTruthy();
+    const input = getByTestId('tag-name-input');
+    expect(input.props.value).toBe('テストタグ');
   });
 
   it('handles submit correctly', () => {
-    const { getByPlaceholderText, getByText } = render(
+    const { getByTestId } = render(
       <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    const input = getByPlaceholderText('タグ名');
+    const input = getByTestId('tag-name-input');
     fireEvent.changeText(input, 'テストタグ');
 
-    const submitButton = getByText('作成');
+    const submitButton = getByTestId('submit-button');
     fireEvent.press(submitButton);
 
     expect(mockOnSubmit).toHaveBeenCalledWith('テストタグ');
@@ -61,22 +62,22 @@ describe('TagForm', () => {
   });
 
   it('handles close correctly', () => {
-    const { getByText } = render(
+    const { getByTestId } = render(
       <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    const cancelButton = getByText('キャンセル');
+    const cancelButton = getByTestId('cancel-button');
     fireEvent.press(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalled();
   });
 
   it('validates input before submit', () => {
-    const { getByText } = render(
+    const { getByTestId } = render(
       <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    const submitButton = getByText('作成');
+    const submitButton = getByTestId('submit-button');
     fireEvent.press(submitButton);
 
     expect(mockOnSubmit).not.toHaveBeenCalled();
