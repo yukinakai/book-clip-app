@@ -16,9 +16,14 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
   visible,
   onClose,
   onSubmit,
-  availableTags,
+  availableTags = [],
   initialValues,
 }) => {
+  // availableTagsの型チェック
+  if (!Array.isArray(availableTags)) {
+    console.warn('QuoteForm: availableTags must be an array');
+    return null;
+  }
   // フォームの状態
   const [content, setContent] = useState(initialValues?.content ?? '');
   const [page, setPage] = useState(initialValues?.page?.toString() ?? '');
