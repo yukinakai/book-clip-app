@@ -1,105 +1,75 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
-import { Dialog } from '../ui/Dialog';
-import { ThemedText } from '../ui/ThemedText';
-import { CreateTagInput } from '@/types/tag';
+import React, { useState } from 'react';
+import { View, StyleSheet, TextInput } from 'react-native';
+import { Dialog } from '@/components/ui/Dialog';
+import { Tag } from '@/types/tag';
 
-interface TagFormProps {
-  isVisible: boolean;
+export interface TagFormProps {
+  visible: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateTagInput) => void;
-  initialValues?: CreateTagInput;
-  testID?: string;
+  onSubmit: (name: string) => void;
+  tag?: Tag;
 }
 
 export const TagForm: React.FC<TagFormProps> = ({
-  isVisible,
+  visible,
   onClose,
   onSubmit,
-  initialValues,
-  testID,
+  tag,
 }) => {
-  const [name, setName] = useState(initialValues?.name ?? '');
-  const [error, setError] = useState('');
+  const [name, setName] = useState(tag?.name ?? '');
 
-  const handleSubmit = useCallback(() => {
-    if (!name.trim()) {
-      setError('タグ名を入力してください');
-      return;
-    }
-
-    onSubmit({ name });
+  const handleCancel = () => {
     setName('');
-    setError('');
     onClose();
-  }, [name, onSubmit, onClose]);
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleSubmit = () => {
+    if (!name.trim()) return;
+    onSubmit(name.trim());
     setName('');
-    setError('');
     onClose();
-  }, [onClose]);
+  };
 
   return (
     <Dialog
-      isVisible={isVisible}
-      onClose={handleCancel}
-      title={initialValues ? 'タグを編集' : 'タグを作成'}
-      content={
-        <View style={styles.container}>
-          <ThemedText style={styles.label}>タグ名</ThemedText>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="タグ名を入力..."
-            style={styles.input}
-            testID={`${testID}-input`}
-          />
-          {error ? (
-            <ThemedText style={styles.error} testID={`${testID}-error`}>
-              {error}
-            </ThemedText>
-          ) : null}
-        </View>
-      }
-      actions={
-        <View style={styles.actions}>
-          <Dialog.Button
-            label="キャンセル"
-            onPress={handleCancel}
-          />
-          <Dialog.Button
-            label={initialValues ? '更新' : '作成'}
-            onPress={handleSubmit}
-          />
-        </View>
-      }
-    />
+      title={tag ? 'タグを編集' : 'タグを作成'}
+      visible={visible}
+      onClose={onClose}
+    >
+      <TextInput
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+        placeholder="タグ名"
+        autoFocus
+        testID="tag-name-input"
+      />
+      <View style={styles.actions}>
+        <Dialog.Button
+          label="キャンセル"
+          onPress={handleCancel}
+          testID="cancel-button"
+        />
+        <Dialog.Button
+          label={tag ? '更新' : '作成'}
+          onPress={handleSubmit}
+          testID="submit-button"
+        />
+      </View>
+    </Dialog>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 8,
+  input: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingVertical: 8,
+    marginBottom: 16,
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 8,
-    fontSize: 16,
-  },
-  error: {
-    color: 'red',
-    fontSize: 14,
   },
 });

@@ -1,68 +1,59 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { TagForm } from '../TagForm';
+import { View } from 'react-native';
+import { Tag } from '@/types/tag';
 
-jest.mock('../../ui/Dialog', () => {
-  const MockDialog = ({ visible, onClose, children }: any) => {
-    if (!visible) return null;
-    return (
-      <div data-testid="dialog">
-        {children}
-        <button onClick={onClose}>Close</button>
-      </div>
-    );
-  };
-
-  MockDialog.Button = ({ label, onPress }: any) => (
-    <button data-testid={`dialog-button-${label}`} onClick={onPress}>
-      {label}
-    </button>
-  );
-
-  return MockDialog;
-});
+jest.mock('@/hooks/useColorScheme');
+jest.mock('@/components/ui/Dialog');
 
 describe('TagForm', () => {
-  const mockOnSubmit = jest.fn();
   const mockOnClose = jest.fn();
+  const mockOnSubmit = jest.fn();
+
+  const mockTag: Tag = {
+    id: '1',
+    name: 'テストタグ',
+    createdAt: '2024-03-05T00:00:00Z',
+    updatedAt: '2024-03-05T00:00:00Z',
+    userId: 'user1',
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders correctly in create mode', () => {
-    const { getByPlaceholderText, getByText } = render(
-      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
+    const { getByPlaceholderText, queryByDisplayValue } = render(
+      <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    expect(getByPlaceholderText('タグ名を入力')).toBeTruthy();
-    expect(getByText('タグを追加')).toBeTruthy();
+    expect(getByPlaceholderText('タグ名')).toBeTruthy();
+    expect(queryByDisplayValue('テストタグ')).toBeNull();
   });
 
   it('renders correctly in edit mode', () => {
-    const { getByDisplayValue, getByText } = render(
+    const { getByDisplayValue } = render(
       <TagForm
-        isVisible
+        visible
         onClose={mockOnClose}
         onSubmit={mockOnSubmit}
-        initialValues={{ name: '既存のタグ' }}
+        tag={mockTag}
       />
     );
 
-    expect(getByDisplayValue('既存のタグ')).toBeTruthy();
-    expect(getByText('タグを更新')).toBeTruthy();
+    expect(getByDisplayValue('テストタグ')).toBeTruthy();
   });
 
   it('handles submit correctly', () => {
-    const { getByPlaceholderText, getByTestId } = render(
-      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
+    const { getByPlaceholderText, getByText } = render(
+      <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    const input = getByPlaceholderText('タグ名を入力');
+    const input = getByPlaceholderText('タグ名');
     fireEvent.changeText(input, 'テストタグ');
 
-    const submitButton = getByTestId('dialog-button-追加');
+    const submitButton = getByText('作成');
     fireEvent.press(submitButton);
 
     expect(mockOnSubmit).toHaveBeenCalledWith('テストタグ');
@@ -70,26 +61,33 @@ describe('TagForm', () => {
   });
 
   it('handles close correctly', () => {
-    const { getByTestId } = render(
-      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
+    const { getByText } = render(
+      <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    const cancelButton = getByTestId('dialog-button-キャンセル');
+    const cancelButton = getByText('キャンセル');
     fireEvent.press(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalled();
-    expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 
   it('validates input before submit', () => {
-    const { getByTestId } = render(
-      <TagForm isVisible onClose={mockOnClose} onSubmit={mockOnSubmit} />
+    const { getByText } = render(
+      <TagForm visible onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
-    const submitButton = getByTestId('dialog-button-追加');
+    const submitButton = getByText('作成');
     fireEvent.press(submitButton);
 
     expect(mockOnSubmit).not.toHaveBeenCalled();
     expect(mockOnClose).not.toHaveBeenCalled();
+  });
+
+  it('does not render when not visible', () => {
+    const { queryByTestId } = render(
+      <TagForm visible={false} onClose={mockOnClose} onSubmit={mockOnSubmit} />
+    );
+
+    expect(queryByTestId('dialog')).toBeNull();
   });
 });

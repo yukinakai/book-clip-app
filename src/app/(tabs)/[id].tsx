@@ -220,158 +220,149 @@ export default function BookDetailScreen() {
       {/* 引用の編集/作成ダイアログ */}
       <Dialog
         title={editingQuote?.id ? '引用を編集' : '引用を追加'}
-        isVisible={!!editingQuote}
+        visible={!!editingQuote}
         onClose={() => setEditingQuote(null)}
-        content={
-          <View>
-            <Dialog.Input
-              label="引用"
-              value={editingQuote?.content}
-              onChangeText={text =>
-                setEditingQuote((prev: Quote | null) => ({
-                  ...prev!,
-                  content: text,
-                }))
-              }
-              placeholder="引用を入力"
-              multiline
-            />
-            <Dialog.Input
-              label="ページ番号"
-              value={editingQuote?.page?.toString()}
-              onChangeText={text =>
-                setEditingQuote((prev: Quote | null) => ({
-                  ...prev!,
-                  page: text ? parseInt(text, 10) : undefined,
-                }))
-              }
-              placeholder="ページ番号"
-              keyboardType="number-pad"
-            />
-            <Dialog.Input
-              label="メモ"
-              value={editingQuote?.memo}
-              onChangeText={text =>
-                setEditingQuote((prev: Quote | null) => ({
-                  ...prev!,
-                  memo: text,
-                }))
-              }
-              placeholder="メモ"
-              multiline
-            />
-          </View>
-        }
-        actions={
-          <>
-            <Dialog.Button
-              label="キャンセル"
-              onPress={() => setEditingQuote(null)}
-            />
-            <Dialog.Button
-              label={editingQuote?.id ? '更新' : '保存'}
-              onPress={() => {
-                const quoteData: QuoteFormData = {
-                  content: editingQuote!.content,
-                  page: editingQuote!.page,
-                  memo: editingQuote!.memo,
-                  tags: editingQuote!.tags?.map(tag => tag.id),
-                };
+      >
+        <View>
+          <Dialog.Input
+            label="引用"
+            value={editingQuote?.content}
+            onChangeText={text =>
+              setEditingQuote((prev: Quote | null) => ({
+                ...prev!,
+                content: text,
+              }))
+            }
+            placeholder="引用を入力"
+            multiline
+          />
+          <Dialog.Input
+            label="ページ番号"
+            value={editingQuote?.page?.toString()}
+            onChangeText={text =>
+              setEditingQuote((prev: Quote | null) => ({
+                ...prev!,
+                page: text ? parseInt(text, 10) : undefined,
+              }))
+            }
+            placeholder="ページ番号"
+            keyboardType="number-pad"
+          />
+          <Dialog.Input
+            label="メモ"
+            value={editingQuote?.memo}
+            onChangeText={text =>
+              setEditingQuote((prev: Quote | null) => ({
+                ...prev!,
+                memo: text,
+              }))
+            }
+            placeholder="メモ"
+            multiline
+          />
+        </View>
+        <View style={styles.dialogActions}>
+          <Dialog.Button
+            label="キャンセル"
+            onPress={() => setEditingQuote(null)}
+          />
+          <Dialog.Button
+            label={editingQuote?.id ? '更新' : '保存'}
+            onPress={() => {
+              const quoteData: QuoteFormData = {
+                content: editingQuote!.content,
+                page: editingQuote!.page,
+                memo: editingQuote!.memo,
+                tags: editingQuote!.tags?.map(tag => tag.id),
+              };
 
-                if (editingQuote?.id) {
-                  updateQuoteMutation.mutate({
-                    quoteId: editingQuote.id,
-                    data: quoteData,
-                  });
-                } else if (editingQuote) {
-                  createQuoteMutation.mutate(quoteData);
-                }
-              }}
-            />
-          </>
-        }
-      />
+              if (editingQuote?.id) {
+                updateQuoteMutation.mutate({
+                  quoteId: editingQuote.id,
+                  data: quoteData,
+                });
+              } else if (editingQuote) {
+                createQuoteMutation.mutate(quoteData);
+              }
+            }}
+          />
+        </View>
+      </Dialog>
 
       {/* 引用の削除確認ダイアログ */}
       <Dialog
         title="引用の削除"
-        isVisible={isDeleteDialogOpen}
+        visible={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
-        content={
-          <ThemedText>この引用を削除してもよろしいですか？</ThemedText>
-        }
-        actions={
-          <>
-            <Dialog.Button
-              label="キャンセル"
-              onPress={() => setIsDeleteDialogOpen(false)}
-            />
-            <Dialog.Button
-              label="削除"
-              onPress={() => editingQuote && deleteQuoteMutation.mutate(editingQuote.id)}
-              destructive
-            />
-          </>
-        }
-      />
+      >
+        <ThemedText>この引用を削除してもよろしいですか？</ThemedText>
+        <View style={styles.dialogActions}>
+          <Dialog.Button
+            label="キャンセル"
+            onPress={() => setIsDeleteDialogOpen(false)}
+          />
+          <Dialog.Button
+            label="削除"
+            onPress={() => editingQuote && deleteQuoteMutation.mutate(editingQuote.id)}
+            destructive
+          />
+        </View>
+      </Dialog>
 
       {/* 書籍情報の編集ダイアログ */}
       <Dialog
         title="書籍情報を編集"
-        isVisible={isEditBookDialogOpen}
+        visible={isEditBookDialogOpen}
         onClose={() => {
           setIsEditBookDialogOpen(false);
           setEditingBook(null);
         }}
-        content={
-          <View>
-            <Dialog.Input
-              label="タイトル"
-              value={editingBook?.title}
-              onChangeText={text =>
-                setEditingBook((prev: BookWithQuotes | null) => ({
-                  ...prev!,
-                  title: text,
-                }))
-              }
-              placeholder="タイトル"
-            />
-            <Dialog.Input
-              label="説明"
-              value={editingBook?.description}
-              onChangeText={text =>
-                setEditingBook((prev: BookWithQuotes | null) => ({
-                  ...prev!,
-                  description: text,
-                }))
-              }
-              placeholder="説明"
-              multiline
-            />
-          </View>
-        }
-        actions={
-          <>
-            <Dialog.Button
-              label="キャンセル"
-              onPress={() => {
-                setIsEditBookDialogOpen(false);
-                setEditingBook(null);
-              }}
-            />
-            <Dialog.Button
-              label="更新"
-              onPress={() =>
-                editingBook &&
-                updateBookMutation.mutate({
-                  title: editingBook.title,
-                  description: editingBook.description,
-                })
-              }
-            />
-          </>
-        }
-      />
+      >
+        <View>
+          <Dialog.Input
+            label="タイトル"
+            value={editingBook?.title}
+            onChangeText={text =>
+              setEditingBook((prev: BookWithQuotes | null) => ({
+                ...prev!,
+                title: text,
+              }))
+            }
+            placeholder="タイトル"
+          />
+          <Dialog.Input
+            label="説明"
+            value={editingBook?.description}
+            onChangeText={text =>
+              setEditingBook((prev: BookWithQuotes | null) => ({
+                ...prev!,
+                description: text,
+              }))
+            }
+            placeholder="説明"
+            multiline
+          />
+        </View>
+        <View style={styles.dialogActions}>
+          <Dialog.Button
+            label="キャンセル"
+            onPress={() => {
+              setIsEditBookDialogOpen(false);
+              setEditingBook(null);
+            }}
+          />
+          <Dialog.Button
+            label="更新"
+            onPress={() =>
+              editingBook &&
+              updateBookMutation.mutate({
+                title: editingBook.title,
+                description: editingBook.description,
+              })
+            }
+          />
+        </View>
+      </Dialog>
     </ParallaxScrollView>
   );
 }
@@ -423,6 +414,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 8,
+  },
+  dialogActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 16,
   },
   error: {
     color: 'red',

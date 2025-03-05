@@ -1,75 +1,100 @@
 import React, { ReactNode } from 'react';
-import { Modal, StyleSheet, View, TextInput, TouchableOpacity, TextInputProps } from 'react-native';
-import { ThemedView } from './ThemedView';
-import { ThemedText } from './ThemedText';
+import { Modal, View, Text, StyleSheet, Pressable, TextInput, KeyboardTypeOptions } from 'react-native';
 
-interface DialogProps {
-  title: string;
-  isVisible: boolean;
-  onClose: () => void;
-  content: ReactNode;
-  actions: ReactNode;
-}
-
-interface DialogButtonProps {
+export interface DialogButtonProps {
   label: string;
   onPress: () => void;
+  testID?: string;
   destructive?: boolean;
 }
 
-interface DialogInputProps extends TextInputProps {
-  label: string;
+export interface DialogInputProps {
+  placeholder?: string;
+  value?: string;
+  onChangeText: (text: string) => void;
+  testID?: string;
+  multiline?: boolean;
+  keyboardType?: KeyboardTypeOptions;
+  label?: string;
 }
 
-export function Dialog({ title, isVisible, onClose, content, actions }: DialogProps) {
+export interface DialogProps {
+  visible: boolean;
+  onClose: () => void;
+  children?: ReactNode;
+  actions?: ReactNode;
+  testID?: string;
+  title?: string;
+  content?: ReactNode;
+}
+
+export const Dialog: React.FC<DialogProps> & {
+  Button: React.FC<DialogButtonProps>;
+  Input: React.FC<DialogInputProps>;
+} = ({ visible, onClose, children, actions, testID, title, content }) => {
   return (
     <Modal
-      animationType="fade"
+      visible={visible}
       transparent
-      visible={isVisible}
+      animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <ThemedView style={styles.container}>
-          <ThemedText style={styles.title}>{title}</ThemedText>
-          <View style={styles.content}>{content}</View>
-          <View style={styles.actions}>{actions}</View>
-        </ThemedView>
-      </View>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <View style={styles.container} testID={testID}>
+          <Pressable style={styles.content} onPress={(e) => e.stopPropagation()}>
+            {title && <Text style={styles.title}>{title}</Text>}
+            {content}
+            {children}
+            {actions}
+          </Pressable>
+        </View>
+      </Pressable>
     </Modal>
   );
-}
-
-Dialog.Button = function DialogButton({ label, onPress, destructive }: DialogButtonProps) {
-  return (
-    <TouchableOpacity onPress={onPress}>
-      <ThemedText
-        style={[
-          styles.button,
-          destructive && styles.destructiveButton,
-        ]}
-      >
-        {label}
-      </ThemedText>
-    </TouchableOpacity>
-  );
 };
 
-Dialog.Input = function DialogInput({
+Dialog.Button = ({ label, onPress, testID, destructive }) => (
+  <Pressable
+    style={({ pressed }) => [
+      styles.button,
+      pressed && styles.buttonPressed,
+    ]}
+    onPress={onPress}
+    testID={testID}
+  >
+    <Text
+      style={[
+        styles.buttonText,
+        destructive && styles.destructiveButtonText,
+      ]}
+    >
+      {label}
+    </Text>
+  </Pressable>
+);
+
+Dialog.Input = ({
+  placeholder,
+  value = '',
+  onChangeText,
+  testID,
+  multiline,
+  keyboardType,
   label,
-  ...props
-}: DialogInputProps) {
-  return (
-    <View style={styles.inputContainer}>
-      <ThemedText style={styles.label}>{label}</ThemedText>
-      <TextInput
-        style={styles.input}
-        placeholderTextColor="#666"
-        {...props}
-      />
-    </View>
-  );
-};
+}) => (
+  <View>
+    {label && <Text style={styles.label}>{label}</Text>}
+    <TextInput
+      style={[styles.input, multiline && styles.multilineInput]}
+      placeholder={placeholder}
+      value={value}
+      onChangeText={onChangeText}
+      testID={testID}
+      multiline={multiline}
+      keyboardType={keyboardType}
+    />
+  </View>
+);
 
 const styles = StyleSheet.create({
   overlay: {
@@ -77,46 +102,50 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
   },
   container: {
-    width: '100%',
-    maxWidth: 500,
+    width: '80%',
+    backgroundColor: 'white',
     borderRadius: 8,
     padding: 16,
   },
+  content: {
+    width: '100%',
+  },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
   },
-  content: {
-    marginBottom: 16,
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
+  label: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#666',
   },
   button: {
-    padding: 8,
-    fontWeight: '600',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 4,
   },
-  destructiveButton: {
-    color: '#ff3b30',
+  buttonPressed: {
+    opacity: 0.7,
   },
-  inputContainer: {
-    marginBottom: 16,
+  buttonText: {
+    fontSize: 16,
+    color: '#007AFF',
+    textAlign: 'center',
   },
-  label: {
-    marginBottom: 8,
-    fontWeight: '600',
+  destructiveButtonText: {
+    color: '#FF3B30',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    padding: 8,
-    color: '#000',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingVertical: 8,
+    marginBottom: 16,
+  },
+  multilineInput: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
 });
