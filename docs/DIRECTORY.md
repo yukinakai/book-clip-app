@@ -34,6 +34,7 @@
 │   │   │   ├── [id].tsx
 │   │   │   ├── __tests__
 │   │   │   │   ├── [id].test.tsx
+│   │   │   │   ├── explore.test.tsx
 │   │   │   │   └── scan.test.tsx
 │   │   │   ├── _layout.tsx
 │   │   │   ├── explore.tsx
@@ -78,8 +79,10 @@
 │   │   │       └── BookList.test.tsx
 │   │   ├── quotes
 │   │   │   ├── QuoteForm.tsx
+│   │   │   ├── QuoteSearch.tsx
 │   │   │   └── __tests__
-│   │   │       └── QuoteForm.test.tsx
+│   │   │       ├── QuoteForm.test.tsx
+│   │   │       └── QuoteSearch.test.tsx
 │   │   ├── tags
 │   │   │   ├── TagForm.tsx
 │   │   │   ├── TagList.tsx
@@ -119,6 +122,7 @@
 │   │   │   └── supabase.ts
 │   │   ├── __tests__
 │   │   │   ├── books.test.ts
+│   │   │   ├── quotes.test.ts
 │   │   │   └── tags.test.ts
 │   │   ├── books.ts
 │   │   ├── quotes.ts
@@ -130,4 +134,4 @@
 │       └── tag.ts
 └── tsconfig.json
 
-37 directories, 94 files
+37 directories, 98 files
