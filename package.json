@@ -57,6 +57,7 @@
     "@babel/plugin-transform-private-methods": "^7.25.9",
     "@testing-library/react-native": "^13.1.0",
     "@types/jest": "^29.5.12",
+    "@types/lodash": "^4.17.16",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
     "dotenv": "^16.4.7",

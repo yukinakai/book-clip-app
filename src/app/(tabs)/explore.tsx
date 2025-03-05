@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { ParallaxScrollView } from "@/components/ParallaxScrollView";
+import { QuoteSearch } from "@/components/quotes/QuoteSearch";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -88,7 +89,8 @@ export default function ExploreScreen() {
         />
       }
     >
-      <ThemedView style={styles.container}>
+      <ThemedView style={styles.container} testID="explore-screen">
+        <ThemedView style={styles.section}>
         <ThemedView style={styles.titleContainer}>
           <ThemedText type="title">タグ管理</ThemedText>
           <IconSymbol
@@ -105,6 +107,12 @@ export default function ExploreScreen() {
           onDeleteTag={handleDeleteTag}
           testID="tag-list"
         />
+        </ThemedView>
+
+        <ThemedView style={styles.section}>
+          <ThemedText type="title">引用を探す</ThemedText>
+          <QuoteSearch />
+        </ThemedView>
 
         <TagForm
           visible={isFormVisible}
@@ -146,6 +154,10 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
+  section: {
+    gap: 16,
+    paddingBottom: 16,
+  },
   container: {
     flex: 1,
     gap: 16,
