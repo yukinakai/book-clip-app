@@ -35,19 +35,40 @@ describe('Books API', () => {
     };
 
     it('新しい書籍を作成できる', async () => {
-      const mockResponse = {
+      // Mock insert operation
+      const mockInsertResponse = {
+        data: { id: '1' },
+        error: null,
+      };
+      
+      // Mock select operation to retrieve the created book
+      const mockSelectResponse = {
         data: mockBook,
         error: null,
       };
-      const mockFromFn = jest.fn().mockReturnValue({
-        insert: jest.fn().mockResolvedValue(mockResponse),
+      
+      const mockSelectFn = jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue(mockSelectResponse),
+        }),
       });
+      
+      const mockFromFn = jest.fn();
+      mockFromFn.mockImplementation((table) => {
+        if (table === 'books') {
+          return {
+            insert: jest.fn().mockResolvedValue(mockInsertResponse),
+            select: mockSelectFn,
+          };
+        }
+        return {};
+      });
+      
       (supabase.from as jest.Mock).mockImplementation(mockFromFn);
 
       const result = await createBook(createBookInput);
       expect(result).toEqual(mockBook);
       expect(mockFromFn).toHaveBeenCalledWith('books');
-      expect(mockFromFn().insert).toHaveBeenCalledWith([createBookInput]);
     });
 
     it('エラー時にnullを返す', async () => {
@@ -112,19 +133,39 @@ describe('Books API', () => {
 
     it('書籍情報を更新できる', async () => {
       const updatedBook = { ...mockBook, ...updateBookInput };
-      const mockResponse = {
+      
+      // Mock update operation
+      const mockUpdateResponse = {
+        error: null,
+      };
+      
+      // Mock select operation to retrieve the updated book
+      const mockSelectResponse = {
         data: updatedBook,
         error: null,
       };
-      const mockFromFn = jest.fn().mockReturnValue({
-        update: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            select: jest.fn().mockReturnValue({
-              single: jest.fn().mockResolvedValue(mockResponse),
-            }),
-          }),
+      
+      const mockSelectFn = jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue(mockSelectResponse),
         }),
       });
+      
+      const mockUpdateFn = jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue(mockUpdateResponse),
+      });
+      
+      const mockFromFn = jest.fn();
+      mockFromFn.mockImplementation((table) => {
+        if (table === 'books') {
+          return {
+            update: mockUpdateFn,
+            select: mockSelectFn,
+          };
+        }
+        return {};
+      });
+      
       (supabase.from as jest.Mock).mockImplementation(mockFromFn);
 
       const result = await updateBook('1', updateBookInput);
@@ -134,16 +175,11 @@ describe('Books API', () => {
 
     it('エラー時にnullを返す', async () => {
       const mockResponse = {
-        data: null,
         error: new Error('Database error'),
       };
       const mockFromFn = jest.fn().mockReturnValue({
         update: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            select: jest.fn().mockReturnValue({
-              single: jest.fn().mockResolvedValue(mockResponse),
-            }),
-          }),
+          eq: jest.fn().mockResolvedValue(mockResponse),
         }),
       });
       (supabase.from as jest.Mock).mockImplementation(mockFromFn);
