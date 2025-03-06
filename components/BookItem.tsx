@@ -10,7 +10,10 @@ interface BookItemProps {
 
 const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 3;
-const ITEM_WIDTH = width / COLUMN_COUNT - 16;
+const HORIZONTAL_PADDING = 32; // Total horizontal padding for the container
+const ITEM_SPACING = 16; // Space between items
+// Calculate item width considering padding and spacing between items
+const ITEM_WIDTH = (width - HORIZONTAL_PADDING - (ITEM_SPACING * (COLUMN_COUNT - 1))) / COLUMN_COUNT;
 const ASPECT_RATIO = 1.5; // Standard book cover aspect ratio (height/width)
 
 export default function BookItem({ book, onPress }: BookItemProps) {

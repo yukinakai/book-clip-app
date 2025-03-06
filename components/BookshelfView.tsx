@@ -1,5 +1,6 @@
 import React from 'react';
 import { FlatList, StyleSheet, View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Book } from '../constants/MockData';
 import BookItem from './BookItem';
 import { useThemeColor } from '../hooks/useThemeColor';
@@ -25,17 +26,18 @@ export default function BookshelfView({ books, onSelectBook, headerTitle }: Book
   };
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       <FlatList
         data={books}
         renderItem={({ item }) => <BookItem book={item} onPress={onSelectBook} />}
         keyExtractor={(item) => item.id}
         numColumns={3}
         contentContainerStyle={styles.listContent}
+        columnWrapperStyle={styles.columnWrapper}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={renderHeader}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -45,8 +47,11 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingVertical: 16,
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
+  },
+  columnWrapper: {
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
   headerContainer: {
     paddingHorizontal: 8,
