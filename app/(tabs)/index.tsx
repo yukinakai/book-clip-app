@@ -17,7 +17,7 @@ export default function HomeScreen() {
     <BookshelfView 
       books={MOCK_BOOKS} 
       onSelectBook={handleBookSelect} 
-      headerTitle="My Library"
+      headerTitle="マイライブラリ"
     />
   );
 }
