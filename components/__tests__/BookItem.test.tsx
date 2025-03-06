@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import BookItem from '../BookItem';
+import { Image } from 'react-native';
 
 // モックデータ
 const mockBook = {
@@ -39,9 +40,11 @@ describe('BookItem', () => {
     
     // タイトルテキストを含むコンポーネントの親（TouchableOpacity）をタップ
     const titleElement = getByText('テスト本');
-    const touchableParent = titleElement.parent.parent.parent; // Text -> View -> TouchableOpacity
+    const touchableParent = titleElement.parent?.parent?.parent; // Text -> View -> TouchableOpacity
     
-    fireEvent.press(touchableParent);
+    if (touchableParent) {
+      fireEvent.press(touchableParent);
+    }
     expect(mockOnPress).toHaveBeenCalledTimes(1);
     expect(mockOnPress).toHaveBeenCalledWith(mockBook);
   });
@@ -51,7 +54,7 @@ describe('BookItem', () => {
       <BookItem book={mockBook} onPress={mockOnPress} />
     );
     
-    const image = UNSAFE_getByType('Image');
+    const image = UNSAFE_getByType(Image);
     expect(image.props.source).toEqual({ uri: 'https://example.com/testcover.jpg' });
   });
 
