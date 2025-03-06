@@ -23,7 +23,7 @@ export default function BookItem({ book, onPress }: BookItemProps) {
       activeOpacity={0.7}
     >
       <Image 
-        source={book.coverImage} 
+        source={typeof book.coverImage === 'string' ? { uri: book.coverImage } : book.coverImage} 
         style={styles.coverImage} 
         resizeMode="cover"
       />
