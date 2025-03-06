@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import HomeScreen from '../index';
 import { MOCK_BOOKS } from '../../../constants/MockData';
 import BookshelfView from '../../../components/BookshelfView';
@@ -24,22 +24,28 @@ jest.mock('../../../constants/MockData', () => ({
 
 // BookshelfViewコンポーネントのモック
 jest.mock('../../../components/BookshelfView', () => {
-  return jest.fn(({ books, onSelectBook, headerTitle }) => {
-    return (
-      <div data-testid="bookshelf-view">
-        <h1>{headerTitle}</h1>
-        {books.map((book) => (
-          <button
-            key={book.id}
-            data-testid={`book-item-${book.id}`}
-            onClick={() => onSelectBook(book)}
-          >
-            {book.title}
-          </button>
-        ))}
-      </div>
-    );
-  });
+  const React = require('react');
+  const { View, Text, Pressable } = require('react-native');
+  
+  return {
+    __esModule: true,
+    default: jest.fn(({ books, onSelectBook, headerTitle }) => {
+      return (
+        <View testID="bookshelf-view">
+          <Text>{headerTitle}</Text>
+          {books.map((book) => (
+            <Pressable
+              key={book.id}
+              testID={`book-item-${book.id}`}
+              onPress={() => onSelectBook(book)}
+            >
+              <Text>{book.title}</Text>
+            </Pressable>
+          ))}
+        </View>
+      );
+    })
+  };
 });
 
 // コンソールログのモック
@@ -67,7 +73,7 @@ describe('HomeScreen', () => {
   it('本を選択するとコンソールログが表示されること', () => {
     const { getByTestId } = render(<HomeScreen />);
     
-    fireEvent.click(getByTestId('book-item-1'));
+    fireEvent.press(getByTestId('book-item-1'));
     
     expect(mockConsoleLog).toHaveBeenCalledWith('Selected book:', 'Test Book 1');
   });
