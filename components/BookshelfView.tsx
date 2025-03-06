@@ -1,6 +1,6 @@
 import React from 'react';
 import { FlatList, StyleSheet, View, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Book } from '../constants/MockData';
 import BookItem from './BookItem';
 import { useThemeColor } from '../hooks/useThemeColor';
@@ -14,6 +14,7 @@ interface BookshelfViewProps {
 export default function BookshelfView({ books, onSelectBook, headerTitle }: BookshelfViewProps) {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const insets = useSafeAreaInsets();
 
   const renderHeader = () => {
     if (!headerTitle) return null;
@@ -32,7 +33,11 @@ export default function BookshelfView({ books, onSelectBook, headerTitle }: Book
         renderItem={({ item }) => <BookItem book={item} onPress={onSelectBook} />}
         keyExtractor={(item) => item.id}
         numColumns={3}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          // タブバーの高さ + 追加のパディングを確保
+          { paddingBottom: 80 + insets.bottom }
+        ]}
         columnWrapperStyle={styles.columnWrapper}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={renderHeader}

@@ -60,4 +60,34 @@ export const MOCK_BOOKS: Book[] = [
     author: 'Paulo Coelho',
     coverImage: 'https://covers.openlibrary.org/b/id/8380881-M.jpg',
   },
+  {
+    id: '10',
+    title: '人間失格',
+    author: '太宰 治',
+    coverImage: 'https://covers.openlibrary.org/b/id/8231922-M.jpg',
+  },
+  {
+    id: '11',
+    title: 'ノルウェイの森',
+    author: '村上 春樹',
+    coverImage: 'https://covers.openlibrary.org/b/id/8903380-M.jpg',
+  },
+  {
+    id: '12',
+    title: '風の谷のナウシカ',
+    author: '宮崎 駿',
+    coverImage: 'https://covers.openlibrary.org/b/id/6930658-M.jpg',
+  },
+  {
+    id: '13',
+    title: '君の名は。',
+    author: '新海 誠',
+    coverImage: 'https://covers.openlibrary.org/b/id/10240242-M.jpg',
+  },
+  {
+    id: '14',
+    title: '三体',
+    author: '劉 慈欣',
+    coverImage: 'https://covers.openlibrary.org/b/id/12970962-M.jpg',
+  },
 ];
