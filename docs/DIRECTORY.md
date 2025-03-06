@@ -29,6 +29,7 @@
 │       ├── react-logo@2x.png
 │       ├── react-logo@3x.png
 │       └── splash-icon.png
+├── babel.config.js
 ├── components
 │   ├── BookItem.tsx
 │   ├── BookshelfView.tsx
@@ -61,10 +62,12 @@
 │   ├── useColorScheme.ts
 │   ├── useColorScheme.web.ts
 │   └── useThemeColor.ts
+├── jest.config.js
 ├── package-lock.json
 ├── package.json
 ├── scripts
 │   └── reset-project.js
+├── test-utils.tsx
 └── tsconfig.json
 
-17 directories, 51 files
+17 directories, 54 files

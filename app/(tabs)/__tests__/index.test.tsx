@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent } from '../../../test-utils';
 import HomeScreen from '../index';
 import { MOCK_BOOKS } from '../../../constants/MockData';
 import BookshelfView from '../../../components/BookshelfView';
