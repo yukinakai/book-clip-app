@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-   "test": "cp .gitignore .clineignore && tree -a -I 'node_modules|coverage|.git' > docs/DIRECTORY.md &&jest",
+    "test": "cp .gitignore .clineignore && tree -a -I 'node_modules|coverage|.git' > docs/DIRECTORY.md &&jest",
     "lint": "expo lint"
   },
   "jest": {
