@@ -1,7 +1,8 @@
 // components/camera/BarcodeScanner.tsx
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Animated, Easing } from 'react-native';
 import { CameraView, BarcodeScanningResult } from 'expo-camera';
+import { Ionicons } from '@expo/vector-icons';
 
 interface BarcodeScannerProps {
   onBarcodeScanned: (isbn: string) => void;
@@ -9,39 +10,61 @@ interface BarcodeScannerProps {
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => {
   const [scanned, setScanned] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [lastScannedISBN, setLastScannedISBN] = useState<string | null>(null);
-
-  // スキャン後のクールダウン処理
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (scanned) {
-      timer = setTimeout(() => {
-        setScanned(false);
-      }, 3000);
-    }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [scanned]);
+  
+  // スキャンアニメーション用
+  const scanLineAnim = useRef(new Animated.Value(0)).current;
+  
+  const startScanning = () => {
+    if (scanning || scanned) return;
+    
+    setScanning(true);
+    
+    // スキャンラインのアニメーションを開始
+    scanLineAnim.setValue(0);
+    Animated.timing(scanLineAnim, {
+      toValue: 1,
+      duration: 1500,
+      easing: Easing.linear,
+      useNativeDriver: true
+    }).start();
+    
+    // 3秒後にスキャンモードを自動終了
+    setTimeout(() => {
+      if (!scanned) {
+        setScanning(false);
+      }
+    }, 3000);
+  };
 
   const handleBarcodeScanned = (scanningResult: BarcodeScanningResult) => {
-    if (scanned) return;
+    if (!scanning || scanned) return;
     
     const { type, data } = scanningResult;
+    console.log('BarcodeScanningResult:', type, data);
     
-    // ISBN-13は978または979で始まります
-    if (type === 'ean13' && (data.startsWith('978') || data.startsWith('979'))) {
-      // 同じISBNの重複スキャンを防止（前回と同じISBNなら無視）
+    if (type === 'ean13') {
       if (lastScannedISBN === data) return;
       
       console.log('ISBN検出:', data);
       setScanned(true);
+      setScanning(false);
       setLastScannedISBN(data);
-      
-      // 親コンポーネントにISBNを通知（ここでアラートは表示しない）
       onBarcodeScanned(data);
+      
+      // 2秒後にスキャン状態をリセット
+      setTimeout(() => {
+        setScanned(false);
+      }, 2000);
     }
   };
+
+  // スキャンラインのアニメーション設定
+  const translateY = scanLineAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 120]
+  });
 
   return (
     <View style={styles.container}>
@@ -50,23 +73,47 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
         barcodeScannerSettings={{
           barcodeTypes: ["ean13"],
         }}
-        onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+        onBarcodeScanned={handleBarcodeScanned}
       >
-        {scanned ? (
+        {scanned && (
           <View style={styles.scannedOverlay}>
+            <Ionicons name="checkmark-circle" size={24} color="#FFF" style={styles.statusIcon} />
             <Text style={styles.scannedText}>ISBN検出しました</Text>
-          </View>
-        ) : (
-          <View style={styles.scannerGuideContainer}>
-            <View style={styles.scannerGuide}>
-              <ActivityIndicator size="small" color="#00FF00" style={styles.spinner} />
-              <Text style={styles.guideText}>バーコードをスキャン中...</Text>
-            </View>
           </View>
         )}
         
         <View style={styles.scannerTargetOverlay}>
-          <View style={styles.scannerTarget} />
+          <View style={styles.scannerTarget}>
+            {scanning && (
+              <Animated.View 
+                style={[
+                  styles.scanLine,
+                  { transform: [{ translateY }] }
+                ]}
+              />
+            )}
+          </View>
+          
+          <TouchableOpacity 
+            style={[
+              styles.scanButton,
+              scanning && styles.scanningButton,
+              scanned && styles.scannedButton
+            ]}
+            onPress={startScanning}
+            disabled={scanning || scanned}
+          >
+            <Text style={styles.scanButtonText}>
+              {scanned 
+                ? "検出済み" 
+                : scanning 
+                  ? "スキャン中..." 
+                  : "タップしてスキャン"}
+            </Text>
+            {!scanning && !scanned && (
+              <Ionicons name="scan-outline" size={20} color="white" style={styles.buttonIcon} />
+            )}
+          </TouchableOpacity>
         </View>
       </CameraView>
     </View>
@@ -88,37 +135,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0, 180, 0, 0.7)',
-    padding: 20,
+    padding: 15,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
     zIndex: 10,
+  },
+  statusIcon: {
+    marginRight: 8,
   },
   scannedText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  scannerGuideContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  scannerGuide: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  spinner: {
-    marginRight: 10,
-  },
-  guideText: {
-    color: 'white',
-    fontSize: 14,
   },
   scannerTargetOverlay: {
     position: 'absolute',
@@ -136,6 +165,48 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: '#00FF00',
     backgroundColor: 'rgba(0, 255, 0, 0.05)',
+    overflow: 'hidden',
+    marginBottom: 50,
+  },
+  scanLine: {
+    position: 'absolute',
+    width: '100%',
+    height: 2,
+    backgroundColor: '#00FF00',
+    shadowColor: '#00FF00',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  scanButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 180,
+  },
+  scanningButton: {
+    backgroundColor: 'rgba(0, 100, 200, 0.7)',
+  },
+  scannedButton: {
+    backgroundColor: 'rgba(0, 150, 0, 0.7)',
+  },
+  scanButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  buttonIcon: {
+    marginLeft: 8,
   },
 });
 
