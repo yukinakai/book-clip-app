@@ -22,13 +22,13 @@ const CameraModal: React.FC<CameraModalProps> = ({ isVisible, onClose, onImageCa
     // 既に処理済みのISBNなら無視
     if (processedISBNs.has(isbn)) return;
     
-    console.log('ISBN検出:', isbn);
+    console.log('バーコード検出:', isbn);
     
     // このISBNを処理済みとしてマーク
     setProcessedISBNs(prev => new Set(prev).add(isbn));
     
     // アラートを1回だけ表示
-    Alert.alert('ISBN検出', `ISBN: ${isbn}\n\nこのISBNを使って書籍情報を検索しますか？`, [
+    Alert.alert('バーコード検出', `コード: ${isbn}\n\nこのコードを使って書籍情報を検索しますか？`, [
       {
         text: 'キャンセル',
         style: 'cancel',
