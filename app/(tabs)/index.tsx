@@ -92,6 +92,9 @@ export default function HomeScreen() {
       <CameraView
         style={styles.camera}
         ref={cameraRef}
+        barcodeScannerSettings={{
+          barcodeTypes: ["ean13"],
+        }}
       >
         <TouchableOpacity 
           style={styles.captureButton}
