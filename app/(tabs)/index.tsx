@@ -1,3 +1,4 @@
+// app/(tabs)/index.tsx
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
 import { MOCK_BOOKS } from '../../constants/MockData';
@@ -40,7 +41,7 @@ export default function HomeScreen() {
           onPress={() => setIsCameraOpen(true)}
           testID="add-book-button"
         >
-          <Ionicons name="add" size={30} color="white" />
+          <Ionicons name="barcode-outline" size={26} color="white" />
         </TouchableOpacity>
       </View>
       
