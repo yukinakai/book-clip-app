@@ -24,17 +24,20 @@ export default function BookItem({ book, onPress }: BookItemProps) {
       style={styles.container}
       onPress={() => onPress(book)}
       activeOpacity={0.7}
+      testID="book-container"
     >
       <Image 
         source={typeof book.coverImage === 'string' ? { uri: book.coverImage } : book.coverImage} 
         style={styles.coverImage} 
         resizeMode="cover"
+        testID="book-cover"
       />
       <View style={styles.textContainer}>
         <Text 
           style={[styles.title, { color: textColor }]} 
           numberOfLines={2}
           ellipsizeMode="tail"
+          testID="book-title"
         >
           {book.title}
         </Text>
@@ -42,6 +45,7 @@ export default function BookItem({ book, onPress }: BookItemProps) {
           style={[styles.author, { color: textColor }]}
           numberOfLines={1}
           ellipsizeMode="tail"
+          testID="book-author"
         >
           {book.author}
         </Text>
