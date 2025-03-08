@@ -1,6 +1,6 @@
 // components/camera/BarcodeScanner.tsx
-import React, { useState, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Animated, Easing } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Animated, Easing, Dimensions } from 'react-native';
 import { CameraView, BarcodeScanningResult } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -12,6 +12,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
   const [scanned, setScanned] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [lastScannedISBN, setLastScannedISBN] = useState<string | null>(null);
+  
+  // 画面の高さを取得
+  const screenHeight = Dimensions.get('window').height;
+  // 画面の中央のy座標
+  const middleY = screenHeight / 2;
   
   // スキャンアニメーション用
   const scanLineAnim = useRef(new Animated.Value(0)).current;
@@ -41,8 +46,39 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
   const handleBarcodeScanned = (scanningResult: BarcodeScanningResult) => {
     if (!scanning || scanned) return;
     
-    const { type, data } = scanningResult;
-    console.log('BarcodeScanningResult:', type, data);
+    const { type, data, bounds } = scanningResult;
+    
+    // バーコードの位置情報をログに出力
+    console.log(`バーコード: ${data}, 位置: ${JSON.stringify(bounds)}, 画面の高さ: ${screenHeight}`);
+    
+    // バーコードの位置をチェック（y座標が中央値より大きいかどうか）
+    // boundsの値が0〜1の範囲の場合と、ピクセル値の場合の両方に対応
+    let isBottomHalf = false;
+    
+    if (bounds && bounds.origin) {
+      const y = bounds.origin.y;
+      
+      // yがピクセル値の場合（大きな値の場合）
+      if (y > 1) {
+        isBottomHalf = y > middleY;
+      } 
+      // yが0〜1の正規化された値の場合
+      else {
+        isBottomHalf = y > 0.5;
+      }
+    }
+    
+    // 下半分のバーコードはスキップ
+    if (isBottomHalf) {
+      console.log('下部のバーコードなのでスキップします', bounds?.origin?.y);
+      return;
+    }
+    
+    // 代替方法: 特定のプレフィックスをスキップ（必要に応じて有効化）
+    // if (data.startsWith('192')) {
+    //   console.log('商品バーコードなのでスキップします:', data);
+    //   return;
+    // }
     
     if (type === 'ean13' && (data.startsWith('978') || data.startsWith('979'))) {
       if (lastScannedISBN === data) return;
@@ -83,7 +119,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
         )}
         
         <View style={styles.scannerTargetOverlay}>
-          <View style={styles.scannerTarget}>
+          {/* ガイダンステキストを追加 */}
+          <Text style={styles.guidanceText}>上部のISBNバーコードを枠内に収めてください</Text>
+          
+          <View style={[styles.scannerTarget, styles.scannerTargetTop]}>
             {scanning && (
               <Animated.View 
                 style={[
@@ -166,7 +205,10 @@ const styles = StyleSheet.create({
     borderColor: '#00FF00',
     backgroundColor: 'rgba(0, 255, 0, 0.05)',
     overflow: 'hidden',
-    marginBottom: 50,
+  },
+  // 上部にスキャナーターゲットを配置
+  scannerTargetTop: {
+    marginBottom: 200, // 画面の上部に配置
   },
   scanLine: {
     position: 'absolute',
@@ -181,6 +223,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 5,
     elevation: 5,
+  },
+  guidanceText: {
+    color: 'white',
+    fontSize: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   scanButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
