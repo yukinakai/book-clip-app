@@ -44,10 +44,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
     const { type, data } = scanningResult;
     console.log('BarcodeScanningResult:', type, data);
     
-    if (type === 'ean13') {
+    if (type === 'ean13' && (data.startsWith('978') || data.startsWith('979'))) {
       if (lastScannedISBN === data) return;
       
-      console.log('バーコード検出:', data);
+      console.log('ISBN検出:', data);
       setScanned(true);
       setScanning(false);
       setLastScannedISBN(data);
@@ -78,7 +78,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
         {scanned && (
           <View style={styles.scannedOverlay}>
             <Ionicons name="checkmark-circle" size={24} color="#FFF" style={styles.statusIcon} />
-            <Text style={styles.scannedText}>バーコードを検出しました</Text>
+            <Text style={styles.scannedText}>ISBNを検出しました</Text>
           </View>
         )}
         

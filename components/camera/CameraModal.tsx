@@ -22,13 +22,13 @@ const CameraModal: React.FC<CameraModalProps> = ({ isVisible, onClose, onImageCa
     // 既に処理済みのISBNなら無視
     if (processedISBNs.has(isbn)) return;
     
-    console.log('バーコード検出:', isbn);
+    console.log('ISBN検出:', isbn);
     
     // このISBNを処理済みとしてマーク
     setProcessedISBNs(prev => new Set(prev).add(isbn));
     
     // アラートを1回だけ表示
-    Alert.alert('バーコード検出', `コード: ${isbn}\n\nこのコードを使って書籍情報を検索しますか？`, [
+    Alert.alert('ISBN検出', `ISBN: ${isbn}\n\nこのISBNを使って書籍情報を検索しますか？`, [
       {
         text: 'キャンセル',
         style: 'cancel',
@@ -38,11 +38,27 @@ const CameraModal: React.FC<CameraModalProps> = ({ isVisible, onClose, onImageCa
       },
       {
         text: '検索する',
-        onPress: () => {
-          // ここでISBNを使った書籍検索処理を実行
-          onClose();
-          // モーダルが閉じる際に状態をリセット
-          setProcessedISBNs(new Set());
+        onPress: async () => {
+          try {
+            // Google Books APIを使ってISBNで書籍情報を検索する処理を実装
+            const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+            const bookData = await response.json();
+            if (response.ok && bookData.items && bookData.items.length > 0) {
+              // 書籍情報が取得できた場合、タイトル、著者名、表紙画像を取得
+              const { volumeInfo } = bookData.items[0];
+              const { title, authors, imageLinks } = volumeInfo;
+              console.log(`タイトル: ${title}, 著者名: ${authors.join(', ')}, 表紙画像: ${imageLinks.thumbnail}`);
+              // ここで取得した情報を利用する処理を追加（例：画面に表示するなど）
+            } else {
+              console.error('書籍情報の取得に失敗しました。');
+            }
+          } catch (error) {
+            console.error('書籍情報の検索中にエラーが発生しました:', error);
+          } finally {
+            onClose();
+            // モーダルが閉じる際に状態をリセット
+            setProcessedISBNs(new Set());
+          }
         }
       }
     ]);
