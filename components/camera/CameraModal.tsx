@@ -40,10 +40,10 @@ const CameraModal: React.FC<CameraModalProps> = ({
 
     // このISBNを処理済みとしてマーク
     setProcessedISBNs((prev) => new Set(prev).add(isbn));
-    
+
     // スキャンを一時停止（処理中フラグを立てる）
     setIsLoading(true);
-    
+
     // アラートを1回だけ表示
     Alert.alert(
       "ISBN検出",
@@ -161,9 +161,8 @@ const CameraModal: React.FC<CameraModalProps> = ({
     }
 
     return (
-      <BarcodeScanner 
+      <BarcodeScanner
         onBarcodeScanned={isLoading ? () => {} : handleBarcodeScanned}
-        isLoading={isLoading}
       />
     );
   };
