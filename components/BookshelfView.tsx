@@ -8,8 +8,17 @@ import { Book } from "../constants/MockData";
 import { BookStorageService } from "../services/BookStorageService";
 import { useThemeColor } from "../hooks/useThemeColor";
 
-export const BookshelfView: React.FC = () => {
+interface BookshelfViewProps {
+  onSelectBook?: (book: Book) => void;
+  headerTitle?: string;
+}
+
+const BookshelfView: React.FC<BookshelfViewProps> = ({
+  onSelectBook,
+  headerTitle,
+}) => {
   const [books, setBooks] = useState<Book[]>([]);
+  const backgroundColor = useThemeColor({}, "background");
 
   useEffect(() => {
     loadBooks();
@@ -32,14 +41,28 @@ export const BookshelfView: React.FC = () => {
     </View>
   );
 
+  const renderHeader = () => {
+    if (!headerTitle) return null;
+
+    return (
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>{headerTitle}</Text>
+      </View>
+    );
+  };
+
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor }]}
+      edges={["top"]}
+    >
       <FlatList
         data={books}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={2}
         contentContainerStyle={styles.listContainer}
+        ListHeaderComponent={renderHeader}
       />
     </SafeAreaView>
   );
@@ -48,7 +71,6 @@ export const BookshelfView: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   listContainer: {
     padding: 10,
@@ -81,4 +103,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666",
   },
+  headerContainer: {
+    paddingHorizontal: 8,
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+  },
 });
+
+export default BookshelfView;
