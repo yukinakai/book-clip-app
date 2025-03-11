@@ -71,6 +71,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   listContainer: {
     padding: 10,
