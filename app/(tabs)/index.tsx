@@ -8,9 +8,14 @@ import CameraModal from "../../components/camera/CameraModal";
 
 export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleBookSelect = (book: Book) => {
     console.log("Selected book:", book.title);
+  };
+
+  const handleBookAdded = () => {
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleImageCaptured = (imageUri: string) => {
@@ -21,12 +26,18 @@ export default function HomeScreen() {
     );
   };
 
+  const handleClose = () => {
+    setIsCameraOpen(false);
+    handleBookAdded();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.bookshelfContainer}>
         <BookshelfView
           onSelectBook={handleBookSelect}
           headerTitle="マイライブラリ"
+          refreshTrigger={refreshTrigger}
         />
       </View>
 
@@ -43,7 +54,7 @@ export default function HomeScreen() {
 
       <CameraModal
         isVisible={isCameraOpen}
-        onClose={() => setIsCameraOpen(false)}
+        onClose={handleClose}
         onImageCaptured={handleImageCaptured}
       />
     </View>

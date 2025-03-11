@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, FlatList, StyleSheet, Image, Text } from "react-native";
 import {
   SafeAreaView,
@@ -11,23 +11,25 @@ import { useThemeColor } from "../hooks/useThemeColor";
 interface BookshelfViewProps {
   onSelectBook?: (book: Book) => void;
   headerTitle?: string;
+  refreshTrigger?: number;
 }
 
 const BookshelfView: React.FC<BookshelfViewProps> = ({
   onSelectBook,
   headerTitle,
+  refreshTrigger = 0,
 }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const backgroundColor = useThemeColor({}, "background");
 
-  useEffect(() => {
-    loadBooks();
-  }, []);
-
-  const loadBooks = async () => {
+  const loadBooks = useCallback(async () => {
     const savedBooks = await BookStorageService.getAllBooks();
     setBooks(savedBooks);
-  };
+  }, []);
+
+  useEffect(() => {
+    loadBooks();
+  }, [loadBooks, refreshTrigger]);
 
   const renderItem = ({ item }: { item: Book }) => (
     <View style={styles.bookItem}>
@@ -63,6 +65,8 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
         numColumns={2}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={renderHeader}
+        onRefresh={loadBooks}
+        refreshing={false}
       />
     </SafeAreaView>
   );
@@ -71,7 +75,6 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   listContainer: {
     padding: 10,
