@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, FlatList, StyleSheet, Image, Text } from "react-native";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  Image,
+  Text,
+  Dimensions,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -42,7 +49,9 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
         <Text style={[styles.title, { color: textColor }]} numberOfLines={2}>
           {item.title}
         </Text>
-        <Text style={[styles.author, { color: textColor }]}>{item.author}</Text>
+        <Text style={[styles.author, { color: textColor }]} numberOfLines={1}>
+          {item.author}
+        </Text>
       </View>
     </View>
   );
@@ -68,7 +77,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
         data={books}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        numColumns={2}
+        numColumns={3}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={renderHeader}
         onRefresh={loadBooks}
@@ -78,38 +87,45 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
   );
 };
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const COLUMN_COUNT = 3;
+const ITEM_MARGIN = 4;
+const ITEM_WIDTH =
+  (SCREEN_WIDTH - (COLUMN_COUNT + 1) * ITEM_MARGIN * 2) / COLUMN_COUNT;
+const COVER_ASPECT_RATIO = 1.5; // 一般的な本の表紙の縦横比（高さ/幅）
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   listContainer: {
-    padding: 10,
+    padding: ITEM_MARGIN,
   },
   bookItem: {
-    flex: 1,
-    margin: 5,
-    padding: 10,
+    margin: ITEM_MARGIN,
+    padding: ITEM_MARGIN,
     borderRadius: 8,
     alignItems: "center",
-    maxWidth: "50%",
+    width: ITEM_WIDTH,
   },
   coverImage: {
-    width: 120,
-    height: 180,
+    width: ITEM_WIDTH - ITEM_MARGIN * 4,
+    height: (ITEM_WIDTH - ITEM_MARGIN * 4) * COVER_ASPECT_RATIO,
     borderRadius: 4,
   },
   bookInfo: {
-    marginTop: 8,
+    marginTop: 4,
     alignItems: "center",
+    width: "100%",
   },
   title: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   author: {
-    fontSize: 12,
+    fontSize: 10,
     opacity: 0.7,
   },
   headerContainer: {
