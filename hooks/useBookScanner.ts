@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert } from "react-native";
-import { searchBookByIsbn } from "@/services/bookSearch";
+import { RakutenBookService } from "@/services/RakutenBookService";
 
 interface UseBookScannerProps {
   onClose: () => void;
@@ -30,9 +30,9 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
           text: "検索する",
           onPress: async () => {
             try {
-              const bookInfo = await searchBookByIsbn(isbn);
+              const book = await RakutenBookService.searchByIsbn(isbn);
 
-              if (!bookInfo) {
+              if (!book) {
                 Alert.alert(
                   "書籍が見つかりません",
                   `ISBN ${isbn} に一致する書籍が見つかりませんでした。`,
@@ -43,12 +43,36 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
 
               Alert.alert(
                 "書籍情報",
-                `タイトル: ${bookInfo.title}\n著者: ${bookInfo.author}`,
+                `タイトル: ${book.title}\n著者: ${book.author}\n\nこの本を本棚に追加しますか？`,
                 [
                   {
-                    text: "OK",
-                    onPress: () => {
-                      onClose();
+                    text: "キャンセル",
+                    style: "cancel",
+                  },
+                  {
+                    text: "追加する",
+                    onPress: async () => {
+                      try {
+                        await RakutenBookService.searchAndSaveBook(isbn);
+                        Alert.alert(
+                          "保存完了",
+                          `「${book.title}」を本棚に追加しました。`,
+                          [
+                            {
+                              text: "OK",
+                              onPress: () => {
+                                onClose();
+                              },
+                            },
+                          ]
+                        );
+                      } catch (error) {
+                        Alert.alert(
+                          "エラー",
+                          "本の保存中にエラーが発生しました。",
+                          [{ text: "OK" }]
+                        );
+                      }
                     },
                   },
                 ]
