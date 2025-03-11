@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import BarcodeScanner from "./BarcodeScanner";
 import ImagePreview from "./ImagePreview";
 import PermissionRequest from "./PermissionRequest";
+import { RAKUTEN_APP_ID } from "@env";
 
 interface CameraModalProps {
   isVisible: boolean;
@@ -64,9 +65,10 @@ const CameraModal: React.FC<CameraModalProps> = ({
               // setIsLoading(true) は既に上部で設定済み
               setError(null);
 
-              // Google Books APIを使ってISBNで書籍情報を検索する処理を実装
+              // 楽天APIを使ってISBNで書籍情報を検索する処理を実装
+              const applicationId = RAKUTEN_APP_ID; // .envファイルから読み込む
               const response = await fetch(
-                `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
+                `https://app.rakuten.co.jp/services/api/BooksTotal/Search/20170404?format=json&isbn=${isbn}&applicationId=${applicationId}`
               );
 
               if (!response.ok) {
@@ -76,10 +78,10 @@ const CameraModal: React.FC<CameraModalProps> = ({
               }
 
               const data = await response.json();
-              console.log("Google Books API response:", data); // Debug logging
+              console.log("楽天API response:", data); // Debug logging
 
               // Check if the response has items (books found)
-              if (!data.items || data.items.length === 0) {
+              if (!data.Items || data.Items.length === 0) {
                 Alert.alert(
                   "書籍が見つかりません",
                   `ISBN ${isbn} に一致する書籍が見つかりませんでした。`,
@@ -90,16 +92,14 @@ const CameraModal: React.FC<CameraModalProps> = ({
               }
 
               // 書籍情報を取得できた場合の処理
-              const bookInfo = data.items[0].volumeInfo;
+              const bookInfo = data.Items[0].Item;
               console.log("Book info:", bookInfo);
 
               // ここで書籍情報を使った処理を行う
-              // 例: タイトル、著者、説明などを表示または保存
-
               Alert.alert(
                 "書籍情報",
                 `タイトル: ${bookInfo.title || "不明"}\n著者: ${
-                  bookInfo.authors ? bookInfo.authors.join(", ") : "不明"
+                  bookInfo.author || "不明"
                 }`,
                 [
                   {
