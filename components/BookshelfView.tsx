@@ -21,6 +21,8 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
 }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const backgroundColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
+  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
 
   const loadBooks = useCallback(async () => {
     const savedBooks = await BookStorageService.getAllBooks();
@@ -32,13 +34,15 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
   }, [loadBooks, refreshTrigger]);
 
   const renderItem = ({ item }: { item: Book }) => (
-    <View style={styles.bookItem}>
+    <View
+      style={[styles.bookItem, { backgroundColor: secondaryBackgroundColor }]}
+    >
       <Image source={{ uri: item.coverImage }} style={styles.coverImage} />
       <View style={styles.bookInfo}>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.title, { color: textColor }]} numberOfLines={2}>
           {item.title}
         </Text>
-        <Text style={styles.author}>{item.author}</Text>
+        <Text style={[styles.author, { color: textColor }]}>{item.author}</Text>
       </View>
     </View>
   );
@@ -48,7 +52,9 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
 
     return (
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>{headerTitle}</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>
+          {headerTitle}
+        </Text>
       </View>
     );
   };
@@ -83,7 +89,6 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 5,
     padding: 10,
-    backgroundColor: "#f8f8f8",
     borderRadius: 8,
     alignItems: "center",
     maxWidth: "50%",
@@ -105,7 +110,7 @@ const styles = StyleSheet.create({
   },
   author: {
     fontSize: 12,
-    color: "#666",
+    opacity: 0.7,
   },
   headerContainer: {
     paddingHorizontal: 8,
