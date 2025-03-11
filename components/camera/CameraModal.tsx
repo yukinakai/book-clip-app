@@ -14,7 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 import BarcodeScanner from "./BarcodeScanner";
 import ImagePreview from "./ImagePreview";
 import PermissionRequest from "./PermissionRequest";
-import { RAKUTEN_APP_ID } from "@env";
 
 interface CameraModalProps {
   isVisible: boolean;
@@ -66,7 +65,7 @@ const CameraModal: React.FC<CameraModalProps> = ({
               setError(null);
 
               // 楽天APIを使ってISBNで書籍情報を検索する処理を実装
-              const applicationId = RAKUTEN_APP_ID; // .envファイルから読み込む
+              const applicationId = process.env.EXPO_PUBLIC_RAKUTEN_APP_ID; // Expoの環境変数から読み込む
               const response = await fetch(
                 `https://app.rakuten.co.jp/services/api/BooksTotal/Search/20170404?format=json&isbn=${isbn}&applicationId=${applicationId}`
               );
