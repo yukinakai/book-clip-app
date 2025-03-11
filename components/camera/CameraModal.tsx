@@ -66,9 +66,38 @@ const CameraModal: React.FC<CameraModalProps> = ({
 
               // 楽天APIを使ってISBNで書籍情報を検索する処理を実装
               const applicationId = process.env.EXPO_PUBLIC_RAKUTEN_APP_ID; // Expoの環境変数から読み込む
-              const response = await fetch(
-                `https://app.rakuten.co.jp/services/api/BooksTotal/Search/20170404?format=json&isbn=${isbn}&applicationId=${applicationId}`
-              );
+
+              // アプリケーションIDが設定されているか確認
+              if (!applicationId) {
+                throw new Error(
+                  "楽天アプリケーションIDが設定されていません。環境変数EXPO_PUBLIC_RAKUTEN_APP_IDを確認してください。"
+                );
+              }
+
+              // ISBNコードの整形（ハイフンを削除し、13桁の数字のみにする）
+              const formattedIsbn = isbn.replace(/[^0-9]/g, "");
+
+              // ISBNの形式チェック
+              if (formattedIsbn.length !== 13 || !/^\d+$/.test(formattedIsbn)) {
+                throw new Error(
+                  `無効なISBN形式です: ${formattedIsbn}。13桁の数字が必要です。`
+                );
+              }
+
+              // デバッグ情報を追加
+              console.log("元のISBN:", isbn);
+              console.log("整形後ISBN:", formattedIsbn);
+              console.log("環境変数 applicationId:", applicationId);
+
+              // パラメータ名をisbnjに修正（楽天APIの仕様通り）
+              const apiUrl = `https://app.rakuten.co.jp/services/api/BooksTotal/Search/20170404?format=json&isbnjan=${formattedIsbn}&applicationId=${applicationId}`;
+              console.log("API URL:", apiUrl);
+
+              const response = await fetch(apiUrl);
+
+              // レスポンスの詳細情報も出力
+              console.log("Response status:", response.status);
+              console.log("Response statusText:", response.statusText);
 
               if (!response.ok) {
                 throw new Error(
