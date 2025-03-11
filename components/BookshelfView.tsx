@@ -1,69 +1,84 @@
-import React from 'react';
-import { FlatList, StyleSheet, View, Text } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Book } from '../constants/MockData';
-import BookItem from './BookItem';
-import { useThemeColor } from '../hooks/useThemeColor';
+import React, { useEffect, useState } from "react";
+import { View, FlatList, StyleSheet, Image, Text } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { Book } from "../constants/MockData";
+import { BookStorageService } from "../services/BookStorageService";
+import { useThemeColor } from "../hooks/useThemeColor";
 
-interface BookshelfViewProps {
-  books: Book[];
-  onSelectBook: (book: Book) => void;
-  headerTitle?: string;
-}
+export const BookshelfView: React.FC = () => {
+  const [books, setBooks] = useState<Book[]>([]);
 
-export default function BookshelfView({ books, onSelectBook, headerTitle }: BookshelfViewProps) {
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const insets = useSafeAreaInsets();
+  useEffect(() => {
+    loadBooks();
+  }, []);
 
-  const renderHeader = () => {
-    if (!headerTitle) return null;
-    
-    return (
-      <View style={styles.headerContainer}>
-        <Text style={[styles.headerTitle, { color: textColor }]}>{headerTitle}</Text>
-      </View>
-    );
+  const loadBooks = async () => {
+    const savedBooks = await BookStorageService.getAllBooks();
+    setBooks(savedBooks);
   };
 
+  const renderItem = ({ item }: { item: Book }) => (
+    <View style={styles.bookItem}>
+      <Image source={{ uri: item.coverImage }} style={styles.coverImage} />
+      <View style={styles.bookInfo}>
+        <Text style={styles.title} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <Text style={styles.author}>{item.author}</Text>
+      </View>
+    </View>
+  );
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <FlatList
         data={books}
-        renderItem={({ item }) => <BookItem book={item} onPress={onSelectBook} />}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        numColumns={3}
-        contentContainerStyle={[
-          styles.listContent,
-          // タブバーの高さ + 追加のパディングを確保
-          { paddingBottom: 80 + insets.bottom }
-        ]}
-        columnWrapperStyle={styles.columnWrapper}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={renderHeader}
+        numColumns={2}
+        contentContainerStyle={styles.listContainer}
       />
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
-  listContent: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+  listContainer: {
+    padding: 10,
   },
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: 12,
+  bookItem: {
+    flex: 1,
+    margin: 5,
+    padding: 10,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 8,
+    alignItems: "center",
+    maxWidth: "50%",
   },
-  headerContainer: {
-    paddingHorizontal: 8,
-    marginBottom: 16,
+  coverImage: {
+    width: 120,
+    height: 180,
+    borderRadius: 4,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+  bookInfo: {
+    marginTop: 8,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  author: {
+    fontSize: 12,
+    color: "#666",
   },
 });
