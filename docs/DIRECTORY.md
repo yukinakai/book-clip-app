@@ -81,6 +81,7 @@
 │   │   └── (tabs)
 │   │       └── index.test.tsx
 │   ├── components
+│   │   ├── BarcodeScanner.test.tsx
 │   │   ├── BookItem.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── ThemedText-test.tsx
@@ -93,4 +94,4 @@
 └── types
     └── env.d.ts
 
-24 directories, 70 files
+24 directories, 71 files
