@@ -14,14 +14,17 @@ jest.mock("../../services/BookStorageService", () => ({
 jest.mock("react-native/Libraries/Lists/FlatList", () => {
   return function MockFlatList(props: any) {
     return (
+      // @ts-ignore - テスト環境ではtestIDを使用するため型チェックを無視
       <div testID="flatlist">
         {props.data.map((item: any, index: number) => (
+          // @ts-ignore - テスト環境ではtestIDを使用するため型チェックを無視
           <div key={index} testID="flatlist-item">
             {props.renderItem({ item, index })}
           </div>
         ))}
         {props.ListHeaderComponent && props.ListHeaderComponent()}
-        <button testID="refresh-button" />
+        {/* @ts-ignore - テスト環境ではtestIDを使用するため型チェックを無視 */}
+        <button testID="refresh-button" onClick={props.onRefresh} />
       </div>
     );
   };
