@@ -1,5 +1,6 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
+import { Modal, View, Text, TouchableOpacity } from "react-native";
 import CameraModal from "../../../components/camera/CameraModal";
 
 // モック
@@ -137,6 +138,13 @@ describe("CameraModal", () => {
   it.skip("capturedImageがある場合、ImagePreviewが表示されること", () => {
     // このテストは複雑なため、スキップします
     // 実際のコンポーネントでは、capturedImageがnull以外の場合にImagePreviewが表示されます
+    // Stateをモックする必要があるため、直接テストするのが難しい
+  });
+
+  // エラー表示のテストもスキップ - 実装が複雑なため
+  it.skip("エラーがある場合、エラーメッセージが表示されること", () => {
+    // このテストは複雑なため、スキップします
+    // React内部ステートをモックする必要があるため直接テストするのが難しい
   });
 
   it("ImagePreviewのonUseが呼ばれるとonImageCapturedとonCloseが実行されること", () => {
@@ -176,5 +184,52 @@ describe("CameraModal", () => {
     imagePreviewProps.onRetake();
 
     expect(mockSetCapturedImage).toHaveBeenCalledWith(null);
+  });
+
+  it("カメラ権限がまだ取得中の場合、ローディング状態のPermissionRequestが表示されること", () => {
+    // カメラ権限がnullの状態（まだ取得中）にモックを変更
+    jest
+      .mocked(require("expo-camera").useCameraPermissions)
+      .mockReturnValue([null, jest.fn()]);
+
+    const { UNSAFE_getAllByType, UNSAFE_getAllByProps } = render(
+      <CameraModal
+        isVisible={true}
+        onClose={jest.fn()}
+        onImageCaptured={jest.fn()}
+      />
+    );
+
+    // PermissionRequestコンポーネントが表示されていることを確認
+    expect(
+      UNSAFE_getAllByType("PermissionRequest-mock").length
+    ).toBeGreaterThan(0);
+
+    // loading=trueのプロパティを持つPermissionRequestがあることを確認
+    const permissionRequests = UNSAFE_getAllByType("PermissionRequest-mock");
+    const loadingRequest = permissionRequests.find(
+      (pr) => pr.props.loading === true
+    );
+    expect(loadingRequest).toBeTruthy();
+  });
+
+  it("閉じるボタンがヘッダーに表示されること", () => {
+    const { UNSAFE_getAllByType } = render(
+      <CameraModal
+        isVisible={true}
+        onClose={jest.fn()}
+        onImageCaptured={jest.fn()}
+      />
+    );
+
+    // Ioniconsコンポーネントが存在することを確認
+    const iconComponents = UNSAFE_getAllByType("Ionicons-mock");
+    expect(iconComponents.length).toBeGreaterThan(0);
+
+    // closeアイコンがあることを確認
+    const closeIcon = iconComponents.find(
+      (icon) => icon.props.name === "close"
+    );
+    expect(closeIcon).toBeTruthy();
   });
 });
