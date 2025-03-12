@@ -8,4 +8,9 @@ module.exports = {
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest",
   },
+  moduleNameMapper: {
+    "@react-native-async-storage/async-storage":
+      "<rootDir>/tests/__mocks__/@react-native-async-storage/async-storage.js",
+  },
+  setupFiles: ["<rootDir>/tests/setup.js"],
 };
