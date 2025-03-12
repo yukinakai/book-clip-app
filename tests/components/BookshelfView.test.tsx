@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
+import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import BookshelfView from "../../components/BookshelfView";
 import { Book } from "../../constants/MockData";
 
@@ -36,58 +36,71 @@ jest.mock("../../components/BookItem", () => {
 });
 
 // BookStorageServiceのモック
+const mockBooks: Book[] = [
+  {
+    id: "1",
+    title: "Test Book 1",
+    author: "Author 1",
+    coverImage: "https://example.com/image1.jpg",
+  },
+  {
+    id: "2",
+    title: "Test Book 2",
+    author: "Author 2",
+    coverImage: "https://example.com/image2.jpg",
+  },
+];
+
 jest.mock("../../services/BookStorageService", () => ({
-  getBooks: jest.fn(() => Promise.resolve([])),
-  saveBook: jest.fn(() => Promise.resolve()),
-  removeBook: jest.fn(() => Promise.resolve()),
+  BookStorageService: {
+    getAllBooks: jest.fn().mockResolvedValue([
+      {
+        id: "1",
+        title: "Test Book 1",
+        author: "Author 1",
+        coverImage: "https://example.com/image1.jpg",
+      },
+      {
+        id: "2",
+        title: "Test Book 2",
+        author: "Author 2",
+        coverImage: "https://example.com/image2.jpg",
+      },
+    ]),
+  },
 }));
 
 describe.skip("BookshelfView", () => {
-  const mockBooks: Book[] = [
-    {
-      id: "1",
-      title: "Test Book 1",
-      author: "Author 1",
-      coverImage: "https://example.com/image1.jpg",
-    },
-    {
-      id: "2",
-      title: "Test Book 2",
-      author: "Author 2",
-      coverImage: "https://example.com/image2.jpg",
-    },
-  ];
-
   const mockOnSelectBook = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("renders without header title", () => {
+  it("renders without header title", async () => {
     const { queryByText } = render(
-      <BookshelfView books={mockBooks} onSelectBook={mockOnSelectBook} />
+      <BookshelfView onSelectBook={mockOnSelectBook} />
     );
 
     expect(queryByText("My Books")).toBeNull();
   });
 
-  it("renders with header title", () => {
+  it("renders with header title", async () => {
     const { getByText } = render(
-      <BookshelfView
-        books={mockBooks}
-        onSelectBook={mockOnSelectBook}
-        headerTitle="My Books"
-      />
+      <BookshelfView onSelectBook={mockOnSelectBook} headerTitle="My Books" />
     );
 
     expect(getByText("My Books")).toBeTruthy();
   });
 
-  it("calls onSelectBook when a book is pressed", () => {
+  it("calls onSelectBook when a book is pressed", async () => {
     const { getAllByTestId } = render(
-      <BookshelfView books={mockBooks} onSelectBook={mockOnSelectBook} />
+      <BookshelfView onSelectBook={mockOnSelectBook} />
     );
+
+    await waitFor(() => {
+      expect(getAllByTestId("book-item").length).toBe(2);
+    });
 
     const firstBookItem = getAllByTestId("book-item")[0];
     fireEvent.press(firstBookItem);
@@ -95,19 +108,27 @@ describe.skip("BookshelfView", () => {
     expect(mockOnSelectBook).toHaveBeenCalledWith(mockBooks[0]);
   });
 
-  it("renders books correctly", () => {
+  it("renders books correctly", async () => {
     const { getAllByTestId } = render(
-      <BookshelfView books={mockBooks} onSelectBook={mockOnSelectBook} />
+      <BookshelfView onSelectBook={mockOnSelectBook} />
     );
 
-    expect(getAllByTestId("book-item").length).toBe(2);
+    await waitFor(() => {
+      expect(getAllByTestId("book-item").length).toBe(2);
+    });
   });
 
-  it("renders no books when empty array is provided", () => {
-    const { queryAllByTestId } = render(
-      <BookshelfView books={[]} onSelectBook={mockOnSelectBook} />
+  it("renders no books when getAllBooks returns empty array", async () => {
+    require("../../services/BookStorageService").BookStorageService.getAllBooks.mockResolvedValueOnce(
+      []
     );
 
-    expect(queryAllByTestId("book-item").length).toBe(0);
+    const { queryAllByTestId } = render(
+      <BookshelfView onSelectBook={mockOnSelectBook} />
+    );
+
+    await waitFor(() => {
+      expect(queryAllByTestId("book-item").length).toBe(0);
+    });
   });
 });
