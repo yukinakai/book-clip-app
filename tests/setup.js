@@ -11,4 +11,27 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   mergeItem: jest.fn(() => Promise.resolve()),
 }));
 
+// Expo関連のモック
+jest.mock("@expo/vector-icons", () => {
+  const { View } = require("react-native");
+  return {
+    Ionicons: () => <View />,
+    MaterialIcons: () => <View />,
+    FontAwesome: () => <View />,
+    // 他のアイコンライブラリも必要に応じて追加
+  };
+});
+
+// Expoモジュールのモック
+jest.mock("expo-constants", () => ({
+  manifest: {
+    extra: {
+      RAKUTEN_APP_ID: "test-app-id",
+    },
+  },
+}));
+
+// プロセス環境変数のモック
+process.env = Object.assign(process.env, { EXPO_OS: "ios" });
+
 // 他のモックやグローバル設定をここに追加
