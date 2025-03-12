@@ -1,20 +1,25 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { Alert, View } from "react-native";
+import { Alert } from "react-native";
 import BarcodeScanner from "../../components/BarcodeScanner";
 
 // BarCodeScannerのモック
-jest.mock("expo-barcode-scanner", () => ({
-  BarCodeScanner: jest.fn(({ onBarCodeScanned, style }) => {
-    return (
-      <View
-        testID="barcode-scanner"
-        style={style}
-        onPress={(data) => onBarCodeScanned({ data })}
-      />
-    );
-  }),
-}));
+jest.mock("expo-barcode-scanner", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+
+  return {
+    BarCodeScanner: jest.fn(({ onBarCodeScanned, style }) => {
+      return (
+        <View
+          testID="barcode-scanner"
+          style={style}
+          onPress={(data) => onBarCodeScanned({ data })}
+        />
+      );
+    }),
+  };
+});
 
 // RakutenBookServiceのモック
 jest.mock("../../services/RakutenBookService", () => ({
