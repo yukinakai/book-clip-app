@@ -1,0 +1,53 @@
+---
+description: このプロジェクトのコーディングルール
+globs: ["*.ts", "*.tsx"]
+alwaysApply: true
+---
+
+# Book Clip App コーディングルール
+
+## プロジェクト構造
+- `app/`: Expo Routerベースのアプリケーションルートと画面
+- `components/`: 再利用可能なUIコンポーネント
+- `services/`: データ操作や外部APIとの通信を担当するサービス
+- `hooks/`: カスタムReactフック
+- `constants/`: 定数、型定義、モックデータ
+- `assets/`: 画像やフォントなどの静的リソース
+- `tests/`: テストファイル（Jest + React Testing Library）
+
+## 命名規則
+- **ファイル名**: PascalCase（コンポーネント）、camelCase（ユーティリティ、フック）
+- **コンポーネント**: PascalCase (`BookItem.tsx`)
+- **インターフェース**: PascalCase + 'Props' サフィックス (`BookItemProps`)
+- **サービス**: PascalCase + 'Service' サフィックス (`BookStorageService`)
+- **テストファイル**: 対象ファイル名 + `.test.tsx` または `-test.tsx`
+
+## コンポーネント実装
+- 関数コンポーネントを使用し、アロー関数ではなく `function` キーワードを優先
+- Props型はインターフェースで定義
+- スタイルはコンポーネントファイル内で `StyleSheet.create()` を使用
+- React Hooksのルールに従う
+- コンポーネントにはテスト用の `testID` 属性を追加
+
+## TypeScript
+- 明示的な型定義を使用
+- 暗黙的な `any` 型は避ける
+- インターフェースを適切に活用
+- 関数の戻り値の型を明示する
+
+## テスト
+- Jest + React Testing Libraryを使用
+- 各コンポーネントの主要機能をテスト
+- モックを適切に使用する
+- テスト名は日本語の説明文スタイル（`"〜されること"`）
+- 各テストケースは独立して実行できるようにする
+
+## エラーハンドリング
+- try/catchでエラーを適切に処理
+- エラーログを出力し、必要に応じてユーザーにフィードバック
+- 非同期処理のエラーハンドリングを適切に行う
+
+## コメント
+- 複雑なロジックには日本語でコメントを記述
+- 関数の引数や戻り値が不明確な場合はJSDocスタイルのコメントを追加
+- TODOコメントには担当者と期限を含める
