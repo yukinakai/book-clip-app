@@ -1,16 +1,15 @@
 .
-├── .clineignore
-├── .expo
-│   ├── README.md
-│   ├── devices.json
-│   └── types
-│       └── router.d.ts
+├── .cursor
+│   └── rules
+│       ├── coding-rule.mdc
+│       └── jest-testing-guide.mdc
+├── .cursorignore
+├── .env
+├── .env.sample
 ├── .gitignore
 ├── README.md
 ├── app
 │   ├── (tabs)
-│   │   ├── __tests__
-│   │   │   └── index.test.tsx
 │   │   ├── _layout.tsx
 │   │   ├── explore.tsx
 │   │   └── index.tsx
@@ -31,6 +30,7 @@
 │       └── splash-icon.png
 ├── babel.config.js
 ├── components
+│   ├── BarcodeScanner.tsx
 │   ├── BookItem.tsx
 │   ├── BookshelfView.tsx
 │   ├── Collapsible.tsx
@@ -40,10 +40,11 @@
 │   ├── ParallaxScrollView.tsx
 │   ├── ThemedText.tsx
 │   ├── ThemedView.tsx
-│   ├── __tests__
-│   │   ├── ThemedText-test.tsx
-│   │   └── __snapshots__
-│   │       └── ThemedText-test.tsx.snap
+│   ├── camera
+│   │   ├── BarcodeScanner.tsx
+│   │   ├── CameraModal.tsx
+│   │   ├── ImagePreview.tsx
+│   │   └── PermissionRequest.tsx
 │   └── ui
 │       ├── IconSymbol.ios.tsx
 │       ├── IconSymbol.tsx
@@ -56,9 +57,11 @@
 │   ├── ARCHITECTURE.md
 │   ├── DIRECTORY.md
 │   ├── PRD.md
-│   └── PRODUCT_OVERVIEW.md
+│   ├── PRODUCT_OVERVIEW.md
+│   └── PROGRESS.md
 ├── expo-env.d.ts
 ├── hooks
+│   ├── useBookScanner.ts
 │   ├── useColorScheme.ts
 │   ├── useColorScheme.web.ts
 │   └── useThemeColor.ts
@@ -67,7 +70,32 @@
 ├── package.json
 ├── scripts
 │   └── reset-project.js
-├── test-utils.tsx
-└── tsconfig.json
+├── services
+│   ├── BookStorageService.ts
+│   ├── RakutenBookService.ts
+│   └── bookSearch.ts
+├── tests
+│   ├── __mocks__
+│   │   └── @react-native-async-storage
+│   │       └── async-storage.js
+│   ├── app
+│   │   └── (tabs)
+│   │       └── index.test.tsx
+│   ├── components
+│   │   ├── BarcodeScanner.test.tsx
+│   │   ├── BookItem.test.tsx
+│   │   ├── BookshelfView.test.tsx
+│   │   ├── ThemedText-test.tsx
+│   │   ├── __snapshots__
+│   │   │   └── ThemedText-test.tsx.snap
+│   │   └── camera
+│   │       ├── BarcodeScanner.test.tsx
+│   │       └── CameraModal.test.tsx
+│   ├── jest.config.js
+│   ├── setup.js
+│   └── test-utils.tsx
+├── tsconfig.json
+└── types
+    └── env.d.ts
 
-17 directories, 54 files
+25 directories, 74 files

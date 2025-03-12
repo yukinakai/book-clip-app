@@ -1,62 +1,132 @@
-import React from 'react';
-import { FlatList, StyleSheet, View, Text } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Book } from '../constants/MockData';
-import BookItem from './BookItem';
-import { useThemeColor } from '../hooks/useThemeColor';
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  Image,
+  Text,
+  Dimensions,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { Book } from "../constants/MockData";
+import { BookStorageService } from "../services/BookStorageService";
+import { useThemeColor } from "../hooks/useThemeColor";
 
 interface BookshelfViewProps {
-  books: Book[];
-  onSelectBook: (book: Book) => void;
+  onSelectBook?: (book: Book) => void;
   headerTitle?: string;
+  refreshTrigger?: number;
 }
 
-export default function BookshelfView({ books, onSelectBook, headerTitle }: BookshelfViewProps) {
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const insets = useSafeAreaInsets();
+const BookshelfView: React.FC<BookshelfViewProps> = ({
+  onSelectBook,
+  headerTitle,
+  refreshTrigger = 0,
+}) => {
+  const [books, setBooks] = useState<Book[]>([]);
+  const backgroundColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
+  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+
+  const loadBooks = useCallback(async () => {
+    const savedBooks = await BookStorageService.getAllBooks();
+    setBooks(savedBooks);
+  }, []);
+
+  useEffect(() => {
+    loadBooks();
+  }, [loadBooks, refreshTrigger]);
+
+  const renderItem = ({ item }: { item: Book }) => (
+    <View
+      style={[styles.bookItem, { backgroundColor: secondaryBackgroundColor }]}
+    >
+      <Image source={{ uri: item.coverImage }} style={styles.coverImage} />
+      <View style={styles.bookInfo}>
+        <Text style={[styles.title, { color: textColor }]} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <Text style={[styles.author, { color: textColor }]} numberOfLines={1}>
+          {item.author}
+        </Text>
+      </View>
+    </View>
+  );
 
   const renderHeader = () => {
     if (!headerTitle) return null;
-    
+
     return (
       <View style={styles.headerContainer}>
-        <Text style={[styles.headerTitle, { color: textColor }]}>{headerTitle}</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>
+          {headerTitle}
+        </Text>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor }]}
+      edges={["top"]}
+    >
       <FlatList
         data={books}
-        renderItem={({ item }) => <BookItem book={item} onPress={onSelectBook} />}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={3}
-        contentContainerStyle={[
-          styles.listContent,
-          // タブバーの高さ + 追加のパディングを確保
-          { paddingBottom: 80 + insets.bottom }
-        ]}
-        columnWrapperStyle={styles.columnWrapper}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContainer}
         ListHeaderComponent={renderHeader}
+        onRefresh={loadBooks}
+        refreshing={false}
       />
     </SafeAreaView>
   );
-}
+};
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const COLUMN_COUNT = 3;
+const ITEM_MARGIN = 4;
+const ITEM_WIDTH =
+  (SCREEN_WIDTH - (COLUMN_COUNT + 1) * ITEM_MARGIN * 2) / COLUMN_COUNT;
+const COVER_ASPECT_RATIO = 1.5; // 一般的な本の表紙の縦横比（高さ/幅）
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  listContent: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+  listContainer: {
+    padding: ITEM_MARGIN,
   },
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: 12,
+  bookItem: {
+    margin: ITEM_MARGIN,
+    padding: ITEM_MARGIN,
+    borderRadius: 8,
+    alignItems: "center",
+    width: ITEM_WIDTH,
+  },
+  coverImage: {
+    width: ITEM_WIDTH - ITEM_MARGIN * 4,
+    height: (ITEM_WIDTH - ITEM_MARGIN * 4) * COVER_ASPECT_RATIO,
+    borderRadius: 4,
+  },
+  bookInfo: {
+    marginTop: 4,
+    alignItems: "center",
+    width: "100%",
+  },
+  title: {
+    fontSize: 12,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 2,
+  },
+  author: {
+    fontSize: 10,
+    opacity: 0.7,
   },
   headerContainer: {
     paddingHorizontal: 8,
@@ -64,6 +134,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
+
+export default BookshelfView;

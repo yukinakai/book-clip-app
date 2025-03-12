@@ -1,0 +1,119 @@
+---
+description: React Native + Jest テスト作成ガイドライン
+globs: *.test.tsx
+alwaysApply: false
+---
+# React Native + Jest テスト作成ガイドライン
+
+## モックに関する重要な制約
+
+### 1. モック関数内での外部変数参照の制限
+
+Jest の`jest.mock()`内では、モック関数の外部で定義された変数を参照することができません。以下のようなコードはエラーになります：
+
+```typescript
+// ❌ エラー: モック内でViewなどの外部変数を参照
+import { View, Text } from "react-native";
+
+jest.mock("some-module", () => ({
+  SomeComponent: () => (
+    <View>
+      <Text>Mock</Text>
+    </View>
+  ), // エラー！
+}));
+```
+
+### 2. 正しいモックの書き方
+
+代わりに、モック内で必要なモジュールを`require`で取得します：
+
+```typescript
+// ✅ 正しい方法: requireを使用
+jest.mock("some-module", () => {
+  const React = require("react");
+  const { View, Text } = require("react-native");
+
+  return {
+    SomeComponent: () =>
+      React.createElement(View, null, React.createElement(Text, null, "Mock")),
+  };
+});
+```
+
+### 3. モックの順序とタイミング
+
+モックは必ず実際のインポートより前に定義する必要があります：
+
+```typescript
+// ✅ 正しい順序
+jest.mock('react-native', () => { ... });
+jest.mock('some-library', () => { ... });
+
+// モック定義後にインポート
+import { Component } from './component';
+```
+
+## React Native のテストのベストプラクティス
+
+### 1. StyleSheet のモック
+
+StyleSheet は単純にスタイルオブジェクトを返すようにモックします：
+
+```typescript
+jest.mock("react-native", () => {
+  const rn = jest.requireActual("react-native");
+  rn.StyleSheet = {
+    ...rn.StyleSheet,
+    create: (styles) => styles,
+  };
+  return rn;
+});
+```
+
+### 2. コンポーネントのモック
+
+複雑なコンポーネントは単純なモックに置き換えます：
+
+```typescript
+jest.mock("../../../components/SomeComponent", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+
+  return function MockComponent(props) {
+    return React.createElement(View, {
+      testID: "mock-component",
+      ...props,
+    });
+  };
+});
+```
+
+### 3. Animated API のモック
+
+Animated API は特に複雑なので、必要な部分だけモックします：
+
+```typescript
+rn.Animated = {
+  ...rn.Animated,
+  Value: jest.fn(() => ({
+    interpolate: jest.fn(() => ({})),
+  })),
+  timing: jest.fn(() => ({
+    start: jest.fn((cb) => cb && cb({ finished: true })),
+  })),
+  View: "Animated.View",
+};
+```
+
+## テスト実装のポイント
+
+1. **単純化が鍵**: 複雑なコンポーネントのテストは単純化することで安定性を高める
+2. **モジュールの修正より置換**: 既存のモジュールを修正するより、完全に置換する方がトラブルが少ない
+3. **テストを段階的に追加**: 一度に多くのテストケースを追加せず、動作する基本テストから徐々に拡張する
+
+## React Native Testing Library のヒント
+
+- `render`の結果から`getByTestId`を使うためには`testID`属性をコンポーネントに設定する
+- 非公開 API を使用する場合は`UNSAFE_getAllByType`などを使用する
+- 要素が存在するかを確認するには`toBeTruthy()`を使用し、存在しないことを確認するには`toBeNull()`を使用する
