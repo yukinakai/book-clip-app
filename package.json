@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "pretest": "cp .gitignore .cursorignore && jest; tree -a -I 'node_modules|.expo|.git|.DS_Store' > docs/DIRECTORY.md",
+    "pretest": "cp .gitignore .cursorignore && tree -a -I 'node_modules|.expo|.git|.DS_Store' > docs/DIRECTORY.md",
     "test": "jest --config jest.config.js",
     "test:watch": "jest --watch --config jest.config.js",
     "test:coverage": "jest --coverage --config jest.config.js",
