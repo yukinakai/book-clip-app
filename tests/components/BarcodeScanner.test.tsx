@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { Alert, View } from "react-native";
-import BarcodeScanner from "../../../components/BarcodeScanner";
+import BarcodeScanner from "../../components/BarcodeScanner";
 
 // BarCodeScannerのモック
 jest.mock("expo-barcode-scanner", () => ({
@@ -17,7 +17,7 @@ jest.mock("expo-barcode-scanner", () => ({
 }));
 
 // RakutenBookServiceのモック
-jest.mock("../../../services/RakutenBookService", () => ({
+jest.mock("../../services/RakutenBookService", () => ({
   RakutenBookService: {
     searchAndSaveBook: jest.fn(),
   },
@@ -53,7 +53,7 @@ describe("BarcodeScanner", () => {
     };
 
     // 新しい本を見つけた場合の戻り値をモック
-    require("../../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
+    require("../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
       {
         book: mockBook,
         isExisting: false,
@@ -91,7 +91,7 @@ describe("BarcodeScanner", () => {
     };
 
     // 既存の本を見つけた場合の戻り値をモック
-    require("../../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
+    require("../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
       {
         book: mockBook,
         isExisting: true,
@@ -128,7 +128,7 @@ describe("BarcodeScanner", () => {
 
   it("handles book not found error", async () => {
     // 本が見つからない場合の戻り値をモック
-    require("../../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
+    require("../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
       {
         book: null,
         isExisting: false,
@@ -155,7 +155,7 @@ describe("BarcodeScanner", () => {
 
   it("handles service error", async () => {
     // サービスエラーをシミュレート
-    require("../../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockRejectedValueOnce(
+    require("../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockRejectedValueOnce(
       new Error("API error")
     );
 
@@ -195,7 +195,7 @@ describe("BarcodeScanner", () => {
     };
 
     // 新しい本を見つけた場合の戻り値をモック
-    require("../../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
+    require("../../services/RakutenBookService").RakutenBookService.searchAndSaveBook.mockResolvedValueOnce(
       {
         book: mockBook,
         isExisting: false,
@@ -211,7 +211,7 @@ describe("BarcodeScanner", () => {
     await waitFor(() => {
       // searchAndSaveBookは1回だけ呼ばれるはず
       expect(
-        require("../../../services/RakutenBookService").RakutenBookService
+        require("../../services/RakutenBookService").RakutenBookService
           .searchAndSaveBook
       ).toHaveBeenCalledTimes(1);
     });
