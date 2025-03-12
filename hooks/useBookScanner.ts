@@ -32,6 +32,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
       setProcessedISBNs((prev) => new Set(prev).add(isbn));
       setIsLoading(true);
       setIsAlertShowing(true);
+      setIsLoading(true);
 
       Alert.alert(
         "ISBN検出",
@@ -50,9 +51,9 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
             text: "検索する",
             onPress: async () => {
               try {
-                const book = await RakutenBookService.searchByIsbn(isbn);
+                const result = await RakutenBookService.searchByIsbn(isbn);
 
-                if (!book) {
+                if (!result) {
                   Alert.alert(
                     "書籍が見つかりません",
                     `ISBN ${isbn} に一致する書籍が見つかりませんでした。`,
@@ -71,7 +72,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
 
                 Alert.alert(
                   "書籍情報",
-                  `タイトル: ${book.title}\n著者: ${book.author}\n\nこの本を本棚に追加しますか？`,
+                  `タイトル: ${result.title}\n著者: ${result.author}\n\nこの本を本棚に追加しますか？`,
                   [
                     {
                       text: "キャンセル",
@@ -85,21 +86,38 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                       text: "追加する",
                       onPress: async () => {
                         try {
-                          await RakutenBookService.searchAndSaveBook(isbn);
-                          Alert.alert(
-                            "保存完了",
-                            `「${book.title}」を本棚に追加しました。`,
-                            [
-                              {
-                                text: "OK",
-                                onPress: () => {
-                                  setIsAlertShowing(false);
-                                  isProcessingRef.current = false;
-                                  onClose();
+                          const saveResult =
+                            await RakutenBookService.searchAndSaveBook(isbn);
+                          if (saveResult.isExisting) {
+                            Alert.alert(
+                              "登録済みの本",
+                              `「${saveResult.book?.title}」は既に本棚に登録されています。`,
+                              [
+                                {
+                                  text: "OK",
+                                  onPress: () => {
+                                    setIsAlertShowing(false);
+                                    isProcessingRef.current = false;
+                                  },
                                 },
-                              },
-                            ]
-                          );
+                              ]
+                            );
+                          } else if (saveResult.book) {
+                            Alert.alert(
+                              "保存完了",
+                              `「${saveResult.book.title}」を本棚に追加しました。`,
+                              [
+                                {
+                                  text: "OK",
+                                  onPress: () => {
+                                    setIsAlertShowing(false);
+                                    isProcessingRef.current = false;
+                                    onClose();
+                                  },
+                                },
+                              ]
+                            );
+                          }
                         } catch (error) {
                           Alert.alert(
                             "エラー",
@@ -120,19 +138,15 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                   ]
                 );
               } catch (error) {
-                Alert.alert(
-                  "エラー",
-                  "書籍情報の取得に失敗しました。ネットワーク接続を確認してください。",
-                  [
-                    {
-                      text: "OK",
-                      onPress: () => {
-                        setIsAlertShowing(false);
-                        isProcessingRef.current = false;
-                      },
+                Alert.alert("エラー", "本の検索中にエラーが発生しました。", [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                      setIsAlertShowing(false);
+                      isProcessingRef.current = false;
                     },
-                  ]
-                );
+                  },
+                ]);
               } finally {
                 setIsLoading(false);
               }

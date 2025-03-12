@@ -38,14 +38,23 @@ export class RakutenBookService {
     }
   }
 
-  static async searchAndSaveBook(isbn: string): Promise<Book | null> {
+  static async searchAndSaveBook(
+    isbn: string
+  ): Promise<{ book: Book | null; isExisting: boolean }> {
     try {
       const book = await this.searchByIsbn(isbn);
       if (book) {
-        await BookStorageService.saveBook(book);
-        return book;
+        // 既存の本をチェック
+        const existingBooks = await BookStorageService.getAllBooks();
+        const isExisting = existingBooks.some((b) => b.id === book.id);
+
+        if (!isExisting) {
+          await BookStorageService.saveBook(book);
+        }
+
+        return { book, isExisting };
       }
-      return null;
+      return { book: null, isExisting: false };
     } catch (error) {
       console.error("Error searching and saving book:", error);
       throw error;

@@ -15,11 +15,21 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
     setHasScanned(true);
 
     try {
-      const book = await RakutenBookService.searchAndSaveBook(data);
-      if (book) {
-        Alert.alert("保存完了", `「${book.title}」を本棚に追加しました。`, [
-          { text: "OK", onPress: onClose },
-        ]);
+      const result = await RakutenBookService.searchAndSaveBook(data);
+      if (result.book) {
+        if (result.isExisting) {
+          Alert.alert(
+            "登録済みの本",
+            `「${result.book.title}」は既に本棚に登録されています。`,
+            [{ text: "OK", onPress: () => setHasScanned(false) }]
+          );
+        } else {
+          Alert.alert(
+            "保存完了",
+            `「${result.book.title}」を本棚に追加しました。`,
+            [{ text: "OK", onPress: onClose }]
+          );
+        }
       } else {
         Alert.alert("エラー", "本が見つかりませんでした。", [
           { text: "OK", onPress: () => setHasScanned(false) },
