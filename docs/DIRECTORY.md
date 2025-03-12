@@ -1,7 +1,8 @@
 .
 ├── .cursor
 │   └── rules
-│       └── coding-rule.mdc
+│       ├── coding-rule.mdc
+│       └── jest-testing-guide.mdc
 ├── .cursorignore
 ├── .env
 ├── .env.sample
@@ -85,8 +86,11 @@
 │   │   ├── BookItem.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── ThemedText-test.tsx
-│   │   └── __snapshots__
-│   │       └── ThemedText-test.tsx.snap
+│   │   ├── __snapshots__
+│   │   │   └── ThemedText-test.tsx.snap
+│   │   └── camera
+│   │       ├── BarcodeScanner.test.tsx
+│   │       └── CameraModal.test.tsx
 │   ├── jest.config.js
 │   ├── setup.js
 │   └── test-utils.tsx
@@ -94,4 +98,4 @@
 └── types
     └── env.d.ts
 
-24 directories, 71 files
+25 directories, 74 files
