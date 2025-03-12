@@ -5,10 +5,9 @@ import { Alert } from "react-native";
 import { Book } from "../../../constants/MockData";
 
 // Ioniconsのモック
+jest.mock("@expo/vector-icons/build/Icons/Ionicons", () => "Ionicons");
 jest.mock("@expo/vector-icons", () => ({
-  Ionicons: jest.fn().mockImplementation(({ name, size, color, style }) => {
-    return React.createElement("Text", { style }, `Icon-${name}`);
-  }),
+  Ionicons: "Ionicons",
 }));
 
 // BookStorageServiceのモック
