@@ -1,0 +1,55 @@
+---
+description: Jest モックに関する教訓(React を直接参照できないエラー
+globs: *.test.tsx
+alwaysApply: false
+---
+# Jest モックに関する教訓
+
+## React を直接参照できないエラー
+
+### 問題
+
+Jest のモックでは、React モジュールを直接参照できないことがあります。これは、Jest の実行環境と React の参照方法に関連する問題です。
+
+### 解決策
+
+以下のアプローチを検討してください：
+
+1. **モジュールモックの使用**
+
+   ```javascript
+   // 直接Reactを参照する代わりに
+   jest.mock("react", () => ({
+     ...jest.requireActual("react"),
+     // 必要な関数やフックをここでモック
+   }));
+   ```
+
+2. **テスト対象コンポーネントの依存関係を分離**
+
+   - コンポーネントの依存関係を明示的に props として渡す
+   - 依存関係を別のモジュールに抽出し、そのモジュールをモック
+
+3. **React Testing Library の活用**
+
+   - モックよりもユーザー操作をシミュレートするアプローチを優先
+   - コンポーネントの実装詳細ではなく、動作をテスト
+
+4. **jest.spyOn()の使用**
+   ```javascript
+   // Reactモジュール全体ではなく特定のメソッドをスパイ
+   jest
+     .spyOn(React, "useState")
+     .mockImplementation(() => [initialState, setState]);
+   ```
+
+### 注意点
+
+- テストでは実装詳細ではなく、コンポーネントの動作に焦点を当てる
+- 過度なモックは避け、実際の動作に近いテスト環境を維持する
+- モックが必要な場合は、最小限の範囲にとどめる
+
+### 参考リソース
+
+- [Jest 公式ドキュメント - Manual Mocks](mdc:https:/jestjs.io/docs/manual-mocks)
+- [React Testing Library - ガイド](mdc:https:/testing-library.com/docs/react-testing-library/intro)
