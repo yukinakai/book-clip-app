@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,10 @@ import {
   SafeAreaView,
   ScrollView,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Book, Clip, MOCK_CLIPS } from "../../constants/MockData";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { Book, Clip } from "../../constants/MockData";
 import { BookStorageService } from "../../services/BookStorageService";
+import { ClipStorageService } from "../../services/ClipStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
 
@@ -26,35 +27,48 @@ export default function BookDetailScreen() {
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
 
-  useEffect(() => {
-    const loadBookDetails = async () => {
-      try {
-        setLoading(true);
+  // 書籍データとクリップを読み込む
+  const loadBookDetailsAndClips = async () => {
+    try {
+      setLoading(true);
 
-        // 書籍情報を取得
-        const books = await BookStorageService.getAllBooks();
-        const foundBook = books.find((b) => b.id === id);
+      // 書籍情報を取得
+      const books = await BookStorageService.getAllBooks();
+      const foundBook = books.find((b) => b.id === id);
 
-        if (foundBook) {
-          setBook(foundBook);
+      if (foundBook) {
+        setBook(foundBook);
 
-          // 【一時的な修正】: 本来は特定の書籍のクリップだけをフィルタリングするが、
-          // テスト目的ですべてのクリップを表示する
-          // const bookClips = MOCK_CLIPS.filter((clip) => clip.bookId === id);
-          const bookClips = MOCK_CLIPS; // すべてのクリップを表示
-          setClips(bookClips);
-        }
-      } catch (error) {
-        console.error("Error loading book details:", error);
-      } finally {
-        setLoading(false);
+        // 書籍に関連するクリップを取得
+        const bookClips = await ClipStorageService.getClipsByBookId(id);
+        setClips(bookClips);
       }
-    };
-
-    if (id) {
-      loadBookDetails();
+    } catch (error) {
+      console.error("Error loading book details:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [id]);
+  };
+
+  // 画面がフォーカスされるたびにデータを再読み込み
+  useFocusEffect(
+    useCallback(() => {
+      if (id) {
+        loadBookDetailsAndClips();
+      }
+    }, [id])
+  );
+
+  const handleAddClip = () => {
+    if (book) {
+      // Expo Routerの相対パスを使用
+      router.push(
+        `/book/add-clip?bookId=${id}&bookTitle=${encodeURIComponent(
+          book.title
+        )}`
+      );
+    }
+  };
 
   const renderClipItem = ({ item }: { item: Clip }) => (
     <View
@@ -108,7 +122,9 @@ export default function BookDetailScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>マイライブラリ</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>
+          マイライブラリ
+        </Text>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
@@ -145,6 +161,7 @@ export default function BookDetailScreen() {
         style={styles.addButton}
         activeOpacity={0.8}
         testID="add-clip-button"
+        onPress={handleAddClip}
       >
         <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
