@@ -3,6 +3,7 @@
 │   └── rules
 │       ├── coding-rule.mdc
 │       ├── expo-router-testing.mdc
+│       ├── jest-mock-lessons.mdc
 │       └── jest-testing-guide.mdc
 ├── .cursorignore
 ├── .env
@@ -16,9 +17,11 @@
 │   │   └── index.tsx
 │   ├── +not-found.tsx
 │   ├── _layout.tsx
-│   └── book
-│       ├── [id].tsx
-│       └── add-clip.tsx
+│   ├── book
+│   │   ├── [id].tsx
+│   │   └── add-clip.tsx
+│   └── clip
+│       └── [id].tsx
 ├── app.json
 ├── assets
 │   ├── fonts
@@ -86,9 +89,11 @@
 │   ├── app
 │   │   ├── (tabs)
 │   │   │   └── index.test.tsx
-│   │   └── book
-│   │       ├── add-clip.test.tsx
-│   │       └── book-detail.test.tsx
+│   │   ├── book
+│   │   │   ├── add-clip.test.tsx
+│   │   │   └── book-detail.test.tsx
+│   │   └── clip
+│   │       └── clip-detail.test.tsx
 │   ├── components
 │   │   ├── BarcodeScanner.test.tsx
 │   │   ├── BookItem.test.tsx
@@ -108,4 +113,4 @@
 └── types
     └── env.d.ts
 
-28 directories, 81 files
+30 directories, 84 files

@@ -71,8 +71,13 @@ export default function BookDetailScreen() {
   };
 
   const renderClipItem = ({ item }: { item: Clip }) => (
-    <View
+    <TouchableOpacity
       style={[styles.clipItem, { backgroundColor: secondaryBackgroundColor }]}
+      onPress={() => {
+        // @ts-ignore - 動的ルーティングの型エラーを無視
+        router.push(`/clip/${item.id}`);
+      }}
+      testID={`clip-item-${item.id}`}
     >
       <View style={styles.clipContent}>
         <Text style={[styles.clipText, { color: textColor }]}>{item.text}</Text>
@@ -85,7 +90,7 @@ export default function BookDetailScreen() {
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderEmptyClipsList = () => (

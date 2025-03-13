@@ -60,4 +60,23 @@ export class ClipStorageService {
       throw error;
     }
   }
+
+  static async updateClip(updatedClip: Clip): Promise<void> {
+    try {
+      const existingClipsJson = await AsyncStorage.getItem(STORAGE_KEY);
+      const existingClips: Clip[] = existingClipsJson
+        ? JSON.parse(existingClipsJson)
+        : [];
+
+      // 更新対象のクリップを置き換え
+      const updatedClips = existingClips.map((clip) =>
+        clip.id === updatedClip.id ? updatedClip : clip
+      );
+
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClips));
+    } catch (error) {
+      console.error("Error updating clip:", error);
+      throw error;
+    }
+  }
 }
