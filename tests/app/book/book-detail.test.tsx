@@ -2,6 +2,7 @@ import React from "react";
 import { render, fireEvent, waitFor } from "../../test-utils";
 import BookDetailScreen from "../../../app/book/[id]";
 import { Book, Clip } from "../../../constants/MockData";
+import { ClipStorageService } from "../../../services/ClipStorageService";
 
 // モックデータ
 const mockBooks: Book[] = [
@@ -19,7 +20,7 @@ const mockBooks: Book[] = [
   },
 ];
 
-const mockClips = [
+const mockClips: Clip[] = [
   {
     id: "1",
     bookId: "1",
@@ -42,6 +43,11 @@ jest.mock("expo-router", () => ({
   useRouter: jest.fn().mockReturnValue({
     back: jest.fn(),
     push: jest.fn(),
+  }),
+  useFocusEffect: jest.fn().mockImplementation((callback) => {
+    // useFocusEffectのコールバックを即座に実行してテストを簡略化
+    callback();
+    return () => {};
   }),
 }));
 
@@ -68,12 +74,9 @@ jest.mock("../../../services/BookStorageService", () => ({
   },
 }));
 
-jest.mock("../../../constants/MockData", () => {
-  return {
-    Book: jest.requireActual("../../../constants/MockData").Book,
-    Clip: jest.requireActual("../../../constants/MockData").Clip,
-    MOCK_BOOKS: jest.requireActual("../../../constants/MockData").MOCK_BOOKS,
-    MOCK_CLIPS: [
+jest.mock("../../../services/ClipStorageService", () => ({
+  ClipStorageService: {
+    getClipsByBookId: jest.fn().mockResolvedValue([
       {
         id: "1",
         bookId: "1",
@@ -88,9 +91,9 @@ jest.mock("../../../constants/MockData", () => {
         page: 78,
         createdAt: "2023-06-18T14:25:00Z",
       },
-    ],
-  };
-});
+    ]),
+  },
+}));
 
 // コンソールエラーのモック
 jest.spyOn(console, "error").mockImplementation(() => {});
@@ -115,6 +118,8 @@ describe("BookDetailScreen", () => {
 
     // クリップセクションが表示されていることを確認
     expect(getByText("クリップ")).toBeTruthy();
+    expect(getByText("テストクリップ1")).toBeTruthy();
+    expect(getByText("テストクリップ2")).toBeTruthy();
   });
 
   it("書籍が見つからない場合はエラーメッセージが表示されること", async () => {
@@ -131,5 +136,55 @@ describe("BookDetailScreen", () => {
 
     // エラーメッセージが表示されていることを確認
     expect(getByText("書籍が見つかりませんでした")).toBeTruthy();
+  });
+
+  it("クリップがない場合は空のメッセージが表示されること", async () => {
+    // ClipStorageServiceのモックを一時的に変更
+    require("../../../services/ClipStorageService").ClipStorageService.getClipsByBookId.mockResolvedValueOnce(
+      []
+    );
+
+    const { getByText, queryByText } = render(<BookDetailScreen />);
+
+    await waitFor(() => {
+      expect(queryByText("読み込み中...")).toBeNull();
+    });
+
+    // 空のメッセージが表示されていることを確認
+    expect(getByText("この書籍にはまだクリップがありません")).toBeTruthy();
+  });
+
+  it("追加ボタンをタップするとクリップ追加画面に遷移すること", async () => {
+    const { getByTestId, queryByText } = render(<BookDetailScreen />);
+    const router = require("expo-router").useRouter();
+
+    await waitFor(() => {
+      expect(queryByText("読み込み中...")).toBeNull();
+    });
+
+    // 追加ボタンをタップ
+    const addButton = getByTestId("add-clip-button");
+    fireEvent.press(addButton);
+
+    // クリップ追加画面への遷移を確認
+    expect(router.push).toHaveBeenCalledWith(
+      expect.stringContaining("/book/add-clip")
+    );
+    // URLにbookIdとbookTitleが含まれていることを確認
+    expect(router.push).toHaveBeenCalledWith(
+      expect.stringContaining("bookId=1")
+    );
+    expect(router.push).toHaveBeenCalledWith(
+      expect.stringContaining("bookTitle=")
+    );
+  });
+
+  it("ClipStorageServiceからクリップを正しく取得すること", async () => {
+    render(<BookDetailScreen />);
+
+    await waitFor(() => {
+      // ClipStorageService.getClipsByBookIdが呼ばれたことを確認
+      expect(ClipStorageService.getClipsByBookId).toHaveBeenCalledWith("1");
+    });
   });
 });
