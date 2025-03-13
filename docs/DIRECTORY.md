@@ -17,7 +17,8 @@
 │   ├── +not-found.tsx
 │   ├── _layout.tsx
 │   └── book
-│       └── [id].tsx
+│       ├── [id].tsx
+│       └── add-clip.tsx
 ├── app.json
 ├── assets
 │   ├── fonts
@@ -75,6 +76,7 @@
 │   └── reset-project.js
 ├── services
 │   ├── BookStorageService.ts
+│   ├── ClipStorageService.ts
 │   ├── RakutenBookService.ts
 │   └── bookSearch.ts
 ├── tests
@@ -85,6 +87,7 @@
 │   │   ├── (tabs)
 │   │   │   └── index.test.tsx
 │   │   └── book
+│   │       ├── add-clip.test.tsx
 │   │       └── book-detail.test.tsx
 │   ├── components
 │   │   ├── BarcodeScanner.test.tsx
@@ -97,10 +100,12 @@
 │   │       ├── BarcodeScanner.test.tsx
 │   │       └── CameraModal.test.tsx
 │   ├── jest.config.js
+│   ├── services
+│   │   └── ClipStorageService.test.ts
 │   ├── setup.js
 │   └── test-utils.tsx
 ├── tsconfig.json
 └── types
     └── env.d.ts
 
-27 directories, 77 files
+28 directories, 81 files
