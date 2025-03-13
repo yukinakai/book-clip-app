@@ -9,11 +9,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ClipStorageService } from "../../services/ClipStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
+import CameraView from "../../components/CameraView";
+import OCRResultView from "../../components/OCRResultView";
 
 export default function AddClipScreen() {
   const { bookId, bookTitle } = useLocalSearchParams<{
@@ -22,6 +25,9 @@ export default function AddClipScreen() {
   }>();
   const [clipText, setClipText] = useState("");
   const [pageNumber, setPageNumber] = useState("");
+  const [showCamera, setShowCamera] = useState(false);
+  const [showOCRResult, setShowOCRResult] = useState(false);
+  const [capturedImageUri, setCapturedImageUri] = useState<string | null>(null);
   const router = useRouter();
 
   const backgroundColor = useThemeColor({}, "background");
@@ -58,6 +64,34 @@ export default function AddClipScreen() {
     }
   };
 
+  // カメラ撮影画面を表示
+  const handleShowCamera = () => {
+    setShowCamera(true);
+  };
+
+  // 撮影後の処理
+  const handleCapture = (imageUri: string) => {
+    setCapturedImageUri(imageUri);
+    setShowCamera(false);
+    setShowOCRResult(true);
+  };
+
+  // カメラキャンセル
+  const handleCameraClose = () => {
+    setShowCamera(false);
+  };
+
+  // OCR結果から取得したテキストを設定
+  const handleConfirmOCRText = (text: string) => {
+    setClipText(text);
+    setShowOCRResult(false);
+  };
+
+  // OCR結果画面を閉じる
+  const handleCancelOCR = () => {
+    setShowOCRResult(false);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <KeyboardAvoidingView
@@ -83,9 +117,19 @@ export default function AddClipScreen() {
           </Text>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: textColor }]}>
-              クリップするテキスト
-            </Text>
+            <View style={styles.labelContainer}>
+              <Text style={[styles.label, { color: textColor }]}>
+                クリップするテキスト
+              </Text>
+              <TouchableOpacity
+                style={styles.cameraButton}
+                onPress={handleShowCamera}
+                testID="camera-button"
+              >
+                <Ionicons name="camera" size={24} color="#FF4757" />
+                <Text style={styles.cameraButtonText}>写真から追加</Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               style={[
                 styles.textInput,
@@ -132,6 +176,30 @@ export default function AddClipScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* カメラモーダル */}
+      <Modal
+        visible={showCamera}
+        animationType="slide"
+        onRequestClose={handleCameraClose}
+      >
+        <CameraView onCapture={handleCapture} onClose={handleCameraClose} />
+      </Modal>
+
+      {/* OCR結果モーダル */}
+      <Modal
+        visible={showOCRResult}
+        animationType="slide"
+        onRequestClose={handleCancelOCR}
+      >
+        {capturedImageUri && (
+          <OCRResultView
+            imageUri={capturedImageUri}
+            onConfirm={handleConfirmOCRText}
+            onCancel={handleCancelOCR}
+          />
+        )}
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -169,10 +237,25 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: 24,
   },
+  labelContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
   label: {
     fontSize: 16,
-    marginBottom: 8,
     fontWeight: "500",
+  },
+  cameraButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+  },
+  cameraButtonText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: "#FF4757",
   },
   textInput: {
     borderWidth: 1,
