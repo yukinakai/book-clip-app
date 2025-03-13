@@ -14,7 +14,9 @@
 │   │   ├── explore.tsx
 │   │   └── index.tsx
 │   ├── +not-found.tsx
-│   └── _layout.tsx
+│   ├── _layout.tsx
+│   └── book
+│       └── [id].tsx
 ├── app.json
 ├── assets
 │   ├── fonts
@@ -79,8 +81,10 @@
 │   │   └── @react-native-async-storage
 │   │       └── async-storage.js
 │   ├── app
-│   │   └── (tabs)
-│   │       └── index.test.tsx
+│   │   ├── (tabs)
+│   │   │   └── index.test.tsx
+│   │   └── book
+│   │       └── book-detail.test.tsx
 │   ├── components
 │   │   ├── BarcodeScanner.test.tsx
 │   │   ├── BookItem.test.tsx
@@ -98,4 +102,4 @@
 └── types
     └── env.d.ts
 
-25 directories, 74 files
+27 directories, 76 files
