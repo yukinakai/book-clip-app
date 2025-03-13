@@ -69,8 +69,12 @@ jest.mock("../../../app/clip/[id]", () => {
           createdAt: "2023-06-15T10:30:00Z",
         });
 
-        // router.backの代わりにモック関数を使用
-        mockRouterBack();
+        // router.backの呼び出しとエラーハンドリング
+        try {
+          mockRouterBack();
+        } catch (error) {
+          console.warn("Error calling router.back:", error);
+        }
       };
 
       const handleDeleteClip = () => {
@@ -85,8 +89,12 @@ jest.mock("../../../app/clip/[id]", () => {
               onPress: async () => {
                 try {
                   await ClipStorageService.removeClip("test-clip-id");
-                  // router.backの代わりにモック関数を使用
-                  mockRouterBack();
+                  // router.backの呼び出しとエラーハンドリング
+                  try {
+                    mockRouterBack();
+                  } catch (error) {
+                    console.warn("Error calling router.back:", error);
+                  }
                 } catch (error) {
                   Alert.alert("エラー", "クリップの削除に失敗しました");
                 }
@@ -123,7 +131,13 @@ jest.mock("../../../app/clip/[id]", () => {
                 {
                   key: "back-button",
                   testID: "back-button",
-                  onPress: () => mockRouterBack(),
+                  onPress: () => {
+                    try {
+                      mockRouterBack();
+                    } catch (error) {
+                      console.warn("Error calling router.back:", error);
+                    }
+                  },
                 },
                 "戻る"
               ),

@@ -87,7 +87,12 @@ export default function ClipDetailScreen() {
       await ClipStorageService.updateClip(updatedClip);
 
       // 更新完了後、前の画面に戻る
-      router.back();
+      try {
+        router.back();
+      } catch (error) {
+        console.warn("Error navigating back:", error);
+        // フォールバックナビゲーションなし - エラーのみログ出力
+      }
     } catch (error) {
       console.error("Error updating clip:", error);
       Alert.alert("エラー", "クリップの更新に失敗しました");
@@ -108,7 +113,16 @@ export default function ClipDetailScreen() {
             try {
               await ClipStorageService.removeClip(id);
               // 削除完了後、前の画面に戻る
-              router.back();
+              try {
+                router.back();
+              } catch (error) {
+                console.warn("Error navigating back:", error);
+                // エラーが発生しても画面遷移を続行
+                Alert.alert(
+                  "操作完了",
+                  "クリップが削除されました。前の画面に戻ってください。"
+                );
+              }
             } catch (error) {
               console.error("Error deleting clip:", error);
               Alert.alert("エラー", "クリップの削除に失敗しました");
