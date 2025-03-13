@@ -1,0 +1,194 @@
+# Expo Router開発とテストガイドライン
+
+## 動的ルーティングの画面開発
+
+### ファイル命名と配置
+
+- 動的パラメータを受け取る画面は`[param].tsx`形式で作成する
+  - 例: `app/book/[id].tsx` -> `/book/123`のようなパスでアクセス可能
+- ネストした動的ルートは`app/parent/[param]/child.tsx`のように配置可能
+
+### パラメータの取得
+
+```tsx
+import { useLocalSearchParams } from "expo-router";
+
+export default function DynamicScreen() {
+  // URLパラメータを取得
+  const { id } = useLocalSearchParams<{ id: string }>();
+  
+  // パラメータを使ってデータを取得・表示
+}
+```
+
+### 画面間の遷移
+
+```tsx
+import { useRouter } from "expo-router";
+
+// 遷移処理
+const router = useRouter();
+
+// 正しい型エラーを回避しつつ動的ルートに遷移する方法
+// @ts-ignore - 動的ルーティングの型エラーを無視
+router.push(`/book/${bookId}`);
+
+// 戻る処理
+router.back();
+```
+
+## Expo Routerを使った画面のテスト作成
+
+### テストファイル命名の注意点
+
+- 動的ルート(`[id].tsx`)をテストする場合、テストファイル名に特殊文字を含めない
+  - ❌ `tests/app/book/[id].test.tsx`
+  - ✅ `tests/app/book/book-detail.test.tsx`
+
+### モックの基本設定
+
+```tsx
+// expo-routerのモック
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: jest.fn().mockReturnValue({ id: "1" }),
+  useRouter: jest.fn().mockReturnValue({
+    back: jest.fn(),
+    push: jest.fn(),
+  }),
+}));
+
+// アイコンのモック
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: "Ionicons-Mock",
+}));
+
+// データサービスのモック
+jest.mock("../../../services/SomeService", () => ({
+  SomeService: {
+    getData: jest.fn().mockResolvedValue([{ /* モックデータ */ }]),
+  },
+}));
+```
+
+### 非同期コンポーネントのテスト
+
+データ取得を含む非同期コンポーネントのテストには`waitFor`を使用します：
+
+```tsx
+it("コンポーネントが正しく表示されること", async () => {
+  const { getByText, queryByText } = render(<MyComponent />);
+  
+  // ローディング状態が終了するのを待つ
+  await waitFor(() => {
+    expect(queryByText("読み込み中...")).toBeNull();
+  });
+  
+  // データが表示されていることを確認
+  expect(getByText("表示されるべきテキスト")).toBeTruthy();
+});
+```
+
+### 「Can't access .root on unmounted test renderer」エラーの対処法
+
+非同期処理を含むコンポーネントのテスト時によく発生するエラーです：
+
+```tsx
+// ❌ エラーが発生しやすい実装
+it("非同期テスト", async () => {
+  let component;
+  
+  // このパターンはエラーを引き起こす可能性が高い
+  await act(async () => {
+    component = render(<AsyncComponent />);
+  });
+  
+  const { getByText } = component;
+  expect(getByText("データ")).toBeTruthy();
+});
+
+// ✅ 推奨される実装
+it("非同期テスト（改善版）", async () => {
+  // renderを直接呼び出し、結果を保存
+  const { getByText, queryByText } = render(<AsyncComponent />);
+  
+  // データ読み込みが完了するまで待機
+  await waitFor(() => {
+    expect(queryByText("読み込み中...")).toBeNull();
+  });
+  
+  // テスト検証を実行
+  expect(getByText("データ")).toBeTruthy();
+});
+```
+
+このエラーを防ぐために：
+1. `act()`内で`render()`を実行してコンポーネント変数を割り当てるパターンを避ける
+2. `render()`を直接呼び出し、その戻り値を使用する
+3. 非同期処理の完了を`waitFor()`で待機する
+4. テストの各ステップを明確に分ける
+
+### 条件分岐を含むコンポーネントのテスト
+
+```tsx
+it("データがない場合はメッセージが表示されること", async () => {
+  // サービスのモックを一時的に変更
+  require("../../../services/SomeService").SomeService.getData.mockResolvedValueOnce([]);
+  
+  const { getByText, queryByText } = render(<MyComponent />);
+  
+  await waitFor(() => {
+    expect(queryByText("読み込み中...")).toBeNull();
+  });
+  
+  // エラーメッセージが表示されていることを確認
+  expect(getByText("データが見つかりませんでした")).toBeTruthy();
+});
+```
+
+### モジュールのモック時の注意点
+
+モック定義内で外部変数を直接参照することはできません：
+
+```tsx
+// ❌ エラー: モック内で変数を直接参照
+const mockData = [...];
+jest.mock("../path/to/module", () => ({
+  SomeModule: {
+    getData: () => mockData, // エラー!
+  },
+}));
+
+// ✅ 正しい方法: インライン定義または`require`を使用
+jest.mock("../path/to/module", () => ({
+  SomeModule: {
+    getData: jest.fn().mockResolvedValue([
+      { id: "1", name: "テスト" },
+      // ...
+    ]),
+  },
+}));
+```
+
+### 動的ルーターの遷移テスト
+
+```tsx
+it("ボタンをタップするとrouter.back()が呼ばれること", async () => {
+  const { getByTestId } = render(<MyComponent />);
+  const router = require("expo-router").useRouter();
+  
+  await waitFor(() => {
+    // ボタンをタップ
+    fireEvent.press(getByTestId("back-button"));
+    
+    // router.back()が呼ばれたことを確認
+    expect(router.back).toHaveBeenCalled();
+  });
+});
+```
+
+## UIコンポーネント設計のベストプラクティス
+
+- 各操作ボタンには`testID`を設定し、テストで簡単に見つけられるようにする
+- ローディング状態、エラー状態、データなし状態の表示を適切に実装する
+- スタイルはコンポーネントファイル内で`StyleSheet.create()`を使用し、適切に構造化する
+- 再利用可能なUIコンポーネントは分離し、テスト可能にする 

@@ -6,6 +6,7 @@ import {
   Image,
   Text,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import {
   SafeAreaView,
@@ -14,6 +15,7 @@ import {
 import { Book } from "../constants/MockData";
 import { BookStorageService } from "../services/BookStorageService";
 import { useThemeColor } from "../hooks/useThemeColor";
+import { useRouter } from "expo-router";
 
 interface BookshelfViewProps {
   onSelectBook?: (book: Book) => void;
@@ -30,6 +32,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const router = useRouter();
 
   const loadBooks = useCallback(async () => {
     const savedBooks = await BookStorageService.getAllBooks();
@@ -40,9 +43,21 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
     loadBooks();
   }, [loadBooks, refreshTrigger]);
 
+  const handleBookPress = (book: Book) => {
+    if (onSelectBook) {
+      onSelectBook(book);
+    }
+
+    // 書籍詳細画面へ遷移
+    // @ts-ignore - 動的ルーティングの型エラーを無視
+    router.push(`/book/${book.id}`);
+  };
+
   const renderItem = ({ item }: { item: Book }) => (
-    <View
+    <TouchableOpacity
       style={[styles.bookItem, { backgroundColor: secondaryBackgroundColor }]}
+      onPress={() => handleBookPress(item)}
+      testID={`book-item-${item.id}`}
     >
       <Image source={{ uri: item.coverImage }} style={styles.coverImage} />
       <View style={styles.bookInfo}>
@@ -53,7 +68,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
           {item.author}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderHeader = () => {
