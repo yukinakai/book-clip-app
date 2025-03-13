@@ -2,6 +2,7 @@
 ├── .cursor
 │   └── rules
 │       ├── coding-rule.mdc
+│       ├── expo-router-testing.mdc
 │       └── jest-testing-guide.mdc
 ├── .cursorignore
 ├── .env
@@ -102,4 +103,4 @@
 └── types
     └── env.d.ts
 
-27 directories, 76 files
+27 directories, 77 files
