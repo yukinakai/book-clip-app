@@ -88,6 +88,45 @@ it("コンポーネントが正しく表示されること", async () => {
 });
 ```
 
+### 「Can't access .root on unmounted test renderer」エラーの対処法
+
+非同期処理を含むコンポーネントのテスト時によく発生するエラーです：
+
+```tsx
+// ❌ エラーが発生しやすい実装
+it("非同期テスト", async () => {
+  let component;
+  
+  // このパターンはエラーを引き起こす可能性が高い
+  await act(async () => {
+    component = render(<AsyncComponent />);
+  });
+  
+  const { getByText } = component;
+  expect(getByText("データ")).toBeTruthy();
+});
+
+// ✅ 推奨される実装
+it("非同期テスト（改善版）", async () => {
+  // renderを直接呼び出し、結果を保存
+  const { getByText, queryByText } = render(<AsyncComponent />);
+  
+  // データ読み込みが完了するまで待機
+  await waitFor(() => {
+    expect(queryByText("読み込み中...")).toBeNull();
+  });
+  
+  // テスト検証を実行
+  expect(getByText("データ")).toBeTruthy();
+});
+```
+
+このエラーを防ぐために：
+1. `act()`内で`render()`を実行してコンポーネント変数を割り当てるパターンを避ける
+2. `render()`を直接呼び出し、その戻り値を使用する
+3. 非同期処理の完了を`waitFor()`で待機する
+4. テストの各ステップを明確に分ける
+
 ### 条件分岐を含むコンポーネントのテスト
 
 ```tsx
