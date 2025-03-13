@@ -163,14 +163,6 @@ export default function CameraView({
               )}
             </TouchableOpacity>
           </View>
-
-          {/* ガイドライン（オプション） */}
-          <View style={styles.guideContainer}>
-            <View style={styles.guideBox} />
-            <Text style={styles.guideText}>
-              テキストが枠内に収まるようにしてください
-            </Text>
-          </View>
         </View>
       </ExpoCameraView>
     </View>
@@ -178,7 +170,6 @@ export default function CameraView({
 }
 
 const { width } = Dimensions.get("window");
-const guideBoxWidth = width * 0.8;
 
 const styles = StyleSheet.create({
   container: {
@@ -257,32 +248,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
-  },
-  guideContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  guideBox: {
-    width: guideBoxWidth,
-    height: guideBoxWidth * 0.6,
-    borderWidth: 2,
-    borderColor: "rgba(255, 255, 255, 0.5)",
-    borderRadius: 8,
-    backgroundColor: "transparent",
-  },
-  guideText: {
-    color: "white",
-    fontSize: 14,
-    marginTop: 10,
-    textAlign: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 4,
   },
 });
