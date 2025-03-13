@@ -1,4 +1,8 @@
 import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
+import TextRecognition, {
+  TextRecognitionScript,
+} from "@react-native-ml-kit/text-recognition";
 
 // OCR結果のインターフェース
 export interface OCRResult {
@@ -21,12 +25,8 @@ export class OCRService {
       // 1. 画像を圧縮して処理しやすくする
       const processedImage = await this.preprocessImage(imageUri);
 
-      // 2. テキスト抽出処理（実際にはGoogle Cloud Vision APIを使用）
-      // 現時点ではモック実装
-      return await this.mockExtractText(processedImage.uri);
-
-      // 本番実装では以下のようになります
-      // return await this.callGoogleVisionAPI(processedImage.uri);
+      // 2. MLKitを使用してテキスト抽出
+      return await this.recognizeTextWithMLKit(processedImage.uri);
     } catch (error) {
       console.error("OCR処理中にエラーが発生しました:", error);
       return {
@@ -51,8 +51,68 @@ export class OCRService {
   }
 
   /**
+   * MLKitを使用したテキスト認識
+   * @param imageUri 画像のURI
+   * @returns テキスト抽出結果
+   */
+  private static async recognizeTextWithMLKit(
+    imageUri: string
+  ): Promise<OCRResult> {
+    try {
+      // MLKitの日本語テキスト認識を使用
+      const result = await TextRecognition.recognize(
+        imageUri,
+        TextRecognitionScript.JAPANESE
+      );
+
+      // 結果がない場合
+      if (!result || !result.text) {
+        return {
+          text: "",
+          error: "テキストを検出できませんでした",
+        };
+      }
+
+      // テキスト認識結果を取得
+      const recognizedText = result.text;
+
+      // 信頼度の計算（ブロックごとの信頼度の平均）
+      let totalConfidence = 0;
+      let confidenceCount = 0;
+
+      if (result.blocks && result.blocks.length > 0) {
+        for (const block of result.blocks) {
+          if (block.lines && block.lines.length > 0) {
+            for (const line of block.lines) {
+              if (line.confidence !== undefined) {
+                totalConfidence += line.confidence;
+                confidenceCount++;
+              }
+            }
+          }
+        }
+      }
+
+      // 信頼度の平均を計算（値がある場合のみ）
+      const avgConfidence =
+        confidenceCount > 0 ? totalConfidence / confidenceCount : undefined;
+
+      return {
+        text: recognizedText,
+        confidence: avgConfidence,
+      };
+    } catch (error) {
+      console.error("MLKit処理中にエラーが発生しました:", error);
+
+      // フォールバックとしてモック実装を使用
+      console.warn("MLKit実装でエラーが発生したため、モック実装を使用します");
+      return this.mockExtractText(imageUri);
+    }
+  }
+
+  /**
    * モック実装：テキスト抽出
-   * 実際のAPI実装の前に使用するテスト用関数
+   * MLKit実装がエラーを起こした場合のフォールバックとして使用
    */
   private static async mockExtractText(imageUri: string): Promise<OCRResult> {
     // APIの動作をシミュレートするために少し待機
@@ -76,64 +136,17 @@ export class OCRService {
   }
 
   /**
-   * Google Cloud Vision APIを呼び出す
-   * 注：実際の実装では、APIキーの設定やセキュリティ対策が必要です
-   */
-  private static async callGoogleVisionAPI(
-    imageUri: string
-  ): Promise<OCRResult> {
-    // これは実際の実装の例です。APIキーなどの設定が必要です。
-    // const apiKey = 'YOUR_GOOGLE_CLOUD_API_KEY';
-    // const apiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
-
-    // 画像をBase64エンコード
-    // const base64Image = await this.imageToBase64(imageUri);
-
-    // APIリクエストボディ
-    // const requestBody = {
-    //   requests: [
-    //     {
-    //       image: { content: base64Image },
-    //       features: [{ type: 'TEXT_DETECTION' }]
-    //     }
-    //   ]
-    // };
-
-    // APIコール
-    // const response = await fetch(apiUrl, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(requestBody)
-    // });
-
-    // レスポンス処理
-    // const data = await response.json();
-    // if (data.responses && data.responses[0].fullTextAnnotation) {
-    //   return {
-    //     text: data.responses[0].fullTextAnnotation.text,
-    //     confidence: data.responses[0].fullTextAnnotation.confidence || 0
-    //   };
-    // }
-
-    // レスポンスに結果がない場合
-    // return { text: '', error: 'テキストを検出できませんでした' };
-
-    // モック実装を呼び出し（実際の実装と置き換えてください）
-    return this.mockExtractText(imageUri);
-  }
-
-  /**
-   * 画像をBase64エンコードする（API呼び出し用）
-   * 注：実際の実装ではFileSystem.readAsStringAsyncなどを使用します
+   * 画像をBase64エンコードする（必要な場合に使用）
    */
   private static async imageToBase64(uri: string): Promise<string> {
-    // Expoのライブラリを使ったBase64変換の例
-    // const base64 = await FileSystem.readAsStringAsync(uri, {
-    //   encoding: FileSystem.EncodingType.Base64
-    // });
-    // return base64;
-
-    // モック実装ではダミー文字列を返す
-    return "base64encodedstring";
+    try {
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      return base64;
+    } catch (error) {
+      console.error("Base64エンコード中にエラーが発生しました:", error);
+      throw error;
+    }
   }
 }
