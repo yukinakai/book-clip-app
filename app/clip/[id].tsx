@@ -85,10 +85,9 @@ export default function ClipDetailScreen() {
 
       // クリップを更新
       await ClipStorageService.updateClip(updatedClip);
-      
-      Alert.alert("成功", "クリップが更新されました", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+
+      // 更新完了後、前の画面に戻る
+      router.back();
     } catch (error) {
       console.error("Error updating clip:", error);
       Alert.alert("エラー", "クリップの更新に失敗しました");
@@ -108,9 +107,8 @@ export default function ClipDetailScreen() {
           onPress: async () => {
             try {
               await ClipStorageService.removeClip(id);
-              Alert.alert("成功", "クリップが削除されました", [
-                { text: "OK", onPress: () => router.back() },
-              ]);
+              // 削除完了後、前の画面に戻る
+              router.back();
             } catch (error) {
               console.error("Error deleting clip:", error);
               Alert.alert("エラー", "クリップの削除に失敗しました");
