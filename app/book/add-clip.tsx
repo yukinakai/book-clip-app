@@ -11,12 +11,33 @@ import {
   Alert,
   Modal,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, Router } from "expo-router";
 import { ClipStorageService } from "../../services/ClipStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
 import CameraView from "../../components/CameraView";
 import OCRResultView from "../../components/OCRResultView";
+
+// ルーターシムを作成する関数の型定義
+interface RouterShim {
+  back: () => void;
+}
+
+// モーダル内でのルーターコンテキスト問題を回避するため、
+// router.back()の代わりに使用するカスタム関数
+const createRouterShim = (router: Router): RouterShim => ({
+  back: () => {
+    try {
+      if (router && typeof router.back === "function") {
+        router.back();
+      } else {
+        console.warn("Router not available, using fallback navigation");
+      }
+    } catch (error) {
+      console.warn("Error navigating back:", error);
+    }
+  },
+});
 
 export default function AddClipScreen() {
   const { bookId, bookTitle } = useLocalSearchParams<{
@@ -29,6 +50,7 @@ export default function AddClipScreen() {
   const [showOCRResult, setShowOCRResult] = useState(false);
   const [capturedImageUri, setCapturedImageUri] = useState<string | null>(null);
   const router = useRouter();
+  const routerShim = createRouterShim(router);
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
@@ -177,29 +199,36 @@ export default function AddClipScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* カメラモーダル */}
-      <Modal
-        visible={showCamera}
-        animationType="slide"
-        onRequestClose={handleCameraClose}
-      >
-        <CameraView onCapture={handleCapture} onClose={handleCameraClose} />
-      </Modal>
+      {/* カメラモーダル - Modalを使用した場合、expo-routerのコンテキストが適切に動作しない場合がある */}
+      {showCamera && (
+        <Modal
+          visible={true}
+          animationType="slide"
+          onRequestClose={handleCameraClose}
+        >
+          <CameraView
+            onCapture={handleCapture}
+            onClose={handleCameraClose}
+            router={routerShim}
+          />
+        </Modal>
+      )}
 
       {/* OCR結果モーダル */}
-      <Modal
-        visible={showOCRResult}
-        animationType="slide"
-        onRequestClose={handleCancelOCR}
-      >
-        {capturedImageUri && (
+      {showOCRResult && capturedImageUri && (
+        <Modal
+          visible={true}
+          animationType="slide"
+          onRequestClose={handleCancelOCR}
+        >
           <OCRResultView
             imageUri={capturedImageUri}
             onConfirm={handleConfirmOCRText}
             onCancel={handleCancelOCR}
+            router={routerShim}
           />
-        )}
-      </Modal>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }

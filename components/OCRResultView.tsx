@@ -12,16 +12,23 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { OCRService, OCRResult } from "../services/OCRService";
 
+// ルーターシムのインターフェース
+interface RouterShim {
+  back: () => void;
+}
+
 interface OCRResultViewProps {
   imageUri: string;
   onConfirm: (text: string) => void;
   onCancel: () => void;
+  router?: RouterShim; // オプショナルなので既存のコードを壊さない
 }
 
 export default function OCRResultView({
   imageUri,
   onConfirm,
   onCancel,
+  router,
 }: OCRResultViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

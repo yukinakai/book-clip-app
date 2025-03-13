@@ -9,34 +9,52 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import { Camera, CameraType } from "expo-camera";
+import {
+  CameraView as ExpoCameraView,
+  useCameraPermissions,
+} from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
+
+// ルーターシムのインターフェース
+interface RouterShim {
+  back: () => void;
+}
 
 interface CameraViewProps {
   onCapture: (imageUri: string) => void;
   onClose: () => void;
+  router?: RouterShim; // オプショナルなので既存のコードを壊さない
 }
 
-export default function CameraView({ onCapture, onClose }: CameraViewProps) {
+export default function CameraView({
+  onCapture,
+  onClose,
+  router,
+}: CameraViewProps) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [type, setType] = useState(CameraType.back);
+  const [facing, setFacing] = useState<"front" | "back">("back");
   const [isTakingPicture, setIsTakingPicture] = useState(false);
-  const cameraRef = useRef<Camera | null>(null);
+  const cameraRef = useRef<any>(null);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
   // カメラのパーミッション取得
   useEffect(() => {
     (async () => {
-      const { status: cameraStatus } =
-        await Camera.requestCameraPermissionsAsync();
+      // カメラのパーミッションをリクエスト
+      if (!cameraPermission?.granted) {
+        await requestCameraPermission();
+      }
+
+      // メディアライブラリのパーミッションをリクエスト
       const { status: mediaLibraryStatus } =
         await MediaLibrary.requestPermissionsAsync();
 
       setHasPermission(
-        cameraStatus === "granted" && mediaLibraryStatus === "granted"
+        cameraPermission?.granted === true && mediaLibraryStatus === "granted"
       );
 
-      if (cameraStatus !== "granted") {
+      if (!cameraPermission?.granted) {
         Alert.alert(
           "カメラのアクセス許可が必要です",
           "テキスト抽出機能を使用するにはカメラへのアクセス許可が必要です。"
@@ -50,7 +68,7 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
         );
       }
     })();
-  }, []);
+  }, [cameraPermission, requestCameraPermission]);
 
   // 写真撮影
   const takePicture = async () => {
@@ -78,10 +96,8 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
   };
 
   // カメラ切り替え（前面/背面）
-  const toggleCameraType = () => {
-    setType((current) =>
-      current === CameraType.back ? CameraType.front : CameraType.back
-    );
+  const toggleCameraFacing = () => {
+    setFacing((current) => (current === "back" ? "front" : "back"));
   };
 
   // パーミッションがまだ決定していない場合
@@ -112,7 +128,12 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
   // カメラ表示
   return (
     <View style={styles.container}>
-      <Camera ref={cameraRef} style={styles.camera} type={type} ratio="16:9">
+      <ExpoCameraView
+        ref={cameraRef}
+        style={styles.camera}
+        facing={facing}
+        ratio="16:9"
+      >
         <View style={styles.cameraContent}>
           {/* 上部のヘッダー */}
           <View style={styles.header}>
@@ -121,7 +142,7 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
             </TouchableOpacity>
             <Text style={styles.headerText}>テキスト撮影</Text>
             <TouchableOpacity
-              onPress={toggleCameraType}
+              onPress={toggleCameraFacing}
               style={styles.flipButton}
             >
               <Ionicons name="camera-reverse" size={30} color="white" />
@@ -151,7 +172,7 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
             </Text>
           </View>
         </View>
-      </Camera>
+      </ExpoCameraView>
     </View>
   );
 }
