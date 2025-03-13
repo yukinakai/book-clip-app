@@ -198,11 +198,11 @@ export default function ClipDetailScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.deleteButton]}
+                style={[styles.deleteButton, { backgroundColor }]}
                 onPress={handleDeleteClip}
                 testID="delete-clip-button"
               >
-                <Text style={styles.buttonText}>削除</Text>
+                <Text style={styles.deleteButtonText}>削除</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -272,28 +272,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: "column",
     marginTop: 30,
   },
   updateButton: {
     backgroundColor: "#4CAF50",
     borderRadius: 8,
     padding: 15,
-    flex: 1,
-    marginRight: 10,
     alignItems: "center",
+    marginBottom: 15,
   },
   deleteButton: {
-    backgroundColor: "#F44336",
+    borderWidth: 1,
+    borderColor: "#4CAF50",
     borderRadius: 8,
     padding: 15,
-    flex: 1,
-    marginLeft: 10,
     alignItems: "center",
   },
   buttonText: {
     color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  deleteButtonText: {
+    color: "#4CAF50",
     fontSize: 16,
     fontWeight: "600",
   },
