@@ -38,8 +38,10 @@ export default function BookDetailScreen() {
         if (foundBook) {
           setBook(foundBook);
 
-          // モックデータからこの書籍のクリップを取得
-          const bookClips = MOCK_CLIPS.filter((clip) => clip.bookId === id);
+          // 【一時的な修正】: 本来は特定の書籍のクリップだけをフィルタリングするが、
+          // テスト目的ですべてのクリップを表示する
+          // const bookClips = MOCK_CLIPS.filter((clip) => clip.bookId === id);
+          const bookClips = MOCK_CLIPS; // すべてのクリップを表示
           setClips(bookClips);
         }
       } catch (error) {
@@ -106,7 +108,7 @@ export default function BookDetailScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>書籍詳細</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>マイライブラリ</Text>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
