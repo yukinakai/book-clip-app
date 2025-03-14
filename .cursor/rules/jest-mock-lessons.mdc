@@ -52,8 +52,7 @@ Jest のモックでは、React モジュールを直接参照できないこと
 ### 参考リソース
 
 - [Jest 公式ドキュメント - Manual Mocks](mdc:https:/jestjs.io/docs/manual-mocks)
-- @React Testing Library - ガイド
-
+- [React Testing Library - ガイド](mdc:https:/testing-library.com/docs/react-testing-library/intro)
 
 ## モックモジュール内での外部変数参照の制限
 

@@ -2,6 +2,7 @@
 ├── .cursor
 │   └── rules
 │       ├── coding-rule.mdc
+│       ├── expo-env-variables.mdc
 │       ├── expo-router-testing.mdc
 │       ├── jest-mock-lessons.mdc
 │       └── jest-testing-guide.mdc
@@ -40,10 +41,13 @@
 │   ├── BarcodeScanner.tsx
 │   ├── BookItem.tsx
 │   ├── BookshelfView.tsx
+│   ├── CameraView.tsx
 │   ├── Collapsible.tsx
 │   ├── ExternalLink.tsx
 │   ├── HapticTab.tsx
 │   ├── HelloWave.tsx
+│   ├── ImageSelectionView.tsx
+│   ├── OCRResultView.tsx
 │   ├── ParallaxScrollView.tsx
 │   ├── ThemedText.tsx
 │   ├── ThemedView.tsx
@@ -80,6 +84,7 @@
 ├── services
 │   ├── BookStorageService.ts
 │   ├── ClipStorageService.ts
+│   ├── OCRService.ts
 │   ├── RakutenBookService.ts
 │   └── bookSearch.ts
 ├── tests
@@ -98,6 +103,10 @@
 │   │   ├── BarcodeScanner.test.tsx
 │   │   ├── BookItem.test.tsx
 │   │   ├── BookshelfView.test.tsx
+│   │   ├── CameraView.test.tsx
+│   │   ├── ImageSelectionView.test.tsx
+│   │   ├── OCRResultView.test.tsx
+│   │   ├── ParallaxScrollView.test.tsx
 │   │   ├── ThemedText-test.tsx
 │   │   ├── __snapshots__
 │   │   │   └── ThemedText-test.tsx.snap
@@ -106,11 +115,12 @@
 │   │       └── CameraModal.test.tsx
 │   ├── jest.config.js
 │   ├── services
-│   │   └── ClipStorageService.test.ts
+│   │   ├── ClipStorageService.test.ts
+│   │   └── OCRService.test.ts
 │   ├── setup.js
 │   └── test-utils.tsx
 ├── tsconfig.json
 └── types
     └── env.d.ts
 
-30 directories, 84 files
+30 directories, 94 files
