@@ -69,8 +69,13 @@ jest.mock("../../../app/clip/[id]", () => {
           createdAt: "2023-06-15T10:30:00Z",
         });
 
-        // router.backの代わりにモック関数を使用
-        mockRouterBack();
+        // router.backの呼び出しとエラーハンドリング
+        try {
+          mockRouterBack();
+        } catch (error) {
+          console.warn("Error calling router.back:", error);
+          // フォールバックナビゲーションなし - エラーのみログ出力
+        }
       };
 
       const handleDeleteClip = () => {
@@ -85,8 +90,17 @@ jest.mock("../../../app/clip/[id]", () => {
               onPress: async () => {
                 try {
                   await ClipStorageService.removeClip("test-clip-id");
-                  // router.backの代わりにモック関数を使用
-                  mockRouterBack();
+                  // router.backの呼び出しとエラーハンドリング
+                  try {
+                    mockRouterBack();
+                  } catch (error) {
+                    console.warn("Error calling router.back:", error);
+                    // エラーが発生してもユーザーに通知
+                    Alert.alert(
+                      "操作完了",
+                      "クリップが削除されました。前の画面に戻ってください。"
+                    );
+                  }
                 } catch (error) {
                   Alert.alert("エラー", "クリップの削除に失敗しました");
                 }
@@ -123,7 +137,13 @@ jest.mock("../../../app/clip/[id]", () => {
                 {
                   key: "back-button",
                   testID: "back-button",
-                  onPress: () => mockRouterBack(),
+                  onPress: () => {
+                    try {
+                      mockRouterBack();
+                    } catch (error) {
+                      console.warn("Error calling router.back:", error);
+                    }
+                  },
                 },
                 "戻る"
               ),
@@ -156,34 +176,15 @@ jest.mock("../../../app/clip/[id]", () => {
             React.createElement(
               View,
               {
-                key: "button-container",
-                testID: "button-container",
+                key: "buttons-container",
+                testID: "buttons-container",
                 style: {
-                  flexDirection: "column",
-                  marginTop: 30,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginTop: 20,
                 },
               },
               [
-                React.createElement(
-                  TouchableOpacity,
-                  {
-                    key: "update-button",
-                    testID: "update-clip-button",
-                    onPress: handleUpdateClip,
-                    style: {
-                      backgroundColor: "#4CAF50",
-                      borderRadius: 8,
-                      padding: 15,
-                      alignItems: "center",
-                      marginBottom: 15,
-                    },
-                  },
-                  React.createElement(
-                    Text,
-                    { style: { color: "white" } },
-                    "更新"
-                  )
-                ),
                 React.createElement(
                   TouchableOpacity,
                   {
@@ -191,18 +192,40 @@ jest.mock("../../../app/clip/[id]", () => {
                     testID: "delete-clip-button",
                     onPress: handleDeleteClip,
                     style: {
+                      flex: 1,
+                      paddingVertical: 12,
+                      marginRight: 8,
                       borderWidth: 1,
-                      borderColor: "#4CAF50",
+                      borderColor: "#FF4757",
                       borderRadius: 8,
-                      padding: 15,
                       alignItems: "center",
-                      backgroundColor: "#ffffff",
                     },
                   },
                   React.createElement(
                     Text,
-                    { style: { color: "#4CAF50" } },
+                    { style: { color: "#FF4757" } },
                     "削除"
+                  )
+                ),
+                React.createElement(
+                  TouchableOpacity,
+                  {
+                    key: "update-button",
+                    testID: "update-clip-button",
+                    onPress: handleUpdateClip,
+                    style: {
+                      flex: 2,
+                      backgroundColor: "#4CAF50",
+                      paddingVertical: 12,
+                      marginLeft: 8,
+                      borderRadius: 8,
+                      alignItems: "center",
+                    },
+                  },
+                  React.createElement(
+                    Text,
+                    { style: { color: "white" } },
+                    "更新"
                   )
                 ),
               ]
@@ -403,29 +426,32 @@ describe("ClipDetailScreen", () => {
     // 更新ボタンのスタイルを確認
     const updateButton = getByTestId("update-clip-button");
     expect(updateButton.props.style).toMatchObject({
+      flex: 2,
       backgroundColor: "#4CAF50",
+      paddingVertical: 12,
+      marginLeft: 8,
       borderRadius: 8,
-      padding: 15,
       alignItems: "center",
-      marginBottom: 15,
     });
 
     // 削除ボタンのスタイルを確認
     const deleteButton = getByTestId("delete-clip-button");
     expect(deleteButton.props.style).toMatchObject({
+      flex: 1,
+      paddingVertical: 12,
+      marginRight: 8,
       borderWidth: 1,
-      borderColor: "#4CAF50",
+      borderColor: "#FF4757",
       borderRadius: 8,
-      padding: 15,
       alignItems: "center",
-      backgroundColor: "#ffffff",
     });
 
-    // ボタンの親要素（buttonContainer）のスタイルを確認
-    const buttonContainer = getByTestId("button-container");
-    expect(buttonContainer.props.style).toMatchObject({
-      flexDirection: "column",
-      marginTop: 30,
+    // ボタンの親要素（buttonsContainer）のスタイルを確認
+    const buttonsContainer = getByTestId("buttons-container");
+    expect(buttonsContainer.props.style).toMatchObject({
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 20,
     });
   });
 });
