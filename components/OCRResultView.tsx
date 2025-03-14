@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { OCRService, OCRResult } from "../services/OCRService";
+import { useThemeColor } from "../hooks/useThemeColor";
 
 // ルーターシムのインターフェース
 interface RouterShim {
@@ -35,6 +36,12 @@ export default function OCRResultView({
   const [extractedText, setExtractedText] = useState("");
   const [editedText, setEditedText] = useState("");
   const [confidence, setConfidence] = useState<number | undefined>(undefined);
+
+  // テーマカラーの取得
+  const backgroundColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
+  const borderColor = "#ddd"; // 固定値に変更
+  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
 
   // 画像からテキストを抽出
   useEffect(() => {
@@ -75,12 +82,14 @@ export default function OCRResultView({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor }]}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>テキスト抽出結果</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>
+          テキスト抽出結果
+        </Text>
         <View style={styles.spacer} />
       </View>
 
@@ -93,7 +102,9 @@ export default function OCRResultView({
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF4757" />
-            <Text style={styles.loadingText}>テキストを抽出中...</Text>
+            <Text style={[styles.loadingText, { color: textColor }]}>
+              テキストを抽出中...
+            </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
@@ -106,14 +117,23 @@ export default function OCRResultView({
         ) : (
           <View style={styles.resultContainer}>
             {confidence !== undefined && (
-              <Text style={styles.confidenceText}>
+              <Text style={[styles.confidenceText, { color: textColor }]}>
                 信頼度: {Math.round(confidence * 100)}%
               </Text>
             )}
 
-            <Text style={styles.label}>抽出されたテキスト:</Text>
+            <Text style={[styles.label, { color: textColor }]}>
+              抽出されたテキスト:
+            </Text>
             <TextInput
-              style={styles.textInput}
+              style={[
+                styles.textInput,
+                {
+                  color: textColor,
+                  backgroundColor: secondaryBackgroundColor,
+                  borderColor: borderColor,
+                },
+              ]}
               multiline
               value={editedText}
               onChangeText={setEditedText}
@@ -147,7 +167,6 @@ export default function OCRResultView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
@@ -156,7 +175,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   closeButton: {
     padding: 8,
