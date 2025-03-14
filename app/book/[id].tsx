@@ -130,9 +130,7 @@ export default function BookDetailScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>
-          マイライブラリ
-        </Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>書籍</Text>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
