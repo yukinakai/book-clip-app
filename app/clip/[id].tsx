@@ -202,21 +202,21 @@ export default function ClipDetailScreen() {
               testID="clip-page-input"
             />
 
-            <View style={styles.buttonContainer}>
+            <View style={styles.buttonsContainer}>
               <TouchableOpacity
-                style={[styles.updateButton]}
-                onPress={handleUpdateClip}
-                testID="update-clip-button"
-              >
-                <Text style={styles.buttonText}>更新</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.deleteButton, { backgroundColor }]}
+                style={styles.cancelButton}
                 onPress={handleDeleteClip}
                 testID="delete-clip-button"
               >
-                <Text style={styles.deleteButtonText}>削除</Text>
+                <Text style={styles.cancelButtonText}>削除</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handleUpdateClip}
+                testID="update-clip-button"
+              >
+                <Text style={styles.confirmButtonText}>更新</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -285,31 +285,35 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
-  buttonContainer: {
-    flexDirection: "column",
-    marginTop: 30,
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
-  updateButton: {
-    backgroundColor: "#4CAF50",
-    borderRadius: 8,
-    padding: 15,
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  deleteButton: {
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    marginRight: 8,
     borderWidth: 1,
-    borderColor: "#4CAF50",
+    borderColor: "#FF4757",
     borderRadius: 8,
-    padding: 15,
     alignItems: "center",
   },
-  buttonText: {
-    color: "white",
+  cancelButtonText: {
+    color: "#FF4757",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "500",
   },
-  deleteButtonText: {
-    color: "#4CAF50",
+  confirmButton: {
+    flex: 2,
+    backgroundColor: "#4CAF50",
+    paddingVertical: 12,
+    marginLeft: 8,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  confirmButtonText: {
+    color: "white",
     fontSize: 16,
     fontWeight: "600",
   },
