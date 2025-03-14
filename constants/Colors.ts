@@ -4,7 +4,7 @@
  */
 
 // メインカラー（Primary Colors）
-const bookClipBlue = "#4C7EFF"; // 信頼感や集中力を与える知的で明るいブルー
+const bookClipBlue = "#2B3A67え"; // 信頼感や集中力を与える知的で明るいブルー
 
 // アクセントカラー（Accent Colors）
 const clipYellow = "#FFD644"; // 強調や注目させたい情報をハイライトするための活力あるイエロー

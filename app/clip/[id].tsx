@@ -168,6 +168,9 @@ export default function ClipDetailScreen() {
           >
             <Ionicons name="arrow-back" size={24} color={textColor} />
           </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: textColor }]}>
+            クリップ編集
+          </Text>
         </View>
 
         <ScrollView style={styles.scrollContainer}>
