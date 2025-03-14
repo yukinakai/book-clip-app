@@ -23,6 +23,8 @@ import OCRResultView from "../../components/OCRResultView";
 import ImageSelectionView, {
   SelectionArea,
 } from "../../components/ImageSelectionView";
+import { Colors } from "../../constants/Colors";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 // ルーターシムを作成する関数の型定義
 interface RouterShim {
@@ -62,10 +64,12 @@ export default function AddClipScreen() {
   );
   const router = useRouter();
   const routerShim = createRouterShim(router);
+  const colorScheme = useColorScheme() ?? "light";
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const borderColor = Colors[colorScheme].tabIconDefault;
 
   // キーボードの表示を監視
   useEffect(() => {
@@ -172,7 +176,7 @@ export default function AddClipScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
@@ -210,8 +214,19 @@ export default function AddClipScreen() {
                 onPress={handleShowCamera}
                 testID="camera-button"
               >
-                <Ionicons name="camera" size={24} color="#FF4757" />
-                <Text style={styles.cameraButtonText}>写真から追加</Text>
+                <Ionicons
+                  name="camera"
+                  size={24}
+                  color={Colors[colorScheme].success}
+                />
+                <Text
+                  style={[
+                    styles.cameraButtonText,
+                    { color: Colors[colorScheme].success },
+                  ]}
+                >
+                  写真から追加
+                </Text>
               </TouchableOpacity>
             </View>
             <TextInput
@@ -220,10 +235,11 @@ export default function AddClipScreen() {
                 {
                   color: textColor,
                   backgroundColor: secondaryBackgroundColor,
+                  borderColor: borderColor,
                 },
               ]}
               placeholder="印象に残った文章をクリップしましょう"
-              placeholderTextColor="gray"
+              placeholderTextColor={Colors[colorScheme].tabIconDefault}
               multiline
               value={clipText}
               onChangeText={setClipText}
@@ -239,10 +255,11 @@ export default function AddClipScreen() {
                 {
                   color: textColor,
                   backgroundColor: secondaryBackgroundColor,
+                  borderColor: borderColor,
                 },
               ]}
               placeholder="例: 42"
-              placeholderTextColor="gray"
+              placeholderTextColor={Colors[colorScheme].tabIconDefault}
               keyboardType="number-pad"
               value={pageNumber}
               onChangeText={setPageNumber}
@@ -251,7 +268,10 @@ export default function AddClipScreen() {
           </View>
 
           <TouchableOpacity
-            style={styles.saveButton}
+            style={[
+              styles.saveButton,
+              { backgroundColor: Colors[colorScheme].primary },
+            ]}
             onPress={handleSaveClip}
             activeOpacity={0.8}
             testID="save-clip-button"
@@ -324,7 +344,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
   },
   backButton: {
     marginRight: 10,
@@ -369,11 +388,9 @@ const styles = StyleSheet.create({
   cameraButtonText: {
     marginLeft: 4,
     fontSize: 14,
-    color: "#FF4757",
   },
   textInput: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -382,14 +399,12 @@ const styles = StyleSheet.create({
   },
   pageInput: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     height: 50,
   },
   saveButton: {
-    backgroundColor: "#FF4757",
     borderRadius: 8,
     padding: 16,
     alignItems: "center",

@@ -16,6 +16,8 @@ import { Clip } from "../../constants/MockData";
 import { ClipStorageService } from "../../services/ClipStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
+import { Colors } from "../../constants/Colors";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function ClipDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,10 +27,12 @@ export default function ClipDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [bookTitle, setBookTitle] = useState("");
   const router = useRouter();
+  const colorScheme = useColorScheme() ?? "light";
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const borderColor = Colors[colorScheme].tabIconDefault;
 
   // クリップデータを読み込む
   useEffect(() => {
@@ -156,7 +160,7 @@ export default function ClipDetailScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingView}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: borderColor }]}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
@@ -164,9 +168,6 @@ export default function ClipDetailScreen() {
           >
             <Ionicons name="arrow-back" size={24} color={textColor} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>
-            クリップ編集
-          </Text>
         </View>
 
         <ScrollView style={styles.scrollContainer}>
@@ -177,14 +178,18 @@ export default function ClipDetailScreen() {
             <TextInput
               style={[
                 styles.textInput,
-                { color: textColor, backgroundColor: secondaryBackgroundColor },
+                {
+                  color: textColor,
+                  backgroundColor: secondaryBackgroundColor,
+                  borderColor: borderColor,
+                },
               ]}
               value={text}
               onChangeText={setText}
               multiline
               numberOfLines={6}
               placeholder="クリップテキストを入力"
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors[colorScheme].tabIconDefault}
               testID="clip-text-input"
             />
 
@@ -192,27 +197,44 @@ export default function ClipDetailScreen() {
             <TextInput
               style={[
                 styles.pageInput,
-                { color: textColor, backgroundColor: secondaryBackgroundColor },
+                {
+                  color: textColor,
+                  backgroundColor: secondaryBackgroundColor,
+                  borderColor: borderColor,
+                },
               ]}
               value={page}
               onChangeText={setPage}
               keyboardType="number-pad"
               placeholder="ページ番号"
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors[colorScheme].tabIconDefault}
               testID="clip-page-input"
             />
 
             <View style={styles.buttonsContainer}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={[
+                  styles.cancelButton,
+                  { borderColor: Colors[colorScheme].alert },
+                ]}
                 onPress={handleDeleteClip}
                 testID="delete-clip-button"
               >
-                <Text style={styles.cancelButtonText}>削除</Text>
+                <Text
+                  style={[
+                    styles.cancelButtonText,
+                    { color: Colors[colorScheme].alert },
+                  ]}
+                >
+                  削除
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.confirmButton}
+                style={[
+                  styles.confirmButton,
+                  { backgroundColor: Colors[colorScheme].success },
+                ]}
                 onPress={handleUpdateClip}
                 testID="update-clip-button"
               >
@@ -248,7 +270,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
   },
   backButton: {
     marginRight: 10,
@@ -271,7 +292,6 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -280,7 +300,6 @@ const styles = StyleSheet.create({
   },
   pageInput: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -295,18 +314,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: "#FF4757",
     borderRadius: 8,
     alignItems: "center",
   },
   cancelButtonText: {
-    color: "#FF4757",
     fontSize: 16,
     fontWeight: "500",
   },
   confirmButton: {
     flex: 2,
-    backgroundColor: "#4CAF50",
     paddingVertical: 12,
     marginLeft: 8,
     borderRadius: 8,
