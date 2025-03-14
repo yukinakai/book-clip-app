@@ -15,6 +15,7 @@ import {
 } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // ルーターシムのインターフェース
 interface RouterShim {
@@ -127,7 +128,7 @@ export default function CameraView({
   // パーミッションが拒否された場合
   if (hasPermission === false) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Text style={styles.text}>カメラへのアクセスが拒否されました</Text>
         <Text style={styles.subText}>
           設定アプリからカメラのアクセスを許可してください
@@ -135,13 +136,13 @@ export default function CameraView({
         <TouchableOpacity style={styles.button} onPress={onClose}>
           <Text style={styles.buttonText}>閉じる</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // カメラ表示
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ExpoCameraView
         ref={cameraRef}
         style={styles.camera}
@@ -179,7 +180,7 @@ export default function CameraView({
           </View>
         </View>
       </ExpoCameraView>
-    </View>
+    </SafeAreaView>
   );
 }
 

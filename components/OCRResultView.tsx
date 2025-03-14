@@ -8,10 +8,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { OCRService, OCRResult } from "../services/OCRService";
 import { useThemeColor } from "../hooks/useThemeColor";
+import { SelectionArea } from "./ImageSelectionView";
 
 // ルーターシムのインターフェース
 interface RouterShim {
@@ -23,6 +25,7 @@ interface OCRResultViewProps {
   onConfirm: (text: string) => void;
   onCancel: () => void;
   router?: RouterShim; // オプショナルなので既存のコードを壊さない
+  selectionArea?: SelectionArea; // 選択領域の情報（オプション）
 }
 
 export default function OCRResultView({
@@ -30,6 +33,7 @@ export default function OCRResultView({
   onConfirm,
   onCancel,
   router,
+  selectionArea,
 }: OCRResultViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ export default function OCRResultView({
   // 画像からテキストを抽出
   useEffect(() => {
     extractText();
-  }, [imageUri]);
+  }, [imageUri, selectionArea]);
 
   const extractText = async () => {
     try {
@@ -54,7 +58,11 @@ export default function OCRResultView({
       setError(null);
 
       // OCRサービスを呼び出して画像からテキストを抽出
-      const result: OCRResult = await OCRService.extractTextFromImage(imageUri);
+      // 選択領域の情報がある場合は渡す
+      const result: OCRResult = await OCRService.extractTextFromImage(
+        imageUri,
+        selectionArea
+      );
 
       if (result.error) {
         setError(result.error);
@@ -82,7 +90,7 @@ export default function OCRResultView({
   };
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
           <Ionicons name="arrow-back" size={24} color={textColor} />
@@ -160,7 +168,7 @@ export default function OCRResultView({
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

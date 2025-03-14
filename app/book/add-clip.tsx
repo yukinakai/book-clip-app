@@ -20,6 +20,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
 import CameraView from "../../components/CameraView";
 import OCRResultView from "../../components/OCRResultView";
+import ImageSelectionView, {
+  SelectionArea,
+} from "../../components/ImageSelectionView";
 
 // ルーターシムを作成する関数の型定義
 interface RouterShim {
@@ -53,6 +56,10 @@ export default function AddClipScreen() {
   const [showOCRResult, setShowOCRResult] = useState(false);
   const [capturedImageUri, setCapturedImageUri] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [showImageSelection, setShowImageSelection] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<SelectionArea | undefined>(
+    undefined
+  );
   const router = useRouter();
   const routerShim = createRouterShim(router);
 
@@ -121,16 +128,34 @@ export default function AddClipScreen() {
     setShowCamera(true);
   };
 
-  // 撮影後の処理
+  // カメラ撮影後の処理
   const handleCapture = (imageUri: string) => {
     setCapturedImageUri(imageUri);
     setShowCamera(false);
-    setShowOCRResult(true);
+    // 画像選択画面を表示
+    setShowImageSelection(true);
   };
 
   // カメラキャンセル
   const handleCameraClose = () => {
     setShowCamera(false);
+  };
+
+  // 画像選択後の処理
+  const handleSelectionConfirm = async (selectionArea: SelectionArea) => {
+    if (!capturedImageUri) return;
+
+    // 選択領域を保存
+    setSelectedArea(selectionArea);
+
+    setShowImageSelection(false);
+    setShowOCRResult(true); // OCR結果画面を表示
+  };
+
+  // 画像選択キャンセル
+  const handleSelectionCancel = () => {
+    setShowImageSelection(false);
+    setCapturedImageUri(null);
   };
 
   // OCR結果から取得したテキストを設定
@@ -160,15 +185,14 @@ export default function AddClipScreen() {
       </View>
 
       <ScrollView
-        style={[styles.scrollContainer, { backgroundColor }]}
+        style={[styles.scrollView, { backgroundColor }]}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 50 },
+          { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 100 : 100 },
         ]}
         keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
+        onScrollBeginDrag={Keyboard.dismiss}
         showsVerticalScrollIndicator={true}
-        onScrollBeginDrag={dismissKeyboard}
       >
         <View style={styles.form}>
           <Text style={[styles.bookTitle, { color: textColor }]}>
@@ -239,7 +263,7 @@ export default function AddClipScreen() {
         </View>
       </ScrollView>
 
-      {/* カメラモーダル - Modalを使用した場合、expo-routerのコンテキストが適切に動作しない場合がある */}
+      {/* カメラモーダル */}
       {showCamera && (
         <Modal
           visible={true}
@@ -254,6 +278,22 @@ export default function AddClipScreen() {
         </Modal>
       )}
 
+      {/* 画像選択モーダル（新規追加） */}
+      {showImageSelection && capturedImageUri && (
+        <Modal
+          visible={true}
+          animationType="slide"
+          onRequestClose={handleSelectionCancel}
+        >
+          <ImageSelectionView
+            imageUri={capturedImageUri}
+            onConfirm={handleSelectionConfirm}
+            onCancel={handleSelectionCancel}
+            router={routerShim}
+          />
+        </Modal>
+      )}
+
       {/* OCR結果モーダル */}
       {showOCRResult && capturedImageUri && (
         <Modal
@@ -263,6 +303,7 @@ export default function AddClipScreen() {
         >
           <OCRResultView
             imageUri={capturedImageUri}
+            selectionArea={selectedArea}
             onConfirm={handleConfirmOCRText}
             onCancel={handleCancelOCR}
             router={routerShim}
@@ -291,7 +332,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-  scrollContainer: {
+  scrollView: {
     flex: 1,
   },
   scrollContent: {

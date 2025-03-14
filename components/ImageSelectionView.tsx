@@ -12,10 +12,12 @@ import {
   PanResponderGestureState,
   Alert,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../hooks/useThemeColor";
 import * as ImageManipulator from "expo-image-manipulator";
+import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
 
 // ルーターシムのインターフェース
 interface RouterShim {
@@ -57,9 +59,14 @@ export default function ImageSelectionView({
   const [isSelecting, setIsSelecting] = useState(false);
   const [hasSelection, setHasSelection] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
+  const borderColor = useThemeColor({}, "border");
+  const buttonColor = useThemeColor({}, "button");
+  const selectionBorderColor = useThemeColor({}, "selectionBorder");
+  const confirmButtonColor = useThemeColor({}, "confirmButton");
 
   // 画像読み込み完了時の処理
   const handleImageLoad = () => {
@@ -192,72 +199,87 @@ export default function ImageSelectionView({
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textColor }]}>
-          テキスト範囲を選択
+          テキスト領域選択
         </Text>
-        <View style={styles.spacer} />
       </View>
 
-      <View style={styles.content}>
-        <Text style={[styles.instruction, { color: textColor }]}>
-          OCRしたいテキスト部分をドラッグして選択してください
-        </Text>
-
-        <View style={styles.imageContainer} onLayout={handleImageLayout}>
-          <Image
-            source={{ uri: imageUri }}
-            style={styles.image}
-            onLoad={handleImageLoad}
-            resizeMode="contain"
-            {...panResponder.panHandlers}
+      <View style={styles.imageContainer}>
+        {isLoading ? (
+          <ActivityIndicator
+            size="large"
+            color="#0000ff"
+            style={styles.loader}
           />
-          {/* 選択範囲の表示 */}
-          {(hasSelection || isSelecting) && (
-            <View style={getSelectionStyle()} />
-          )}
-        </View>
+        ) : (
+          <>
+            <View
+              style={styles.imageWrapper}
+              ref={imageContainerRef}
+              onLayout={onImageContainerLayout}
+            >
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.image}
+                resizeMode="contain"
+                onLoad={onImageLoaded}
+              />
+              {selection.width > 0 && selection.height > 0 && (
+                <View
+                  style={[
+                    styles.selectionBox,
+                    {
+                      left: selection.x,
+                      top: selection.y,
+                      width: selection.width,
+                      height: selection.height,
+                      borderColor: selectionBorderColor,
+                    },
+                  ]}
+                  {...panResponder.panHandlers}
+                />
+              )}
+            </View>
 
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            style={styles.utilityButton}
-            onPress={handleSelectAll}
-          >
-            <Ionicons name="scan-outline" size={20} color="#FF4757" />
-            <Text style={styles.utilityButtonText}>全範囲選択</Text>
-          </TouchableOpacity>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: buttonColor }]}
+                onPress={selectAll}
+              >
+                <Text style={[styles.buttonText, { color: textColor }]}>
+                  すべて選択
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: buttonColor }]}
+                onPress={clearSelection}
+              >
+                <Text style={[styles.buttonText, { color: textColor }]}>
+                  選択解除
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-          <TouchableOpacity
-            style={styles.utilityButton}
-            onPress={clearSelection}
-          >
-            <Ionicons name="trash-outline" size={20} color="#FF4757" />
-            <Text style={styles.utilityButtonText}>クリア</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* 確認・キャンセルボタン */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-            <Text style={styles.cancelButtonText}>キャンセル</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.confirmButton,
-              (!hasSelection || processing) && styles.disabledButton,
-            ]}
-            onPress={handleConfirmSelection}
-            disabled={!hasSelection || processing}
-          >
-            <Text style={styles.confirmButtonText}>
-              {processing ? "処理中..." : "テキスト認識"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={[
+                styles.confirmButton,
+                {
+                  backgroundColor: confirmButtonColor,
+                  opacity:
+                    selection.width > 0 && selection.height > 0 ? 1 : 0.5,
+                },
+              ]}
+              onPress={handleConfirmSelection}
+              disabled={!(selection.width > 0 && selection.height > 0)}
+            >
+              <Text style={styles.confirmButtonText}>選択を確定</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -276,7 +298,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   closeButton: {
     padding: 8,
@@ -285,19 +306,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-  spacer: {
-    width: 40,
-  },
-  content: {
+  imageContainer: {
     flex: 1,
     padding: 16,
   },
-  instruction: {
-    fontSize: 16,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  imageContainer: {
+  imageWrapper: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -310,40 +323,22 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  buttonsContainer: {
+  buttonRow: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 16,
     marginBottom: 16,
   },
-  utilityButton: {
+  button: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 12,
     padding: 8,
   },
-  utilityButtonText: {
+  buttonText: {
     marginLeft: 4,
     fontSize: 14,
     color: "#FF4757",
-  },
-  actionButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    color: "#555",
-    fontSize: 16,
-    fontWeight: "500",
   },
   confirmButton: {
     flex: 2,
@@ -358,8 +353,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  disabledButton: {
-    backgroundColor: "#A5D6A7",
-    opacity: 0.7,
+  loader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  selectionBox: {
+    position: "absolute",
+    borderWidth: 2,
+    borderColor: "#FF4757",
   },
 });
