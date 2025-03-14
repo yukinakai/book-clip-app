@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,13 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
-  KeyboardAvoidingView,
   Platform,
   Alert,
   Modal,
+  ScrollView,
+  Keyboard,
+  KeyboardEvent,
+  Dimensions,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Router } from "expo-router";
 import { ClipStorageService } from "../../services/ClipStorageService";
@@ -49,12 +52,39 @@ export default function AddClipScreen() {
   const [showCamera, setShowCamera] = useState(false);
   const [showOCRResult, setShowOCRResult] = useState(false);
   const [capturedImageUri, setCapturedImageUri] = useState<string | null>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const router = useRouter();
   const routerShim = createRouterShim(router);
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+
+  // キーボードの表示を監視
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e: KeyboardEvent) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
+
+  // キーボードを閉じる関数
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
 
   const handleSaveClip = async () => {
     if (!clipText.trim()) {
@@ -116,23 +146,30 @@ export default function AddClipScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidingView}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-            testID="back-button"
-          >
-            <Ionicons name="arrow-back" size={24} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>
-            クリップを追加
-          </Text>
-        </View>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          testID="back-button"
+        >
+          <Ionicons name="arrow-back" size={24} color={textColor} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: textColor }]}>
+          クリップを追加
+        </Text>
+      </View>
 
+      <ScrollView
+        style={[styles.scrollContainer, { backgroundColor }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 50 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        showsVerticalScrollIndicator={true}
+        onScrollBeginDrag={dismissKeyboard}
+      >
         <View style={styles.form}>
           <Text style={[styles.bookTitle, { color: textColor }]}>
             {bookTitle || "書籍タイトル"}
@@ -196,8 +233,11 @@ export default function AddClipScreen() {
           >
             <Text style={styles.saveButtonText}>保存する</Text>
           </TouchableOpacity>
+
+          {/* 追加の余白 */}
+          <View style={{ height: 80 }} />
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
 
       {/* カメラモーダル - Modalを使用した場合、expo-routerのコンテキストが適切に動作しない場合がある */}
       {showCamera && (
@@ -237,9 +277,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -254,9 +291,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 50,
+  },
   form: {
     padding: 20,
-    flex: 1,
   },
   bookTitle: {
     fontSize: 20,
