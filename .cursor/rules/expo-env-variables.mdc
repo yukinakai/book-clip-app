@@ -1,0 +1,95 @@
+---
+description: # Expoでの環境変数使用ガイド  ## 基本原則  Expoアプリケーションで環境変数を使用する際には、以下の点に注意が必要です：  1. **`EXPO_PUBLIC_`プレフィックスの使用**: Expo 49以降では、クライアントコードからアクセスできる環境変数には必ず`EXPO_PUBLIC_`プレフィックスを付ける必要があります 2. **`process.env`の制限**: React Nativeでは、Node.jsの`process.env`とは異なり、ビルド時に値が埋め込まれます 3. **再ビルドの必要性**: 環境変数の変更はアプリの再ビルド後にのみ反映されます  ## 実装方法  ### 1. `.env`ファイルで環境変数を定義  ``` EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY=あなたのAPIキー EXPO_PUBLIC_API_URL=https://api.example.com ```  ### 2. アプリコードから環境変数にアクセス  ```javascript // 正しいアクセス方法 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY; const apiUrl = process.env.EXPO_PUBLIC_API_URL;  // 誤ったアクセス方法（値が取得できない） const wrongApiKey = process.env.GOOGLE_CLOUD_VISION_API_KEY; // undefined ```  ### 3. TypeScriptでの型定義（オプション）  ```typescript // types.d.ts などに定義 declare global {   namespace NodeJS {     interface ProcessEnv {       EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY: string;       EXPO_PUBLIC_API_URL: string;     }   } } ```  ## 代替方法（古い方法）  Expo 48以前または特殊なケースでは、以下の方法も利用可能です：  ### app.config.jsでの環境変数設定  ```javascript // app.config.js export default {   name: 'my-app',   // ...   extra: {     apiKey: process.env.API_KEY,   }, }; ```  ```javascript // コード内での使用 import Constants from 'expo-constants'; const apiKey = Constants.expoConfig?.extra?.apiKey; ```  ## セキュリティ上の注意点  1. **公開しても良い情報のみ**: `EXPO_PUBLIC_`を付けた環境変数はクライアントコードに埋め込まれるため、公開しても問題ない情報のみを含めるべきです 2. **APIキーの制限**: Google Cloud等のAPIキーは、使用元のバンドルIDやOriginで制限をかけましょう 3. **`.env`ファイルの管理**: `.env`ファイルは`.gitignore`に含め、Gitリポジトリで管理しないようにしましょう 4. **`.env.sample`の提供**: 実際のキーを含まない`.env.sample`ファイルを提供し、必要な環境変数を示しましょう  ## トラブルシューティング  環境変数が`undefined`になる主な原因：  1. `EXPO_PUBLIC_`プレフィックスが付いていない 2. アプリが環境変数変更後に再ビルドされていない 3. 開発環境と本番環境で異なる`.env`ファイルを使用している 4. EASビルドで環境変数が正しく設定されていない  ## バッドプラクティス  以下の方法は避けるべきです：  - 環境変数を直接ソースコードにハードコードする - 秘密の情報（DBパスワードなど）を`EXPO_PUBLIC_`プレフィックス付きで設定する - APIキーを無制限で使用する 
+globs: 
+alwaysApply: false
+---
+# Expoでの環境変数使用ガイド
+
+## 基本原則
+
+Expoアプリケーションで環境変数を使用する際には、以下の点に注意が必要です：
+
+1. **`EXPO_PUBLIC_`プレフィックスの使用**: Expo 49以降では、クライアントコードからアクセスできる環境変数には必ず`EXPO_PUBLIC_`プレフィックスを付ける必要があります
+2. **`process.env`の制限**: React Nativeでは、Node.jsの`process.env`とは異なり、ビルド時に値が埋め込まれます
+3. **再ビルドの必要性**: 環境変数の変更はアプリの再ビルド後にのみ反映されます
+
+## 実装方法
+
+### 1. `.env`ファイルで環境変数を定義
+
+```
+EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY=あなたのAPIキー
+EXPO_PUBLIC_API_URL=https://api.example.com
+```
+
+### 2. アプリコードから環境変数にアクセス
+
+```javascript
+// 正しいアクセス方法
+const apiKey = process.env.EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY;
+const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
+// 誤ったアクセス方法（値が取得できない）
+const wrongApiKey = process.env.GOOGLE_CLOUD_VISION_API_KEY; // undefined
+```
+
+### 3. TypeScriptでの型定義（オプション）
+
+```typescript
+// types.d.ts などに定義
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY: string;
+      EXPO_PUBLIC_API_URL: string;
+    }
+  }
+}
+```
+
+## 代替方法（古い方法）
+
+Expo 48以前または特殊なケースでは、以下の方法も利用可能です：
+
+### app.config.jsでの環境変数設定
+
+```javascript
+// app.config.js
+export default {
+  name: 'my-app',
+  // ...
+  extra: {
+    apiKey: process.env.API_KEY,
+  },
+};
+```
+
+```javascript
+// コード内での使用
+import Constants from 'expo-constants';
+const apiKey = Constants.expoConfig?.extra?.apiKey;
+```
+
+## セキュリティ上の注意点
+
+1. **公開しても良い情報のみ**: `EXPO_PUBLIC_`を付けた環境変数はクライアントコードに埋め込まれるため、公開しても問題ない情報のみを含めるべきです
+2. **APIキーの制限**: Google Cloud等のAPIキーは、使用元のバンドルIDやOriginで制限をかけましょう
+3. **`.env`ファイルの管理**: `.env`ファイルは`.gitignore`に含め、Gitリポジトリで管理しないようにしましょう
+4. **`.env.sample`の提供**: 実際のキーを含まない`.env.sample`ファイルを提供し、必要な環境変数を示しましょう
+
+## トラブルシューティング
+
+環境変数が`undefined`になる主な原因：
+
+1. `EXPO_PUBLIC_`プレフィックスが付いていない
+2. アプリが環境変数変更後に再ビルドされていない
+3. 開発環境と本番環境で異なる`.env`ファイルを使用している
+4. EASビルドで環境変数が正しく設定されていない
+
+## バッドプラクティス
+
+以下の方法は避けるべきです：
+
+- 環境変数を直接ソースコードにハードコードする
+- 秘密の情報（DBパスワードなど）を`EXPO_PUBLIC_`プレフィックス付きで設定する
+- APIキーを無制限で使用する 

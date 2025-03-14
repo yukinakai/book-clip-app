@@ -25,7 +25,7 @@ export class OCRService {
   // 環境変数からAPIキーを取得
   private static getApiKey(): string {
     // 環境変数から直接APIキーを取得
-    const apiKey = process.env.GOOGLE_CLOUD_VISION_API_KEY;
+    const apiKey = process.env.EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY;
 
     if (!apiKey) {
       throw new Error(
