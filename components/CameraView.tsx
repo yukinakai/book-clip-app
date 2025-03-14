@@ -41,34 +41,48 @@ export default function CameraView({
   // カメラのパーミッション取得
   useEffect(() => {
     (async () => {
-      // カメラのパーミッションをリクエスト
-      if (!cameraPermission?.granted) {
-        await requestCameraPermission();
-      }
+      try {
+        // すでに許可されているか確認
+        if (cameraPermission?.granted) {
+          // すでに許可されている場合はメディアライブラリのみチェック
+          const { status: mediaLibraryStatus } =
+            await MediaLibrary.requestPermissionsAsync();
+          setHasPermission(mediaLibraryStatus === "granted");
+          return;
+        }
 
-      // メディアライブラリのパーミッションをリクエスト
-      const { status: mediaLibraryStatus } =
-        await MediaLibrary.requestPermissionsAsync();
+        // カメラのパーミッションをリクエスト（まだ許可されていない場合のみ）
+        const cameraResult = await requestCameraPermission();
 
-      setHasPermission(
-        cameraPermission?.granted === true && mediaLibraryStatus === "granted"
-      );
+        // メディアライブラリのパーミッションをリクエスト
+        const { status: mediaLibraryStatus } =
+          await MediaLibrary.requestPermissionsAsync();
 
-      if (!cameraPermission?.granted) {
-        Alert.alert(
-          "カメラのアクセス許可が必要です",
-          "テキスト抽出機能を使用するにはカメラへのアクセス許可が必要です。"
+        // 両方のパーミッションの状態を更新
+        setHasPermission(
+          cameraResult.granted && mediaLibraryStatus === "granted"
         );
-      }
 
-      if (mediaLibraryStatus !== "granted") {
-        Alert.alert(
-          "メディアライブラリへのアクセス許可が必要です",
-          "撮影した写真を保存するには許可が必要です。"
-        );
+        // パーミッションが拒否された場合のみアラート表示
+        if (!cameraResult.granted) {
+          Alert.alert(
+            "カメラのアクセス許可が必要です",
+            "テキスト抽出機能を使用するにはカメラへのアクセス許可が必要です。"
+          );
+        }
+
+        if (mediaLibraryStatus !== "granted") {
+          Alert.alert(
+            "メディアライブラリへのアクセス許可が必要です",
+            "撮影した写真を保存するには許可が必要です。"
+          );
+        }
+      } catch (error) {
+        console.error("パーミッション取得エラー:", error);
+        setHasPermission(false);
       }
     })();
-  }, [cameraPermission, requestCameraPermission]);
+  }, []); // 依存配列を空にして初回のみ実行
 
   // 写真撮影
   const takePicture = async () => {
