@@ -4,20 +4,20 @@
  */
 
 // メインカラー（Primary Colors）
-const bookClipBlue = "#2B3A67"; // 信頼感や集中力を与える知的で明るいブルー
+const bookNavy = "#2B3A67"; // レトロな本の装丁を想起させる、深く落ち着いた紺
 
 // アクセントカラー（Accent Colors）
-const clipYellow = "#FFD644"; // 強調や注目させたい情報をハイライトするための活力あるイエロー
-const insightGreen = "#3ECF8E"; // 読書から得られる新たな気づきや理解の深まりを表現する新鮮なグリーン
+const antiqueGold = "#D1A85F"; // 深いネイビーと調和し、レトロ感と品格を醸成するゴールド調のイエロー
+const insightGreen = "#558B6E"; // 落ち着いた雰囲気の中にも、学びや気づきを与える穏やかなグリーン
 
 // ベースカラー（Neutral Colors）
-const baseWhite = "#FFFFFF"; // 読書に最適な清潔感と視認性のある白
-const paperBeige = "#F8F4ED"; // 本や紙の質感を連想させるナチュラルなベージュ
-const textBlack = "#333333"; // 長時間読んでも疲れにくい、濃すぎない柔らかなブラック
+const paperWhite = "#FAFAF5"; // 書籍ページのような柔らかな白
+const vintageBeige = "#E8E0D1"; // 紙やヴィンテージ書籍の質感を演出する落ち着いたベージュ
+const inkBlack = "#323031"; // 紙に印刷されたインクを連想させる、穏やかで濃すぎないブラック
 
 // サブカラー（Supporting Colors）
-const archiveGrey = "#8D99AE"; // データ管理やサブ情報、タグなど補助的な要素に使用する落ち着いたグレー
-const alertRed = "#FF5C5C"; // 削除、エラー、注意喚起を促す際の強調色
+const libraryGray = "#7C7C84"; // サブ情報やタグなどの補助的な役割を果たし、落ち着きと視認性を両立
+const classicRed = "#A63A50"; // 削除や注意喚起を示すための控えめな深い赤
 
 // ダークモードの派生カラー
 const darkBackground = "#1A1E2A"; // ダークモードの背景色
@@ -27,33 +27,33 @@ const darkPaperColor = "#2A2F3F"; // ダークモードの紙色
 
 export const Colors = {
   light: {
-    text: textBlack,
-    background: baseWhite,
-    secondaryBackground: paperBeige,
-    tint: bookClipBlue,
-    icon: archiveGrey,
-    tabIconDefault: archiveGrey,
-    tabIconSelected: bookClipBlue,
-    primary: bookClipBlue,
-    accent1: clipYellow,
+    text: inkBlack,
+    background: paperWhite,
+    secondaryBackground: vintageBeige,
+    tint: bookNavy,
+    icon: libraryGray,
+    tabIconDefault: libraryGray,
+    tabIconSelected: bookNavy,
+    primary: bookNavy,
+    accent1: antiqueGold,
     accent2: insightGreen,
-    paper: paperBeige,
-    alert: alertRed,
+    paper: vintageBeige,
+    alert: classicRed,
     success: insightGreen,
   },
   dark: {
     text: darkTextColor,
     background: darkBackground,
     secondaryBackground: darkSecondaryBackground,
-    tint: bookClipBlue,
-    icon: archiveGrey,
-    tabIconDefault: archiveGrey,
-    tabIconSelected: bookClipBlue,
-    primary: bookClipBlue,
-    accent1: clipYellow,
+    tint: bookNavy,
+    icon: libraryGray,
+    tabIconDefault: libraryGray,
+    tabIconSelected: bookNavy,
+    primary: bookNavy,
+    accent1: antiqueGold,
     accent2: insightGreen,
     paper: darkPaperColor,
-    alert: alertRed,
+    alert: classicRed,
     success: insightGreen,
   },
 };
