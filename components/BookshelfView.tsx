@@ -110,7 +110,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const COLUMN_COUNT = 3;
-const ITEM_MARGIN = 4;
+const ITEM_MARGIN = 6;
 const ITEM_WIDTH =
   (SCREEN_WIDTH - (COLUMN_COUNT + 1) * ITEM_MARGIN * 2) / COLUMN_COUNT;
 const COVER_ASPECT_RATIO = 1.5; // 一般的な本の表紙の縦横比（高さ/幅）

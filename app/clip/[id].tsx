@@ -236,7 +236,7 @@ export default function ClipDetailScreen() {
               <TouchableOpacity
                 style={[
                   styles.confirmButton,
-                  { backgroundColor: Colors[colorScheme].success },
+                  { backgroundColor: Colors[colorScheme].primary },
                 ]}
                 onPress={handleUpdateClip}
                 testID="update-clip-button"
