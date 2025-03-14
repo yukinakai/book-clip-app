@@ -61,12 +61,16 @@ export default function ImageSelectionView({
   const [processing, setProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 画像コンテナのref
+  const imageContainerRef = useRef<View>(null);
+
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const borderColor = useThemeColor({}, "border");
-  const buttonColor = useThemeColor({}, "button");
-  const selectionBorderColor = useThemeColor({}, "selectionBorder");
-  const confirmButtonColor = useThemeColor({}, "confirmButton");
+  // テーマカラーの代わりに固定値を使用
+  const borderColor = "#ddd";
+  const buttonColor = "#f5f5f5";
+  const selectionBorderColor = "#FF4757";
+  const confirmButtonColor = "#4CAF50";
 
   // 画像読み込み完了時の処理
   const handleImageLoad = () => {
@@ -197,6 +201,17 @@ export default function ImageSelectionView({
     };
   };
 
+  // 現在の選択範囲を計算
+  const currentSelection = {
+    x: Math.min(selectionStart.x, selectionEnd.x),
+    y: Math.min(selectionStart.y, selectionEnd.y),
+    width: Math.abs(selectionEnd.x - selectionStart.x),
+    height: Math.abs(selectionEnd.y - selectionStart.y),
+  };
+
+  const hasValidSelection =
+    currentSelection.width > 0 && currentSelection.height > 0;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <View style={[styles.header, { borderBottomColor: borderColor }]}>
@@ -220,23 +235,23 @@ export default function ImageSelectionView({
             <View
               style={styles.imageWrapper}
               ref={imageContainerRef}
-              onLayout={onImageContainerLayout}
+              onLayout={handleImageLayout}
             >
               <Image
                 source={{ uri: imageUri }}
                 style={styles.image}
                 resizeMode="contain"
-                onLoad={onImageLoaded}
+                onLoad={handleImageLoad}
               />
-              {selection.width > 0 && selection.height > 0 && (
+              {hasValidSelection && (
                 <View
                   style={[
                     styles.selectionBox,
                     {
-                      left: selection.x,
-                      top: selection.y,
-                      width: selection.width,
-                      height: selection.height,
+                      left: currentSelection.x,
+                      top: currentSelection.y,
+                      width: currentSelection.width,
+                      height: currentSelection.height,
                       borderColor: selectionBorderColor,
                     },
                   ]}
@@ -248,7 +263,7 @@ export default function ImageSelectionView({
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={[styles.button, { backgroundColor: buttonColor }]}
-                onPress={selectAll}
+                onPress={handleSelectAll}
               >
                 <Text style={[styles.buttonText, { color: textColor }]}>
                   すべて選択
@@ -269,12 +284,11 @@ export default function ImageSelectionView({
                 styles.confirmButton,
                 {
                   backgroundColor: confirmButtonColor,
-                  opacity:
-                    selection.width > 0 && selection.height > 0 ? 1 : 0.5,
+                  opacity: hasValidSelection ? 1 : 0.5,
                 },
               ]}
               onPress={handleConfirmSelection}
-              disabled={!(selection.width > 0 && selection.height > 0)}
+              disabled={!hasValidSelection}
             >
               <Text style={styles.confirmButtonText}>選択を確定</Text>
             </TouchableOpacity>
