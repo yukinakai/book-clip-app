@@ -55,7 +55,16 @@ export class OCRService {
       );
 
       // 2. Google Cloud Vision APIでテキスト認識を実行
-      return await this.recognizeTextWithCloudVision(processedImage.uri);
+      const ocrResult = await this.recognizeTextWithCloudVision(
+        processedImage.uri
+      );
+
+      // 3. テキストを整形：改行を削除し、句点「。」ごとに改行を挿入
+      if (ocrResult.text) {
+        ocrResult.text = this.formatRecognizedText(ocrResult.text);
+      }
+
+      return ocrResult;
     } catch (error) {
       console.error("OCR処理中にエラーが発生しました:", error);
 
@@ -303,5 +312,28 @@ export class OCRService {
       console.error("Base64エンコード中にエラーが発生しました:", error);
       throw new Error("画像のエンコードに失敗しました");
     }
+  }
+
+  /**
+   * OCR認識テキストを整形する
+   * @param text 元のテキスト
+   * @returns 整形されたテキスト（改行を削除し、句点「。」ごとに改行を挿入）
+   */
+  private static formatRecognizedText(text: string): string {
+    if (!text) return "";
+
+    // 1. 既存の改行をすべて半角スペースに置換
+    let formattedText = text.replace(/\n/g, " ");
+
+    // 2. 複数の連続したスペースを1つに置換
+    formattedText = formattedText.replace(/\s+/g, " ");
+
+    // 3. 句点「。」の後に改行を挿入（ただし、文末の場合は改行しない）
+    formattedText = formattedText.replace(/。(?!$)/g, "。\n");
+
+    // 4. 前後の余分なスペースを削除
+    formattedText = formattedText.trim();
+
+    return formattedText;
   }
 }
