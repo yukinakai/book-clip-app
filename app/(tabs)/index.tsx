@@ -2,13 +2,16 @@
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View, Alert } from "react-native";
 import { Book } from "../../constants/MockData";
+import { Colors } from "../../constants/Colors";
 import BookshelfView from "../../components/BookshelfView";
 import { Ionicons } from "@expo/vector-icons";
 import CameraModal from "../../components/camera/CameraModal";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const colorScheme = useColorScheme() ?? "light";
 
   const handleBookSelect = (book: Book) => {
     console.log("Selected book:", book.title);
@@ -43,7 +46,10 @@ export default function HomeScreen() {
 
       <View style={styles.buttonWrapper}>
         <TouchableOpacity
-          style={styles.addButton}
+          style={[
+            styles.addButton,
+            { backgroundColor: Colors[colorScheme].primary },
+          ]}
           activeOpacity={0.8}
           onPress={() => setIsCameraOpen(true)}
           testID="add-book-button"
@@ -84,7 +90,6 @@ const styles = StyleSheet.create({
     width: 65,
     height: 65,
     borderRadius: 35,
-    backgroundColor: "#FF4757",
     justifyContent: "center",
     alignItems: "center",
     elevation: 12,
