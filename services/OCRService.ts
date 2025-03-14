@@ -3,6 +3,7 @@ import * as FileSystem from "expo-file-system";
 import TextRecognition, {
   TextRecognitionScript,
 } from "@react-native-ml-kit/text-recognition";
+import { SelectionArea } from "../components/ImageSelectionView";
 
 // OCR結果のインターフェース
 export interface OCRResult {
@@ -29,7 +30,7 @@ export class OCRService {
 
     if (!apiKey) {
       throw new Error(
-        "Google Cloud Vision APIキーが設定されていません。.envファイルにGOOGLE_CLOUD_VISION_API_KEYを設定してください。"
+        "Google Cloud Vision APIキーが設定されていません。.envファイルにEXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEYを設定してください。"
       );
     }
 
@@ -39,12 +40,19 @@ export class OCRService {
   /**
    * 画像からテキストを抽出する
    * @param imageUri 画像のURI
+   * @param selectionArea 選択された領域（指定がない場合は画像全体を処理）
    * @returns テキスト抽出結果
    */
-  static async extractTextFromImage(imageUri: string): Promise<OCRResult> {
+  static async extractTextFromImage(
+    imageUri: string,
+    selectionArea?: SelectionArea
+  ): Promise<OCRResult> {
     try {
-      // 1. 画像を圧縮して処理しやすくする
-      const processedImage = await this.preprocessImage(imageUri);
+      // 1. 画像を処理 (選択領域があればトリミング)
+      const processedImage = await this.preprocessImage(
+        imageUri,
+        selectionArea
+      );
 
       // 2. Google Cloud Vision APIでテキスト認識を実行
       return await this.recognizeTextWithCloudVision(processedImage.uri);
@@ -63,16 +71,87 @@ export class OCRService {
   }
 
   /**
-   * 画像の前処理（サイズ変更・圧縮など）
+   * 画像の前処理（サイズ変更・圧縮・トリミングなど）
    * @param imageUri 元画像のURI
+   * @param selectionArea 選択された領域（指定がない場合は画像全体を処理）
    * @returns 処理済み画像情報
    */
-  private static async preprocessImage(imageUri: string) {
-    // 画像サイズを調整し、品質を下げて処理しやすくする
+  private static async preprocessImage(
+    imageUri: string,
+    selectionArea?: SelectionArea
+  ) {
+    // アクションの配列を作成
+    const actions: ImageManipulator.Action[] = [];
+
+    // 選択領域がある場合はトリミング
+    if (selectionArea) {
+      // 元画像のサイズを取得
+      const imageWidth = selectionArea.imageWidth;
+      const imageHeight = selectionArea.imageHeight;
+
+      // 左右のマージンを非対称に設定（左側により多くのマージン）
+      // 縦書きテキストの場合、左側が行の始まりになるため、左側により大きなマージンを適用
+      const marginLeft = Math.min(Math.round(selectionArea.width * 0.25), 50); // 左側は25%、最大50px
+      const marginRight = Math.min(Math.round(selectionArea.width * 0.15), 30); // 右側は15%、最大30px
+
+      // 上下のマージンも非対称に設定
+      const marginTop = Math.min(Math.round(selectionArea.height * 0.2), 40); // 上部は20%、最大40px
+      const marginBottom = Math.min(
+        Math.round(selectionArea.height * 0.15),
+        30
+      ); // 下部は15%、最大30px
+
+      // 端数を丸めて整数値にする
+      let originX = Math.max(0, Math.round(selectionArea.x - marginLeft));
+      let originY = Math.max(0, Math.round(selectionArea.y - marginTop));
+      let width = Math.min(
+        imageWidth - originX,
+        Math.round(selectionArea.width + marginLeft + marginRight)
+      );
+      let height = Math.min(
+        imageHeight - originY,
+        Math.round(selectionArea.height + marginTop + marginBottom)
+      );
+
+      // 選択範囲が有効（幅と高さが正の値）かチェック
+      if (width > 0 && height > 0) {
+        actions.push({
+          crop: {
+            originX,
+            originY,
+            width,
+            height,
+          },
+        });
+
+        console.log("トリミング範囲:", {
+          originX,
+          originY,
+          width,
+          height,
+          marginLeft,
+          marginRight,
+          marginTop,
+          marginBottom,
+          originalSelection: {
+            x: selectionArea.x,
+            y: selectionArea.y,
+            width: selectionArea.width,
+            height: selectionArea.height,
+          },
+        });
+      }
+    }
+
+    // リサイズ（選択領域がある場合はトリミング後にリサイズ）
+    // 解像度を高めに保持してテキスト認識精度を向上
+    actions.push({ resize: { width: 1600 } });
+
+    // 画像処理を実行
     return await ImageManipulator.manipulateAsync(
       imageUri,
-      [{ resize: { width: 1000 } }], // 幅1000pxにリサイズ
-      { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // 圧縮率80%
+      actions,
+      { compress: 0.95, format: ImageManipulator.SaveFormat.JPEG } // 圧縮率を95%に向上
     );
   }
 
@@ -111,9 +190,16 @@ export class OCRService {
                     type: "TEXT_DETECTION",
                     maxResults: 1,
                   },
+                  {
+                    type: "DOCUMENT_TEXT_DETECTION", // ドキュメントテキスト検出も追加（縦書きに有効）
+                    maxResults: 1,
+                  },
                 ],
                 imageContext: {
-                  languageHints: ["ja"], // 日本語を優先
+                  languageHints: ["ja", "ja-t-i0-handwrit"], // 日本語と日本語手書き認識を優先
+                  textDetectionParams: {
+                    enableTextDetectionConfidenceScore: true, // 信頼度スコアを有効化
+                  },
                 },
               },
             ],
@@ -128,6 +214,10 @@ export class OCRService {
       }
 
       const data = await response.json();
+      console.log(
+        "Google Vision API レスポンス:",
+        JSON.stringify(data, null, 2)
+      );
 
       // エラーチェック
       if (data.error) {
@@ -139,29 +229,46 @@ export class OCRService {
       }
 
       // レスポンスからテキストを抽出
-      if (
-        !data.responses ||
-        !data.responses[0] ||
-        !data.responses[0].fullTextAnnotation
+      // DOCUMENT_TEXT_DETECTIONの結果を優先的に使用（縦書きに対応）
+      const docResponse = data.responses && data.responses[0];
+      let recognizedText = "";
+      let confidenceValue = 0.9; // デフォルト値
+
+      if (docResponse && docResponse.fullTextAnnotation) {
+        recognizedText = docResponse.fullTextAnnotation.text;
+
+        // 信頼度の計算
+        if (docResponse.fullTextAnnotation.pages) {
+          const blocks = docResponse.fullTextAnnotation.pages[0]?.blocks || [];
+          let totalConfidence = 0;
+          let blockCount = 0;
+
+          for (const block of blocks) {
+            if (block.confidence) {
+              totalConfidence += block.confidence;
+              blockCount++;
+            }
+          }
+
+          if (blockCount > 0) {
+            confidenceValue = totalConfidence / blockCount;
+          }
+        }
+      } else if (
+        docResponse &&
+        docResponse.textAnnotations &&
+        docResponse.textAnnotations.length > 0
       ) {
+        recognizedText = docResponse.textAnnotations[0].description;
+
+        if (docResponse.textAnnotations[0].confidence) {
+          confidenceValue = docResponse.textAnnotations[0].confidence;
+        }
+      } else {
         return {
           text: "",
           error: "テキストが検出できませんでした",
         };
-      }
-
-      const recognizedText = data.responses[0].fullTextAnnotation.text;
-
-      // 信頼度の計算（個別の検出結果から平均値を算出）
-      let confidenceValue = 0.9; // デフォルト値
-      if (
-        data.responses[0].textAnnotations &&
-        data.responses[0].textAnnotations.length > 0
-      ) {
-        // 一部のレスポンスに信頼度情報が含まれる場合に対応
-        if (data.responses[0].textAnnotations[0].confidence) {
-          confidenceValue = data.responses[0].textAnnotations[0].confidence;
-        }
       }
 
       return {
