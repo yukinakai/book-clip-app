@@ -8,10 +8,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Book } from "../constants/MockData";
 import { BookStorageService } from "../services/BookStorageService";
 import { useThemeColor } from "../hooks/useThemeColor";
@@ -90,10 +87,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor }]}
-      edges={["top"]}
-    >
+    <View style={[styles.container, { backgroundColor }]}>
       <FlatList
         data={books}
         renderItem={renderItem}
@@ -104,7 +98,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
         onRefresh={loadBooks}
         refreshing={false}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

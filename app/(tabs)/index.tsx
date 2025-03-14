@@ -1,6 +1,13 @@
 // app/(tabs)/index.tsx
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View, Alert } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Alert,
+  Text,
+  SafeAreaView,
+} from "react-native";
 import { Book } from "../../constants/MockData";
 import { Colors } from "../../constants/Colors";
 import BookshelfView from "../../components/BookshelfView";
@@ -35,16 +42,21 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.bookshelfContainer}>
-        <BookshelfView
-          onSelectBook={handleBookSelect}
-          headerTitle="マイライブラリ"
-          refreshTrigger={refreshTrigger}
-        />
-      </View>
-
-      <View style={styles.buttonWrapper}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: Colors[colorScheme].background },
+      ]}
+    >
+      <View
+        style={[
+          styles.headerContainer,
+          { backgroundColor: Colors[colorScheme].background },
+        ]}
+      >
+        <Text style={[styles.headerTitle, { color: Colors[colorScheme].text }]}>
+          マイライブラリ
+        </Text>
         <TouchableOpacity
           style={[
             styles.addButton,
@@ -54,8 +66,17 @@ export default function HomeScreen() {
           onPress={() => setIsCameraOpen(true)}
           testID="add-book-button"
         >
-          <Ionicons name="barcode-outline" size={26} color="white" />
+          <Ionicons name="book-outline" size={18} color="white" />
+          <Text style={styles.buttonText}>書籍を追加</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.bookshelfContainer}>
+        <BookshelfView
+          onSelectBook={handleBookSelect}
+          headerTitle=""
+          refreshTrigger={refreshTrigger}
+        />
       </View>
 
       <CameraModal
@@ -63,7 +84,7 @@ export default function HomeScreen() {
         onClose={handleClose}
         onImageCaptured={handleImageCaptured}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -72,31 +93,41 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E8E0D1", // Vintage Beige
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
   bookshelfContainer: {
     flex: 1,
     width: "100%",
-  },
-  buttonWrapper: {
-    position: "absolute",
-    height: "100%",
-    width: "100%",
-    pointerEvents: "box-none",
-    zIndex: 5000,
+    marginTop: 0, // ヘッダーとコンテンツの間のスペースを削除
   },
   addButton: {
-    position: "absolute",
-    bottom: 90,
-    right: 30,
-    width: 65,
-    height: 65,
-    borderRadius: 35,
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.6,
-    shadowRadius: 6,
-    zIndex: 5000,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 6,
   },
 });
