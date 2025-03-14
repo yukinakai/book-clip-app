@@ -15,6 +15,8 @@ import { BookStorageService } from "../../services/BookStorageService";
 import { ClipStorageService } from "../../services/ClipStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
+import { Colors } from "../../constants/Colors";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,6 +24,7 @@ export default function BookDetailScreen() {
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const colorScheme = useColorScheme() ?? "light";
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
@@ -163,7 +166,10 @@ export default function BookDetailScreen() {
       </ScrollView>
 
       <TouchableOpacity
-        style={styles.addButton}
+        style={[
+          styles.addButton,
+          { backgroundColor: Colors[colorScheme].primary },
+        ]}
         activeOpacity={0.8}
         testID="add-clip-button"
         onPress={handleAddClip}
@@ -285,7 +291,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#FF4757",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
