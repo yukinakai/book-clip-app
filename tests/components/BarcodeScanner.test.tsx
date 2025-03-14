@@ -14,7 +14,11 @@ jest.mock("expo-barcode-scanner", () => {
         <View
           testID="barcode-scanner"
           style={style}
-          onPress={(data) => onBarCodeScanned({ data })}
+          onPress={(data) => {
+            if (onBarCodeScanned) {
+              onBarCodeScanned({ data });
+            }
+          }}
         />
       );
     }),
