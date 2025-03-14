@@ -52,4 +52,108 @@ Jest のモックでは、React モジュールを直接参照できないこと
 ### 参考リソース
 
 - [Jest 公式ドキュメント - Manual Mocks](mdc:https:/jestjs.io/docs/manual-mocks)
-- [React Testing Library - ガイド](mdc:https:/testing-library.com/docs/react-testing-library/intro)
+- @React Testing Library - ガイド
+
+
+## モックモジュール内での外部変数参照の制限
+
+### 問題
+
+Jestのモックモジュール内（`jest.mock()`のコールバック関数内）では、外部で定義された変数を直接参照することができません。以下のようなコードはエラーになります：
+
+```javascript
+// 外部で定義されたモジュールやオブジェクト
+import * as MediaLibrary from "expo-media-library";
+
+// ❌ エラー: モックモジュール内でMediaLibraryを参照している
+jest.mock("../../components/SomeComponent", () => {
+  return (props) => {
+    const React = require("react");
+    return React.createElement("div", {
+      onClick: async () => {
+        // 外部で定義されたMediaLibraryを参照 - これがエラーの原因
+        await MediaLibrary.saveToLibraryAsync("file://test/photo.jpg");
+      }
+    });
+  };
+});
+```
+
+エラーメッセージの例：
+```
+ReferenceError: The module factory of `jest.mock()` is not allowed to reference any out-of-scope variables.
+Invalid variable access: MediaLibrary
+```
+
+### 解決策
+
+以下のアプローチで問題を解決できます：
+
+1. **`mockImplementation`を使用する**
+
+   ```javascript
+   // ✅ 正しい方法: モジュールを直接モックせず、実装を置き換える
+   jest.mock("../../components/SomeComponent");
+   
+   // モジュールをインポート
+   import SomeComponent from "../../components/SomeComponent";
+   import * as MediaLibrary from "expo-media-library";
+   
+   // テスト内でモック実装を設定
+   SomeComponent.mockImplementation((props) => {
+     // ここでは外部変数MediaLibraryを参照できる
+     return <div onClick={() => MediaLibrary.saveToLibraryAsync("file://test/photo.jpg")} />;
+   });
+   ```
+
+2. **モック変数を使用する**
+
+   ```javascript
+   // ✅ 正しい方法: mockプレフィックスの変数を使用
+   const mockMediaLibrary = {
+     saveToLibraryAsync: jest.fn().mockResolvedValue(undefined)
+   };
+   
+   jest.mock("../../components/SomeComponent", () => {
+     return (props) => {
+       const React = require("react");
+       return React.createElement("div", {
+         onClick: async () => {
+           // mockプレフィックス付きなので参照可能
+           await mockMediaLibrary.saveToLibraryAsync("file://test/photo.jpg");
+         }
+       });
+     };
+   });
+   ```
+
+3. **別のテストコンポーネントを作成し、通常のJSXで実装する**
+
+   ```javascript
+   // ✅ 正しい方法: モック用の独立コンポーネントを定義
+   function TestComponent(props) {
+     // 外部のMediaLibraryを使用しないように実装
+     return <div onClick={() => props.onCapture("file://test/photo.jpg")} />;
+   }
+   
+   // もとのコンポーネントをモックして、TestComponentを使用
+   jest.mock("../../components/SomeComponent", () => {
+     return jest.fn().mockImplementation((props) => {
+       const React = require("react");
+       return React.createElement(TestComponent, props);
+     });
+   });
+   ```
+
+### 注意点
+
+- Jestのモジュールモック内では、モック対象のモジュール内の機能のみをモックする
+- 外部依存を参照する必要がある場合は、モック内で`require`を使用するか、モック外で処理する
+- 複雑なモックが必要な場合は、モックモジュールを別ファイルに分離することも検討する
+- `mock`プレフィックス（大文字小文字を区別しない）で始まる変数名はモジュールモック内で参照可能
+
+### 参考リソース
+
+- [Jest 公式ドキュメント - モックの制限](mdc:https:/jestjs.io/docs/mock-functions#mock-implementations)
+- [Jest モジュールモックの範囲](mdc:https:/jestjs.io/docs/jest-object#jestmockmodulename-factory-options)
+
