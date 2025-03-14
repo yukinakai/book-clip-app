@@ -16,6 +16,8 @@ import { Book } from "../constants/MockData";
 import { BookStorageService } from "../services/BookStorageService";
 import { useThemeColor } from "../hooks/useThemeColor";
 import { useRouter } from "expo-router";
+import { Colors } from "../constants/Colors";
+import { useColorScheme } from "../hooks/useColorScheme";
 
 interface BookshelfViewProps {
   onSelectBook?: (book: Book) => void;
@@ -32,6 +34,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
 
   const loadBooks = useCallback(async () => {
@@ -64,7 +67,10 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
         <Text style={[styles.title, { color: textColor }]} numberOfLines={2}>
           {item.title}
         </Text>
-        <Text style={[styles.author, { color: textColor }]} numberOfLines={1}>
+        <Text
+          style={[styles.author, { color: Colors[colorScheme].tabIconDefault }]}
+          numberOfLines={1}
+        >
           {item.author}
         </Text>
       </View>
@@ -104,7 +110,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const COLUMN_COUNT = 3;
-const ITEM_MARGIN = 4;
+const ITEM_MARGIN = 6;
 const ITEM_WIDTH =
   (SCREEN_WIDTH - (COLUMN_COUNT + 1) * ITEM_MARGIN * 2) / COLUMN_COUNT;
 const COVER_ASPECT_RATIO = 1.5; // 一般的な本の表紙の縦横比（高さ/幅）
@@ -141,7 +147,6 @@ const styles = StyleSheet.create({
   },
   author: {
     fontSize: 10,
-    opacity: 0.7,
   },
   headerContainer: {
     paddingHorizontal: 8,

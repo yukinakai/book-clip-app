@@ -14,7 +14,6 @@
 ├── app
 │   ├── (tabs)
 │   │   ├── _layout.tsx
-│   │   ├── explore.tsx
 │   │   └── index.tsx
 │   ├── +not-found.tsx
 │   ├── _layout.tsx
@@ -42,10 +41,7 @@
 │   ├── BookItem.tsx
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
-│   ├── Collapsible.tsx
-│   ├── ExternalLink.tsx
 │   ├── HapticTab.tsx
-│   ├── HelloWave.tsx
 │   ├── ImageSelectionView.tsx
 │   ├── OCRResultView.tsx
 │   ├── ParallaxScrollView.tsx
@@ -77,6 +73,7 @@
 │   ├── useColorScheme.web.ts
 │   └── useThemeColor.ts
 ├── jest.config.js
+├── jest.setup.js
 ├── package-lock.json
 ├── package.json
 ├── scripts
@@ -113,7 +110,6 @@
 │   │   └── camera
 │   │       ├── BarcodeScanner.test.tsx
 │   │       └── CameraModal.test.tsx
-│   ├── jest.config.js
 │   ├── services
 │   │   ├── ClipStorageService.test.ts
 │   │   └── OCRService.test.ts
@@ -123,4 +119,4 @@
 └── types
     └── env.d.ts
 
-30 directories, 94 files
+30 directories, 90 files

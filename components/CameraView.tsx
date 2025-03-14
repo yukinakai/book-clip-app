@@ -16,6 +16,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Colors } from "../constants/Colors";
+import { useColorScheme } from "../hooks/useColorScheme";
 
 // ルーターシムのインターフェース
 interface RouterShim {
@@ -38,6 +40,7 @@ export default function CameraView({
   const [isTakingPicture, setIsTakingPicture] = useState(false);
   const cameraRef = useRef<any>(null);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const colorScheme = useColorScheme() ?? "light";
 
   // カメラのパーミッション取得
   useEffect(() => {
@@ -119,8 +122,10 @@ export default function CameraView({
   if (hasPermission === null) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#FF4757" />
-        <Text style={styles.text}>カメラへのアクセスを確認中...</Text>
+        <ActivityIndicator size="large" color={Colors[colorScheme].primary} />
+        <Text style={[styles.text, { color: Colors[colorScheme].background }]}>
+          カメラへのアクセスを確認中...
+        </Text>
       </View>
     );
   }
@@ -129,11 +134,24 @@ export default function CameraView({
   if (hasPermission === false) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.text}>カメラへのアクセスが拒否されました</Text>
-        <Text style={styles.subText}>
+        <Text style={[styles.text, { color: Colors[colorScheme].background }]}>
+          カメラへのアクセスが拒否されました
+        </Text>
+        <Text
+          style={[
+            styles.subText,
+            { color: Colors[colorScheme].tabIconDefault },
+          ]}
+        >
           設定アプリからカメラのアクセスを許可してください
         </Text>
-        <TouchableOpacity style={styles.button} onPress={onClose}>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            { backgroundColor: Colors[colorScheme].primary },
+          ]}
+          onPress={onClose}
+        >
           <Text style={styles.buttonText}>閉じる</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -153,14 +171,29 @@ export default function CameraView({
           {/* 上部のヘッダー */}
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={30} color="white" />
+              <Ionicons
+                name="close"
+                size={30}
+                color={Colors[colorScheme].background}
+              />
             </TouchableOpacity>
-            <Text style={styles.headerText}>テキスト撮影</Text>
+            <Text
+              style={[
+                styles.headerText,
+                { color: Colors[colorScheme].background },
+              ]}
+            >
+              テキスト撮影
+            </Text>
             <TouchableOpacity
               onPress={toggleCameraFacing}
               style={styles.flipButton}
             >
-              <Ionicons name="camera-reverse" size={30} color="white" />
+              <Ionicons
+                name="camera-reverse"
+                size={30}
+                color={Colors[colorScheme].background}
+              />
             </TouchableOpacity>
           </View>
 
@@ -172,9 +205,17 @@ export default function CameraView({
               disabled={isTakingPicture}
             >
               {isTakingPicture ? (
-                <ActivityIndicator size="large" color="white" />
+                <ActivityIndicator
+                  size="large"
+                  color={Colors[colorScheme].background}
+                />
               ) : (
-                <View style={styles.captureButtonInner} />
+                <View
+                  style={[
+                    styles.captureButtonInner,
+                    { backgroundColor: Colors[colorScheme].background },
+                  ]}
+                />
               )}
             </TouchableOpacity>
           </View>
@@ -189,7 +230,7 @@ const { width } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -214,7 +255,6 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerText: {
-    color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -239,22 +279,18 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "white",
   },
   text: {
-    color: "white",
     fontSize: 18,
     marginVertical: 10,
     textAlign: "center",
   },
   subText: {
-    color: "#ccc",
     fontSize: 14,
     marginBottom: 20,
     textAlign: "center",
   },
   button: {
-    backgroundColor: "#FF4757",
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,

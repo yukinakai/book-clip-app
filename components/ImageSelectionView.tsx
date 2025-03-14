@@ -18,6 +18,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../hooks/useThemeColor";
 import * as ImageManipulator from "expo-image-manipulator";
 import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
+import { Colors } from "../constants/Colors";
+import { useColorScheme } from "../hooks/useColorScheme";
 
 // ルーターシムのインターフェース
 interface RouterShim {
@@ -66,11 +68,13 @@ export default function ImageSelectionView({
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  // テーマカラーの代わりに固定値を使用
-  const borderColor = "#ddd";
-  const buttonColor = "#f0f0f0";
-  const selectionBorderColor = "#FF4757";
-  const confirmButtonColor = "#4CAF50";
+  const colorScheme = useColorScheme() ?? "light";
+
+  // カラーパレットの色を使用
+  const borderColor = Colors[colorScheme].tabIconDefault;
+  const buttonColor = Colors[colorScheme].paper;
+  const selectionBorderColor = Colors[colorScheme].alert;
+  const confirmButtonColor = Colors[colorScheme].success;
 
   // 画像読み込み完了時の処理
   const handleImageLoad = () => {
@@ -228,7 +232,7 @@ export default function ImageSelectionView({
         {isLoading ? (
           <ActivityIndicator
             size="large"
-            color="#0000ff"
+            color={Colors[colorScheme].primary}
             style={styles.loader}
           />
         ) : (
@@ -238,7 +242,10 @@ export default function ImageSelectionView({
             </Text>
 
             <View
-              style={styles.imageWrapper}
+              style={[
+                styles.imageWrapper,
+                { backgroundColor: Colors[colorScheme].paper },
+              ]}
               ref={imageContainerRef}
               onLayout={handleImageLayout}
               {...panResponder.panHandlers}
@@ -259,6 +266,7 @@ export default function ImageSelectionView({
                       width: currentSelection.width,
                       height: currentSelection.height,
                       borderColor: selectionBorderColor,
+                      backgroundColor: `${Colors[colorScheme].alert}20`, // 20は16進数での透明度12.5%
                     },
                   ]}
                 />
@@ -270,27 +278,51 @@ export default function ImageSelectionView({
                 <TouchableOpacity
                   style={[
                     styles.utilityButton,
-                    { backgroundColor: buttonColor },
+                    {
+                      backgroundColor: buttonColor,
+                      borderColor: borderColor,
+                    },
                   ]}
                   onPress={handleSelectAll}
                 >
-                  <Ionicons name="scan-outline" size={20} color="#FF4757" />
-                  <Text style={styles.utilityButtonText}>すべて選択</Text>
+                  <Ionicons
+                    name="scan-outline"
+                    size={20}
+                    color={Colors[colorScheme].alert}
+                  />
+                  <Text
+                    style={[
+                      styles.utilityButtonText,
+                      { color: Colors[colorScheme].alert },
+                    ]}
+                  >
+                    すべて選択
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[
                     styles.utilityButton,
-                    { backgroundColor: buttonColor },
+                    {
+                      backgroundColor: buttonColor,
+                      borderColor: borderColor,
+                    },
                   ]}
                   onPress={clearSelection}
                 >
                   <Ionicons
                     name="close-circle-outline"
                     size={20}
-                    color="#FF4757"
+                    color={Colors[colorScheme].alert}
                   />
-                  <Text style={styles.utilityButtonText}>選択解除</Text>
+                  <Text
+                    style={[
+                      styles.utilityButtonText,
+                      { color: Colors[colorScheme].alert },
+                    ]}
+                  >
+                    選択解除
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -356,7 +388,6 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#f0f0f0",
     marginBottom: 10,
   },
   image: {
@@ -380,17 +411,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#ddd",
     flex: 0.48,
   },
   utilityButtonText: {
     marginLeft: 8,
     fontSize: 14,
-    color: "#FF4757",
     fontWeight: "500",
   },
   confirmButton: {
-    backgroundColor: "#4CAF50",
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",
@@ -410,7 +438,5 @@ const styles = StyleSheet.create({
   selectionBox: {
     position: "absolute",
     borderWidth: 2,
-    borderColor: "#FF4757",
-    backgroundColor: "rgba(255, 71, 87, 0.1)",
   },
 });
