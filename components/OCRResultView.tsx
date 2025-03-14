@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
@@ -102,11 +101,6 @@ export default function OCRResultView({
       </View>
 
       <ScrollView style={styles.content}>
-        {/* 撮影した画像のプレビュー */}
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: imageUri }} style={styles.previewImage} />
-        </View>
-
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF4757" />
@@ -151,7 +145,7 @@ export default function OCRResultView({
 
             <View style={styles.buttonsContainer}>
               <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                <Text style={styles.cancelButtonText}>キャンセル</Text>
+                <Text style={styles.cancelButtonText}>範囲選択に戻る</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -196,16 +190,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  imageContainer: {
-    padding: 16,
-    alignItems: "center",
-  },
-  previewImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 8,
-    resizeMode: "cover",
   },
   loadingContainer: {
     padding: 20,

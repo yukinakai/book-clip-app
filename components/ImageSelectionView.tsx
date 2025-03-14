@@ -68,7 +68,7 @@ export default function ImageSelectionView({
   const textColor = useThemeColor({}, "text");
   // テーマカラーの代わりに固定値を使用
   const borderColor = "#ddd";
-  const buttonColor = "#f5f5f5";
+  const buttonColor = "#f0f0f0";
   const selectionBorderColor = "#FF4757";
   const confirmButtonColor = "#4CAF50";
 
@@ -221,6 +221,7 @@ export default function ImageSelectionView({
         <Text style={[styles.headerTitle, { color: textColor }]}>
           テキスト領域選択
         </Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.imageContainer}>
@@ -232,10 +233,15 @@ export default function ImageSelectionView({
           />
         ) : (
           <>
+            <Text style={[styles.instructionText, { color: textColor }]}>
+              テキストが含まれる領域を選択してください
+            </Text>
+
             <View
               style={styles.imageWrapper}
               ref={imageContainerRef}
               onLayout={handleImageLayout}
+              {...panResponder.panHandlers}
             >
               <Image
                 source={{ uri: imageUri }}
@@ -243,7 +249,7 @@ export default function ImageSelectionView({
                 resizeMode="contain"
                 onLoad={handleImageLoad}
               />
-              {hasValidSelection && (
+              {(hasValidSelection || isSelecting) && (
                 <View
                   style={[
                     styles.selectionBox,
@@ -255,43 +261,53 @@ export default function ImageSelectionView({
                       borderColor: selectionBorderColor,
                     },
                   ]}
-                  {...panResponder.panHandlers}
                 />
               )}
             </View>
 
-            <View style={styles.buttonRow}>
+            <View style={styles.buttonsContainer}>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.utilityButton,
+                    { backgroundColor: buttonColor },
+                  ]}
+                  onPress={handleSelectAll}
+                >
+                  <Ionicons name="scan-outline" size={20} color="#FF4757" />
+                  <Text style={styles.utilityButtonText}>すべて選択</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.utilityButton,
+                    { backgroundColor: buttonColor },
+                  ]}
+                  onPress={clearSelection}
+                >
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={20}
+                    color="#FF4757"
+                  />
+                  <Text style={styles.utilityButtonText}>選択解除</Text>
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
-                style={[styles.button, { backgroundColor: buttonColor }]}
-                onPress={handleSelectAll}
+                style={[
+                  styles.confirmButton,
+                  {
+                    backgroundColor: confirmButtonColor,
+                    opacity: hasValidSelection ? 1 : 0.5,
+                  },
+                ]}
+                onPress={handleConfirmSelection}
+                disabled={!hasValidSelection}
               >
-                <Text style={[styles.buttonText, { color: textColor }]}>
-                  すべて選択
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, { backgroundColor: buttonColor }]}
-                onPress={clearSelection}
-              >
-                <Text style={[styles.buttonText, { color: textColor }]}>
-                  選択解除
-                </Text>
+                <Text style={styles.confirmButtonText}>選択を確定</Text>
               </TouchableOpacity>
             </View>
-
-            <TouchableOpacity
-              style={[
-                styles.confirmButton,
-                {
-                  backgroundColor: confirmButtonColor,
-                  opacity: hasValidSelection ? 1 : 0.5,
-                },
-              ]}
-              onPress={handleConfirmSelection}
-              disabled={!hasValidSelection}
-            >
-              <Text style={styles.confirmButtonText}>選択を確定</Text>
-            </TouchableOpacity>
           </>
         )}
       </View>
@@ -299,7 +315,7 @@ export default function ImageSelectionView({
   );
 }
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
@@ -308,7 +324,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -319,46 +334,64 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
+    flex: 1,
+    textAlign: "center",
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  instructionText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginVertical: 8,
+    fontWeight: "500",
   },
   imageContainer: {
     flex: 1,
-    padding: 16,
+    padding: 8,
+    display: "flex",
+    flexDirection: "column",
   },
   imageWrapper: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    backgroundColor: "#f0f0f0",
     borderRadius: 8,
     overflow: "hidden",
+    backgroundColor: "#f0f0f0",
+    marginBottom: 10,
   },
   image: {
     width: "100%",
     height: "100%",
   },
+  buttonsContainer: {
+    paddingHorizontal: 8,
+    paddingBottom: 16,
+  },
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 16,
+    justifyContent: "space-between",
     marginBottom: 16,
   },
-  button: {
+  utilityButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 12,
-    padding: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    flex: 0.48,
   },
-  buttonText: {
-    marginLeft: 4,
+  utilityButtonText: {
+    marginLeft: 8,
     fontSize: 14,
     color: "#FF4757",
+    fontWeight: "500",
   },
   confirmButton: {
-    flex: 2,
     backgroundColor: "#4CAF50",
-    paddingVertical: 12,
-    marginLeft: 8,
+    paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",
   },
@@ -378,5 +411,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     borderWidth: 2,
     borderColor: "#FF4757",
+    backgroundColor: "rgba(255, 71, 87, 0.1)",
   },
 });

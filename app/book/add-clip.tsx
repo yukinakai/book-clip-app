@@ -167,6 +167,7 @@ export default function AddClipScreen() {
   // OCR結果画面を閉じる
   const handleCancelOCR = () => {
     setShowOCRResult(false);
+    setShowImageSelection(true);
   };
 
   return (
