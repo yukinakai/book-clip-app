@@ -13,6 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { OCRService, OCRResult } from "../services/OCRService";
 import { useThemeColor } from "../hooks/useThemeColor";
 import { SelectionArea } from "./ImageSelectionView";
+import { Colors } from "../constants/Colors";
+import { useColorScheme } from "../hooks/useColorScheme";
 
 // ルーターシムのインターフェース
 interface RouterShim {
@@ -43,7 +45,8 @@ export default function OCRResultView({
   // テーマカラーの取得
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const borderColor = "#ddd"; // 固定値に変更
+  const colorScheme = useColorScheme() ?? "light";
+  const borderColor = Colors[colorScheme].tabIconDefault;
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
 
   // 画像からテキストを抽出
@@ -103,16 +106,30 @@ export default function OCRResultView({
       <ScrollView style={styles.content}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#FF4757" />
+            <ActivityIndicator size="large" color={Colors[colorScheme].alert} />
             <Text style={[styles.loadingText, { color: textColor }]}>
               テキストを抽出中...
             </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={48} color="#FF4757" />
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Ionicons
+              name="alert-circle"
+              size={48}
+              color={Colors[colorScheme].alert}
+            />
+            <Text
+              style={[styles.errorText, { color: Colors[colorScheme].alert }]}
+            >
+              {error}
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.retryButton,
+                { backgroundColor: Colors[colorScheme].alert },
+              ]}
+              onPress={handleRetry}
+            >
               <Text style={styles.retryButtonText}>再試行</Text>
             </TouchableOpacity>
           </View>
@@ -140,18 +157,38 @@ export default function OCRResultView({
               value={editedText}
               onChangeText={setEditedText}
               placeholder="抽出されたテキストがここに表示されます"
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors[colorScheme].tabIconDefault}
             />
 
             <View style={styles.buttonsContainer}>
-              <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                <Text style={styles.cancelButtonText}>範囲選択に戻る</Text>
+              <TouchableOpacity
+                style={[
+                  styles.cancelButton,
+                  { borderColor: Colors[colorScheme].tabIconDefault },
+                ]}
+                onPress={onCancel}
+              >
+                <Text
+                  style={[
+                    styles.cancelButtonText,
+                    { color: Colors[colorScheme].tabIconDefault },
+                  ]}
+                >
+                  範囲選択に戻る
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[
                   styles.confirmButton,
-                  !editedText.trim() && styles.disabledButton,
+                  { backgroundColor: Colors[colorScheme].success },
+                  !editedText.trim() && [
+                    styles.disabledButton,
+                    {
+                      backgroundColor: Colors[colorScheme].success,
+                      opacity: 0.7,
+                    },
+                  ],
                 ]}
                 onPress={handleConfirm}
                 disabled={!editedText.trim()}
@@ -198,7 +235,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: "#555",
   },
   errorContainer: {
     padding: 20,
@@ -207,14 +243,12 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 12,
     fontSize: 16,
-    color: "#FF4757",
     textAlign: "center",
   },
   retryButton: {
     marginTop: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: "#FF4757",
     borderRadius: 8,
   },
   retryButtonText: {
@@ -227,7 +261,6 @@ const styles = StyleSheet.create({
   },
   confidenceText: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 8,
   },
   label: {
@@ -237,7 +270,6 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -254,18 +286,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     alignItems: "center",
   },
   cancelButtonText: {
-    color: "#555",
     fontSize: 16,
     fontWeight: "500",
   },
   confirmButton: {
     flex: 2,
-    backgroundColor: "#4CAF50",
     paddingVertical: 12,
     marginLeft: 8,
     borderRadius: 8,
@@ -277,7 +306,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   disabledButton: {
-    backgroundColor: "#A5D6A7", // 薄い緑色
     opacity: 0.7,
   },
 });
