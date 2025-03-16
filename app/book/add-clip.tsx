@@ -93,8 +93,8 @@ export default function AddClipScreen() {
 
       // 保存成功したら前の画面に戻る
       router.back();
-    } catch (_error) {
-      console.error("Failed to save clip:", _error);
+    } catch {
+      console.error("Failed to save clip");
       Alert.alert("エラー", "クリップの保存に失敗しました");
     }
   };

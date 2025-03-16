@@ -188,7 +188,8 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                               ]
                             );
                           }
-                        } catch (_error) {
+                        } catch {
+                          // エラー詳細は不要なため、ユーザーへの通知のみを行う
                           Alert.alert(
                             "エラー",
                             "本の保存中にエラーが発生しました。",
@@ -207,7 +208,8 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                     },
                   ]
                 );
-              } catch (_error) {
+              } catch {
+                // エラー詳細は不要なため、ユーザーへの通知のみを行う
                 Alert.alert("エラー", "本の検索中にエラーが発生しました。", [
                   {
                     text: "OK",
