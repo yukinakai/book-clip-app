@@ -168,9 +168,11 @@ export default function ClipDetailScreen() {
           >
             <Ionicons name="arrow-back" size={24} color={textColor} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>
-            クリップを編集
-          </Text>
+          <View style={styles.titleContainer}>
+            <Text style={[styles.headerTitle, { color: textColor }]}>
+              クリップを編集
+            </Text>
+          </View>
         </View>
 
         <ScrollView style={styles.scrollContainer}>
@@ -273,9 +275,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
+    position: "relative",
   },
   backButton: {
     marginRight: 10,
+    zIndex: 1,
+  },
+  titleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,

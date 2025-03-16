@@ -54,9 +54,13 @@ export default function HomeScreen() {
           { backgroundColor: Colors[colorScheme].background },
         ]}
       >
-        <Text style={[styles.headerTitle, { color: Colors[colorScheme].text }]}>
-          マイライブラリ
-        </Text>
+        <View style={styles.titleContainer}>
+          <Text
+            style={[styles.headerTitle, { color: Colors[colorScheme].text }]}
+          >
+            マイライブラリ
+          </Text>
+        </View>
         <TouchableOpacity
           style={[
             styles.addButton,
@@ -95,12 +99,21 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#E8E0D1", // Vintage Beige
+    position: "relative",
+  },
+  titleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
   },
   headerTitle: {
     fontSize: 18,

@@ -130,7 +130,9 @@ export default function BookDetailScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>書籍</Text>
+        <View style={styles.titleContainer}>
+          <Text style={[styles.headerTitle, { color: textColor }]}>書籍</Text>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
@@ -198,9 +200,18 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
+    position: "relative",
   },
   backButton: {
     marginRight: 10,
+    zIndex: 1,
+  },
+  titleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,

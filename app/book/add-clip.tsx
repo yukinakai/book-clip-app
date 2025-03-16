@@ -156,9 +156,11 @@ export default function AddClipScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>
-          クリップを追加
-        </Text>
+        <View style={styles.titleContainer}>
+          <Text style={[styles.headerTitle, { color: textColor }]}>
+            クリップを追加
+          </Text>
+        </View>
       </View>
 
       <ScrollView
@@ -310,9 +312,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
+    position: "relative",
   },
   backButton: {
     marginRight: 10,
+    zIndex: 1,
+  },
+  titleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,
