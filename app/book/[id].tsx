@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import NoImagePlaceholder from "../../components/NoImagePlaceholder";
 
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -130,12 +131,23 @@ export default function BookDetailScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>書籍</Text>
+        <View style={styles.titleContainer}>
+          <Text style={[styles.headerTitle, { color: textColor }]}>書籍</Text>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.bookInfoContainer}>
-          <Image source={{ uri: book.coverImage }} style={styles.coverImage} />
+          {book.coverImage ? (
+            <Image
+              source={{ uri: book.coverImage }}
+              style={styles.coverImage}
+            />
+          ) : (
+            <View style={styles.coverImage}>
+              <NoImagePlaceholder width={100} height={150} />
+            </View>
+          )}
           <View style={styles.bookInfo}>
             <Text style={[styles.title, { color: textColor }]}>
               {book.title}
@@ -198,9 +210,18 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
+    position: "relative",
   },
   backButton: {
     marginRight: 10,
+    zIndex: 1,
+  },
+  titleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,

@@ -1,11 +1,12 @@
 // components/camera/CameraModal.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  Pressable,
   View,
   TextInput,
   KeyboardAvoidingView,
@@ -16,9 +17,9 @@ import { Ionicons } from "@expo/vector-icons";
 import BarcodeScanner from "./BarcodeScanner";
 import ImagePreview from "./ImagePreview";
 import PermissionRequest from "./PermissionRequest";
-import { useBookScanner } from "@/hooks/useBookScanner";
-import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useBookScanner } from "../../hooks/useBookScanner";
+import { Colors } from "../../constants/Colors";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 interface CameraModalProps {
   isVisible: boolean;
@@ -160,6 +161,20 @@ const CameraModal: React.FC<CameraModalProps> = ({
     onClose,
   });
 
+  // パーミッション状態をログに出力
+  useEffect(() => {
+    console.log("Camera permissions:", permission);
+    if (isVisible && permission && !permission.granted) {
+      console.log("カメラの権限がありません。リクエストします...");
+      requestPermission();
+    }
+  }, [isVisible, permission, requestPermission]);
+
+  // モーダルの表示状態をログに出力
+  useEffect(() => {
+    console.log("CameraModal isVisible:", isVisible);
+  }, [isVisible]);
+
   const handleClose = () => {
     setCapturedImage(null);
     setError(null);
@@ -169,11 +184,28 @@ const CameraModal: React.FC<CameraModalProps> = ({
 
   const renderContent = () => {
     if (!permission) {
-      return <PermissionRequest loading={true} requestPermission={() => {}} />;
+      console.log("カメラのパーミッション情報が取得できていません");
+      return (
+        <PermissionRequest
+          loading={true}
+          requestPermission={() => {
+            console.log("パーミッションリクエスト（ローディング状態）");
+            requestPermission();
+          }}
+        />
+      );
     }
 
     if (!permission.granted) {
-      return <PermissionRequest requestPermission={requestPermission} />;
+      console.log("カメラの権限がありません");
+      return (
+        <PermissionRequest
+          requestPermission={() => {
+            console.log("パーミッションリクエスト実行");
+            requestPermission();
+          }}
+        />
+      );
     }
 
     if (capturedImage) {
@@ -210,9 +242,14 @@ const CameraModal: React.FC<CameraModalProps> = ({
         <BarcodeScanner onBarcodeScanned={handleBarcodeScanned} />
 
         {/* 手動入力ボタンを追加 */}
-        <TouchableOpacity
-          style={styles.manualEntryButton}
+        <Pressable
+          style={({ pressed }) => [
+            styles.manualEntryButton,
+            pressed && { opacity: 0.7, transform: [{ scale: 0.98 }] },
+          ]}
           onPress={showManualForm}
+          hitSlop={20}
+          android_ripple={{ color: "rgba(255,255,255,0.2)", borderless: false }}
         >
           <Ionicons
             name="create-outline"
@@ -220,8 +257,8 @@ const CameraModal: React.FC<CameraModalProps> = ({
             color="white"
             style={{ marginRight: 6 }}
           />
-          <Text style={styles.buttonText}>手動で入力</Text>
-        </TouchableOpacity>
+          <Text style={[styles.buttonText, { fontSize: 16 }]}>手動で入力</Text>
+        </Pressable>
       </View>
     );
   };
@@ -235,9 +272,20 @@ const CameraModal: React.FC<CameraModalProps> = ({
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={handleClose}
+            hitSlop={15}
+            android_ripple={{
+              color: "rgba(255,255,255,0.2)",
+              borderless: true,
+            }}
+          >
             <Ionicons name="close" size={30} color="white" />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>
             {capturedImage
               ? "プレビュー"
@@ -279,10 +327,12 @@ const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
     left: 15,
-    width: 44,
-    height: 44,
+    width: 50,
+    height: 50,
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 100,
+    borderRadius: 25,
   },
   errorContainer: {
     backgroundColor: "rgba(255, 0, 0, 0.7)",
@@ -370,9 +420,11 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
     elevation: 5,
+    minWidth: 140,
+    minHeight: 44,
   },
 });
 

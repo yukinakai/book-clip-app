@@ -160,29 +160,16 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
           {/* 上部のヘッダー */}
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons
-                name="close"
-                size={30}
-                color={Colors[colorScheme].background}
-              />
+              <Ionicons name="close" size={30} color="white" />
             </TouchableOpacity>
-            <Text
-              style={[
-                styles.headerText,
-                { color: Colors[colorScheme].background },
-              ]}
-            >
+            <Text style={[styles.headerText, { color: "white" }]}>
               テキスト撮影
             </Text>
             <TouchableOpacity
               onPress={toggleCameraFacing}
               style={styles.flipButton}
             >
-              <Ionicons
-                name="camera-reverse"
-                size={30}
-                color={Colors[colorScheme].background}
-              />
+              <Ionicons name="camera-reverse" size={30} color="white" />
             </TouchableOpacity>
           </View>
 

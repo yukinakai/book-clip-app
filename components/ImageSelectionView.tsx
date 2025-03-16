@@ -167,27 +167,6 @@ export default function ImageSelectionView({
     },
   });
 
-  // 選択範囲のスタイルを計算
-  const _getSelectionStyle = () => {
-    if (!hasSelection && !isSelecting) return null;
-
-    const startX = Math.min(selectionStart.x, selectionEnd.x);
-    const startY = Math.min(selectionStart.y, selectionEnd.y);
-    const width = Math.abs(selectionEnd.x - selectionStart.x);
-    const height = Math.abs(selectionEnd.y - selectionStart.y);
-
-    return {
-      position: "absolute" as const,
-      left: startX,
-      top: startY,
-      width,
-      height,
-      borderWidth: 2,
-      borderColor: "#FF4757",
-      backgroundColor: "rgba(255, 71, 87, 0.1)",
-    };
-  };
-
   // 現在の選択範囲を計算
   const currentSelection = {
     x: Math.min(selectionStart.x, selectionEnd.x),

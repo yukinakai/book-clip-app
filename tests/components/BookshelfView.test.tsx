@@ -3,6 +3,12 @@ import { render, fireEvent } from "@testing-library/react-native";
 import BookshelfView from "../../components/BookshelfView";
 import { Book } from "../../constants/MockData";
 
+// NoImagePlaceholderのモック
+jest.mock(
+  "../../components/NoImagePlaceholder",
+  () => "NoImagePlaceholder-Mock"
+);
+
 // BookStorageServiceのモック
 jest.mock("../../services/BookStorageService", () => ({
   BookStorageService: {
