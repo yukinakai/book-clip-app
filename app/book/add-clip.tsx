@@ -13,7 +13,7 @@ import {
   Keyboard,
   KeyboardEvent,
 } from "react-native";
-import { useLocalSearchParams, useRouter, Router } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ClipStorageService } from "../../services/ClipStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
@@ -24,27 +24,6 @@ import ImageSelectionView, {
 } from "../../components/ImageSelectionView";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
-
-// ルーターシムを作成する関数の型定義
-interface RouterShim {
-  back: () => void;
-}
-
-// モーダル内でのルーターコンテキスト問題を回避するため、
-// router.back()の代わりに使用するカスタム関数
-const createRouterShim = (router: Router): RouterShim => ({
-  back: () => {
-    try {
-      if (router && typeof router.back === "function") {
-        router.back();
-      } else {
-        console.warn("Router not available, using fallback navigation");
-      }
-    } catch (error) {
-      console.warn("Error navigating back:", error);
-    }
-  },
-});
 
 export default function AddClipScreen() {
   const { bookId, bookTitle } = useLocalSearchParams<{
@@ -62,7 +41,6 @@ export default function AddClipScreen() {
     undefined
   );
   const router = useRouter();
-  const routerShim = createRouterShim(router);
   const colorScheme = useColorScheme() ?? "light";
 
   const backgroundColor = useThemeColor({}, "background");

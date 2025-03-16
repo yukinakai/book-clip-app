@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
   PanResponder,
   GestureResponderEvent,
   PanResponderGestureState,
@@ -37,14 +36,14 @@ interface ImageSelectionViewProps {
   imageUri: string;
   onConfirm: (selectionArea: SelectionArea) => void;
   onCancel: () => void;
-  router?: RouterShim;
+  _router?: RouterShim;
 }
 
 export default function ImageSelectionView({
   imageUri,
   onConfirm,
   onCancel,
-  router,
+  _router,
 }: ImageSelectionViewProps) {
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [imageLayout, setImageLayout] = useState({
@@ -57,8 +56,8 @@ export default function ImageSelectionView({
   const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
   const [isSelecting, setIsSelecting] = useState(false);
   const [hasSelection, setHasSelection] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_processing, setProcessing] = useState(false);
+  const [isLoading, _setIsLoading] = useState(false);
 
   // 画像コンテナのref
   const imageContainerRef = useRef<View>(null);
@@ -155,7 +154,7 @@ export default function ImageSelectionView({
     },
     onPanResponderMove: (
       event: GestureResponderEvent,
-      gestureState: PanResponderGestureState
+      _gestureState: PanResponderGestureState
     ) => {
       if (isSelecting) {
         // 移動中は選択範囲を更新
@@ -182,7 +181,7 @@ export default function ImageSelectionView({
   });
 
   // 選択範囲のスタイルを計算
-  const getSelectionStyle = () => {
+  const _getSelectionStyle = () => {
     if (!hasSelection && !isSelecting) return null;
 
     const startX = Math.min(selectionStart.x, selectionEnd.x);
@@ -343,8 +342,6 @@ export default function ImageSelectionView({
     </SafeAreaView>
   );
 }
-
-const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {

@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions,
   Platform,
 } from "react-native";
 import {
@@ -27,13 +26,13 @@ interface RouterShim {
 interface CameraViewProps {
   onCapture: (imageUri: string) => void;
   onClose: () => void;
-  router?: RouterShim; // オプショナルなので既存のコードを壊さない
+  _router?: RouterShim; // オプショナルなので既存のコードを壊さない
 }
 
 export default function CameraView({
   onCapture,
   onClose,
-  router,
+  _router,
 }: CameraViewProps) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [facing, setFacing] = useState<"front" | "back">("back");
@@ -224,8 +223,6 @@ export default function CameraView({
     </SafeAreaView>
   );
 }
-
-const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
