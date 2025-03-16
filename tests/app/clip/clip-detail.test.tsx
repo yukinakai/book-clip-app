@@ -2,8 +2,12 @@ import React from "react";
 import { render, fireEvent, waitFor } from "../../test-utils";
 import { Alert } from "react-native";
 
+// 実際のテスト
+import ClipDetailScreen from "../../../app/clip/[id]";
+import { ClipStorageService } from "../../../services/ClipStorageService";
+
 // Alertのモック
-jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
+jest.spyOn(Alert, "alert").mockImplementation((title, _message, buttons) => {
   // 削除確認アラートの場合、削除を実行
   if (title === "確認" && buttons && buttons.length > 1) {
     const deleteButton = buttons.find((b) => b.text === "削除");
@@ -19,7 +23,7 @@ const mockRouterBack = jest.fn();
 // 実際のコンポーネントをモックして、テスト用の簡易版を提供
 jest.mock("../../../app/clip/[id]", () => {
   // 元のモジュールの型情報を保持
-  const originalModule = jest.requireActual("../../../app/clip/[id]");
+  const _originalModule = jest.requireActual("../../../app/clip/[id]");
 
   // モック化されたコンポーネントを返す関数
   return {
@@ -36,7 +40,6 @@ jest.mock("../../../app/clip/[id]", () => {
 
       // モック用の背景色
       const backgroundColor = "#ffffff";
-      const textColor = "#000000";
 
       React.useEffect(() => {
         // コンポーネントマウント時にモックAPIを呼び出す
@@ -101,7 +104,7 @@ jest.mock("../../../app/clip/[id]", () => {
                       "クリップが削除されました。前の画面に戻ってください。"
                     );
                   }
-                } catch (error) {
+                } catch {
                   Alert.alert("エラー", "クリップの削除に失敗しました");
                 }
               },
@@ -266,10 +269,6 @@ jest.mock("../../../services/ClipStorageService", () => ({
     removeClip: jest.fn().mockResolvedValue(undefined),
   },
 }));
-
-// 実際のテスト
-import ClipDetailScreen from "../../../app/clip/[id]";
-import { ClipStorageService } from "../../../services/ClipStorageService";
 
 describe("ClipDetailScreen", () => {
   beforeEach(() => {

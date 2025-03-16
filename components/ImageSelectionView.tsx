@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -6,25 +6,16 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
   PanResponder,
   GestureResponderEvent,
   PanResponderGestureState,
   Alert,
-  Platform,
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../hooks/useThemeColor";
-import * as ImageManipulator from "expo-image-manipulator";
-import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
-
-// ルーターシムのインターフェース
-interface RouterShim {
-  back: () => void;
-}
 
 // 選択領域の情報
 export interface SelectionArea {
@@ -40,14 +31,12 @@ interface ImageSelectionViewProps {
   imageUri: string;
   onConfirm: (selectionArea: SelectionArea) => void;
   onCancel: () => void;
-  router?: RouterShim;
 }
 
 export default function ImageSelectionView({
   imageUri,
   onConfirm,
   onCancel,
-  router,
 }: ImageSelectionViewProps) {
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [imageLayout, setImageLayout] = useState({
@@ -60,8 +49,6 @@ export default function ImageSelectionView({
   const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
   const [isSelecting, setIsSelecting] = useState(false);
   const [hasSelection, setHasSelection] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   // 画像コンテナのref
   const imageContainerRef = useRef<View>(null);
@@ -98,8 +85,6 @@ export default function ImageSelectionView({
   const handleConfirmSelection = async () => {
     if (!hasSelection) return;
 
-    setProcessing(true);
-
     try {
       // 選択範囲をソートして確実に左上と右下の座標にする
       const startX = Math.min(selectionStart.x, selectionEnd.x);
@@ -125,8 +110,6 @@ export default function ImageSelectionView({
     } catch (error) {
       console.error("選択範囲の処理中にエラーが発生しました:", error);
       Alert.alert("エラー", "画像の処理に失敗しました");
-    } finally {
-      setProcessing(false);
     }
   };
 
@@ -158,7 +141,7 @@ export default function ImageSelectionView({
     },
     onPanResponderMove: (
       event: GestureResponderEvent,
-      gestureState: PanResponderGestureState
+      _gestureState: PanResponderGestureState
     ) => {
       if (isSelecting) {
         // 移動中は選択範囲を更新
@@ -185,7 +168,7 @@ export default function ImageSelectionView({
   });
 
   // 選択範囲のスタイルを計算
-  const getSelectionStyle = () => {
+  const _getSelectionStyle = () => {
     if (!hasSelection && !isSelecting) return null;
 
     const startX = Math.min(selectionStart.x, selectionEnd.x);
@@ -229,7 +212,7 @@ export default function ImageSelectionView({
       </View>
 
       <View style={styles.imageContainer}>
-        {isLoading ? (
+        {false ? (
           <ActivityIndicator
             size="large"
             color={Colors[colorScheme].primary}
@@ -346,8 +329,6 @@ export default function ImageSelectionView({
     </SafeAreaView>
   );
 }
-
-const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {

@@ -1,9 +1,7 @@
 import React from "react";
-import { render, fireEvent, waitFor, act } from "../test-utils";
+import { render, fireEvent, act } from "../test-utils";
 import { Alert } from "react-native";
-import ImageSelectionView, {
-  SelectionArea,
-} from "../../components/ImageSelectionView";
+import ImageSelectionView from "../../components/ImageSelectionView";
 
 // Alertのモック
 jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
@@ -96,7 +94,7 @@ jest.mock("../../components/ImageSelectionView", () => {
 
 // Ioniconsのモック
 jest.mock("@expo/vector-icons", () => ({
-  Ionicons: ({ name, size, color }) => {
+  Ionicons: ({ name, _size, _color }) => {
     const React = require("react");
     const { Text } = require("react-native");
     return React.createElement(Text, { testID: `icon-${name}` }, name);

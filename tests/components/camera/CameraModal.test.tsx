@@ -1,6 +1,5 @@
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
-import { Modal, View, Text, TouchableOpacity } from "react-native";
+import { render } from "@testing-library/react-native";
 import CameraModal from "../../../components/camera/CameraModal";
 
 // モック
@@ -192,7 +191,7 @@ describe("CameraModal", () => {
       .mocked(require("expo-camera").useCameraPermissions)
       .mockReturnValue([null, jest.fn()]);
 
-    const { UNSAFE_getAllByType, UNSAFE_getAllByProps } = render(
+    const { UNSAFE_getAllByType } = render(
       <CameraModal
         isVisible={true}
         onClose={jest.fn()}

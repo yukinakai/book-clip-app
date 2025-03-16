@@ -25,7 +25,7 @@ export default function ClipDetailScreen() {
   const [text, setText] = useState("");
   const [page, setPage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [bookTitle, setBookTitle] = useState("");
+  const [_bookTitle, _setBookTitle] = useState("");
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
 

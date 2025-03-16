@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions,
   Platform,
 } from "react-native";
 import {
@@ -19,22 +18,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
 
-// ルーターシムのインターフェース
-interface RouterShim {
-  back: () => void;
-}
-
 interface CameraViewProps {
   onCapture: (imageUri: string) => void;
   onClose: () => void;
-  router?: RouterShim; // オプショナルなので既存のコードを壊さない
 }
 
-export default function CameraView({
-  onCapture,
-  onClose,
-  router,
-}: CameraViewProps) {
+export default function CameraView({ onCapture, onClose }: CameraViewProps) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [facing, setFacing] = useState<"front" | "back">("back");
   const [isTakingPicture, setIsTakingPicture] = useState(false);
@@ -86,7 +75,7 @@ export default function CameraView({
         setHasPermission(false);
       }
     })();
-  }, []); // 依存配列を空にして初回のみ実行
+  }, [cameraPermission?.granted, requestCameraPermission]);
 
   // 写真撮影
   const takePicture = async () => {
@@ -224,8 +213,6 @@ export default function CameraView({
     </SafeAreaView>
   );
 }
-
-const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {

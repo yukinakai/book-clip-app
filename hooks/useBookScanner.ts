@@ -4,12 +4,8 @@ import { RakutenBookService } from "@/services/RakutenBookService";
 import { BookStorageService } from "@/services/BookStorageService";
 import { Book } from "@/constants/MockData";
 
-// No-Image用のデフォルト画像URL
-const DEFAULT_BOOK_IMAGE =
-  "https://placehold.co/150x200/e0e0e0/696969?text=No+Image";
-
 // No-Image用のフラグ - この値がcoverImageに設定された場合はプレースホルダーを表示
-export const NO_IMAGE_FLAG = null;
+const NO_IMAGE_FLAG = null;
 
 interface UseBookScannerProps {
   onClose: () => void;
@@ -24,7 +20,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
     useState<boolean>(false);
   const [bookTitle, setBookTitle] = useState<string>("");
   const [bookAuthor, setBookAuthor] = useState<string>("");
-  const [scannedBarcode, setScannedBarcode] = useState<string>("");
+  const [_scannedBarcode, setScannedBarcode] = useState<string>("");
 
   const isProcessingRef = useRef(false);
   const lastProcessedTime = useRef(0);
@@ -192,7 +188,8 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                               ]
                             );
                           }
-                        } catch (error) {
+                        } catch {
+                          // エラー詳細は不要なため、ユーザーへの通知のみを行う
                           Alert.alert(
                             "エラー",
                             "本の保存中にエラーが発生しました。",
@@ -211,7 +208,8 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                     },
                   ]
                 );
-              } catch (error) {
+              } catch {
+                // エラー詳細は不要なため、ユーザーへの通知のみを行う
                 Alert.alert("エラー", "本の検索中にエラーが発生しました。", [
                   {
                     text: "OK",

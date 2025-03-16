@@ -26,7 +26,7 @@ const mockGetClipsByBookId = jest.fn().mockResolvedValue([
 // 実際のコンポーネントをモックして、テスト用の簡易版を提供
 jest.mock("../../../app/book/[id]", () => {
   // 元のモジュールをrequireActualで取得
-  const originalModule = jest.requireActual("../../../app/book/[id]");
+  const _originalModule = jest.requireActual("../../../app/book/[id]");
 
   // モック化されたコンポーネントを返す関数
   const MockedComponent = () => {

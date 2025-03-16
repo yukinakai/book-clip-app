@@ -5,11 +5,14 @@
 │       ├── expo-env-variables.mdc
 │       ├── expo-router-testing.mdc
 │       ├── jest-mock-lessons.mdc
-│       └── jest-testing-guide.mdc
+│       ├── jest-testing-guide.mdc
+│       └── unused-variables.mdc
 ├── .cursorignore
 ├── .env
 ├── .env.sample
+├── .eslintrc.js
 ├── .gitignore
+├── .ts-prunerc.json
 ├── README.md
 ├── app
 │   ├── (tabs)
@@ -121,4 +124,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 91 files
+31 directories, 94 files

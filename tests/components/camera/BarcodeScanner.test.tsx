@@ -1,12 +1,15 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 
+// テスト対象をインポート
+import BarcodeScanner from "../../../components/camera/BarcodeScanner";
+
 // コンポーネントをモックする
 jest.mock("../../../components/camera/BarcodeScanner", () => {
   const React = require("react");
   const { View, Text, TouchableOpacity } = require("react-native");
 
-  return function MockBarcodeScanner(props) {
+  return function MockBarcodeScanner(_props) {
     return (
       <View testID="barcode-scanner">
         <Text>上部のISBNバーコードを枠内に収めてください</Text>
@@ -68,9 +71,6 @@ jest.mock("expo-camera", () => ({
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: "Ionicons",
 }));
-
-// テスト対象をインポート
-import BarcodeScanner from "../../../components/camera/BarcodeScanner";
 
 describe("BarcodeScanner", () => {
   it("コンポーネントが正しくレンダリングされること", () => {

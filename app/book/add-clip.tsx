@@ -12,9 +12,8 @@ import {
   ScrollView,
   Keyboard,
   KeyboardEvent,
-  Dimensions,
 } from "react-native";
-import { useLocalSearchParams, useRouter, Router } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ClipStorageService } from "../../services/ClipStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
@@ -25,27 +24,6 @@ import ImageSelectionView, {
 } from "../../components/ImageSelectionView";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
-
-// ルーターシムを作成する関数の型定義
-interface RouterShim {
-  back: () => void;
-}
-
-// モーダル内でのルーターコンテキスト問題を回避するため、
-// router.back()の代わりに使用するカスタム関数
-const createRouterShim = (router: Router): RouterShim => ({
-  back: () => {
-    try {
-      if (router && typeof router.back === "function") {
-        router.back();
-      } else {
-        console.warn("Router not available, using fallback navigation");
-      }
-    } catch (error) {
-      console.warn("Error navigating back:", error);
-    }
-  },
-});
 
 export default function AddClipScreen() {
   const { bookId, bookTitle } = useLocalSearchParams<{
@@ -63,7 +41,6 @@ export default function AddClipScreen() {
     undefined
   );
   const router = useRouter();
-  const routerShim = createRouterShim(router);
   const colorScheme = useColorScheme() ?? "light";
 
   const backgroundColor = useThemeColor({}, "background");
@@ -92,11 +69,6 @@ export default function AddClipScreen() {
     };
   }, []);
 
-  // キーボードを閉じる関数
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
-
   const handleSaveClip = async () => {
     if (!clipText.trim()) {
       Alert.alert("エラー", "クリップするテキストを入力してください");
@@ -121,8 +93,8 @@ export default function AddClipScreen() {
 
       // 保存成功したら前の画面に戻る
       router.back();
-    } catch (error) {
-      console.error("Failed to save clip:", error);
+    } catch {
+      console.error("Failed to save clip");
       Alert.alert("エラー", "クリップの保存に失敗しました");
     }
   };
@@ -291,11 +263,7 @@ export default function AddClipScreen() {
           animationType="slide"
           onRequestClose={handleCameraClose}
         >
-          <CameraView
-            onCapture={handleCapture}
-            onClose={handleCameraClose}
-            router={routerShim}
-          />
+          <CameraView onCapture={handleCapture} onClose={handleCameraClose} />
         </Modal>
       )}
 
@@ -310,7 +278,6 @@ export default function AddClipScreen() {
             imageUri={capturedImageUri}
             onConfirm={handleSelectionConfirm}
             onCancel={handleSelectionCancel}
-            router={routerShim}
           />
         </Modal>
       )}
@@ -327,7 +294,6 @@ export default function AddClipScreen() {
             selectionArea={selectedArea}
             onConfirm={handleConfirmOCRText}
             onCancel={handleCancelOCR}
-            router={routerShim}
           />
         </Modal>
       )}

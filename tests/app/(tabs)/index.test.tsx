@@ -1,8 +1,7 @@
 import React from "react";
-import { render, fireEvent, act } from "../../test-utils";
+import { render, fireEvent } from "../../test-utils";
 import HomeScreen from "../../../app/(tabs)/index";
 import { Alert } from "react-native";
-import { Book } from "../../../constants/MockData";
 
 // Ioniconsのモック
 jest.mock("@expo/vector-icons", () => ({
@@ -36,7 +35,7 @@ jest.mock("../../../components/BookshelfView", () => {
 
   return {
     __esModule: true,
-    default: jest.fn(({ onSelectBook, headerTitle, refreshTrigger }) => {
+    default: jest.fn(({ onSelectBook, headerTitle, _refreshTrigger }) => {
       return (
         <View testID="bookshelf-view">
           <Text testID="header-title">{headerTitle}</Text>

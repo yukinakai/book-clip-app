@@ -1,4 +1,3 @@
-import React from "react";
 import { renderHook } from "@testing-library/react-hooks";
 import { Alert } from "react-native";
 import { useBookScanner } from "../../hooks/useBookScanner";

@@ -1,7 +1,10 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "../test-utils";
-import { Alert, View, Text, TouchableOpacity } from "react-native";
+import { Alert } from "react-native";
 import * as MediaLibrary from "expo-media-library";
+
+// テスト対象コンポーネントのインポート
+import CameraView from "../../components/CameraView";
 
 // モックの準備
 const mockRef = {
@@ -46,7 +49,7 @@ jest.mock("expo-media-library", () => ({
 }));
 
 jest.mock("@expo/vector-icons", () => ({
-  Ionicons: ({ name, size, color }) => {
+  Ionicons: ({ name, _size, _color }) => {
     const React = require("react");
     const { Text } = require("react-native");
     return React.createElement(
@@ -75,9 +78,6 @@ jest.mock("react-native-safe-area-context", () => {
       ),
   };
 });
-
-// テスト対象コンポーネントのインポート
-import CameraView from "../../components/CameraView";
 
 // テスト用のモックコンポーネント（React Nativeコンポーネントを使用）
 const TestCameraView = (props) => {

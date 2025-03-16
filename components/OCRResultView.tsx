@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -16,16 +16,10 @@ import { SelectionArea } from "./ImageSelectionView";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
 
-// ルーターシムのインターフェース
-interface RouterShim {
-  back: () => void;
-}
-
 interface OCRResultViewProps {
   imageUri: string;
   onConfirm: (text: string) => void;
   onCancel: () => void;
-  router?: RouterShim; // オプショナルなので既存のコードを壊さない
   selectionArea?: SelectionArea; // 選択領域の情報（オプション）
 }
 
@@ -33,12 +27,11 @@ export default function OCRResultView({
   imageUri,
   onConfirm,
   onCancel,
-  router,
   selectionArea,
 }: OCRResultViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [extractedText, setExtractedText] = useState("");
+  const [, setExtractedText] = useState("");
   const [editedText, setEditedText] = useState("");
   const [confidence, setConfidence] = useState<number | undefined>(undefined);
 
@@ -49,12 +42,8 @@ export default function OCRResultView({
   const borderColor = Colors[colorScheme].tabIconDefault;
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
 
-  // 画像からテキストを抽出
-  useEffect(() => {
-    extractText();
-  }, [imageUri, selectionArea]);
-
-  const extractText = async () => {
+  // 画像からテキストを抽出する関数をuseCallbackで包む
+  const extractText = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -79,7 +68,20 @@ export default function OCRResultView({
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    imageUri,
+    selectionArea,
+    setLoading,
+    setError,
+    setExtractedText,
+    setEditedText,
+    setConfidence,
+  ]);
+
+  // 画像からテキストを抽出
+  useEffect(() => {
+    extractText();
+  }, [extractText]);
 
   // テキストを確定して親コンポーネントに渡す
   const handleConfirm = () => {

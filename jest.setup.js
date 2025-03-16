@@ -5,7 +5,7 @@ jest.mock("@expo/vector-icons", () => {
 
   // アイコンコンポーネントのモック作成
   const createIconMock = (name) => {
-    const Icon = ({ name, size, color, style }) => {
+    const Icon = ({ name, _size, _color, style }) => {
       return React.createElement(View, { style }, `${name} Icon`);
     };
     Icon.displayName = name;
