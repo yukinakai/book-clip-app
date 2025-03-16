@@ -1,17 +1,17 @@
 // @expo/vector-icons のモック
-jest.mock("@expo/vector-icons", () => {
-  const React = require("react");
-  const { View } = require("react-native");
+const React = require("react");
+const { View } = require("react-native");
 
-  // アイコンコンポーネントのモック作成
-  const createIconMock = (name) => {
-    const Icon = ({ name, _size, _color, style }) => {
-      return React.createElement(View, { style }, `${name} Icon`);
-    };
-    Icon.displayName = name;
-    return Icon;
+// アイコンコンポーネントのモック作成
+const createIconMock = (name) => {
+  const Icon = ({ name, _size, _color, style }) => {
+    return React.createElement(View, { style }, `${name} Icon`);
   };
+  Icon.displayName = name;
+  return Icon;
+};
 
+jest.mock("@expo/vector-icons", () => {
   // 必要なアイコンセットをモック
   return {
     Ionicons: createIconMock("Ionicons"),

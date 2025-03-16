@@ -1,4 +1,3 @@
-import React from "react";
 import { render } from "../test-utils";
 import { View, Text, Image } from "react-native";
 import ParallaxScrollView from "../../components/ParallaxScrollView";

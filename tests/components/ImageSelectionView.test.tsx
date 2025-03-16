@@ -1,4 +1,3 @@
-import React from "react";
 import { render, fireEvent, act } from "../test-utils";
 import { Alert } from "react-native";
 import ImageSelectionView from "../../components/ImageSelectionView";
