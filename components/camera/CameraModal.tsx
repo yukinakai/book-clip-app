@@ -253,11 +253,11 @@ const CameraModal: React.FC<CameraModalProps> = ({
         >
           <Ionicons
             name="create-outline"
-            size={24}
+            size={20}
             color="white"
-            style={{ marginRight: 8 }}
+            style={{ marginRight: 6 }}
           />
-          <Text style={[styles.buttonText, { fontSize: 18 }]}>手動で入力</Text>
+          <Text style={[styles.buttonText, { fontSize: 16 }]}>手動で入力</Text>
         </Pressable>
       </View>
     );
@@ -409,22 +409,22 @@ const styles = StyleSheet.create({
   // 手動入力ボタン
   manualEntryButton: {
     position: "absolute",
-    bottom: 50,
+    bottom: 40,
     alignSelf: "center",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.7)",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 30,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 8,
-    minWidth: 160,
-    minHeight: 50,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    minWidth: 140,
+    minHeight: 44,
   },
 });
 
