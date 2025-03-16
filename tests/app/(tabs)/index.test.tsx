@@ -1,8 +1,7 @@
 import React from "react";
-import { render, fireEvent, act } from "../../test-utils";
+import { render, fireEvent } from "../../test-utils";
 import HomeScreen from "../../../app/(tabs)/index";
 import { Alert } from "react-native";
-import { Book } from "../../../constants/MockData";
 
 // Ioniconsのモック
 jest.mock("@expo/vector-icons", () => ({

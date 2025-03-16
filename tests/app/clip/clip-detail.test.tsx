@@ -2,6 +2,10 @@ import React from "react";
 import { render, fireEvent, waitFor } from "../../test-utils";
 import { Alert } from "react-native";
 
+// 実際のテスト
+import ClipDetailScreen from "../../../app/clip/[id]";
+import { ClipStorageService } from "../../../services/ClipStorageService";
+
 // Alertのモック
 jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
   // 削除確認アラートの場合、削除を実行
@@ -266,10 +270,6 @@ jest.mock("../../../services/ClipStorageService", () => ({
     removeClip: jest.fn().mockResolvedValue(undefined),
   },
 }));
-
-// 実際のテスト
-import ClipDetailScreen from "../../../app/clip/[id]";
-import { ClipStorageService } from "../../../services/ClipStorageService";
 
 describe("ClipDetailScreen", () => {
   beforeEach(() => {

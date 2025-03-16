@@ -1,6 +1,5 @@
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
-import { Modal, View, Text, TouchableOpacity } from "react-native";
+import { render } from "@testing-library/react-native";
 import CameraModal from "../../../components/camera/CameraModal";
 
 // モック

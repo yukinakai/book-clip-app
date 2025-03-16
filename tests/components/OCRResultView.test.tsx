@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent, waitFor, act } from "../test-utils";
+import { render, fireEvent, waitFor } from "../test-utils";
 import { Alert } from "react-native";
 import OCRResultView from "../../components/OCRResultView";
 import { OCRService } from "../../services/OCRService";

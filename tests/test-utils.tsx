@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import { render } from '@testing-library/react-native';
 
 function customRender(ui: ReactElement, options = {}) {

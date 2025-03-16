@@ -1,7 +1,10 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "../test-utils";
-import { Alert, View, Text, TouchableOpacity } from "react-native";
+import { Alert } from "react-native";
 import * as MediaLibrary from "expo-media-library";
+
+// テスト対象コンポーネントのインポート
+import CameraView from "../../components/CameraView";
 
 // モックの準備
 const mockRef = {
@@ -75,9 +78,6 @@ jest.mock("react-native-safe-area-context", () => {
       ),
   };
 });
-
-// テスト対象コンポーネントのインポート
-import CameraView from "../../components/CameraView";
 
 // テスト用のモックコンポーネント（React Nativeコンポーネントを使用）
 const TestCameraView = (props) => {

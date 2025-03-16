@@ -1,8 +1,7 @@
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
-import TextRecognition, {
-  TextRecognitionScript,
-} from "@react-native-ml-kit/text-recognition";
+
+
 import { SelectionArea } from "../components/ImageSelectionView";
 
 // OCR結果のインターフェース

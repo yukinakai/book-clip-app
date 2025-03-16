@@ -1,9 +1,7 @@
 import React from "react";
-import { render, fireEvent, waitFor, act } from "../test-utils";
+import { render, fireEvent, act } from "../test-utils";
 import { Alert } from "react-native";
-import ImageSelectionView, {
-  SelectionArea,
-} from "../../components/ImageSelectionView";
+import ImageSelectionView from "../../components/ImageSelectionView";
 
 // Alertのモック
 jest.spyOn(Alert, "alert").mockImplementation(() => undefined);

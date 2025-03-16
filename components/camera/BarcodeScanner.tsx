@@ -1,5 +1,5 @@
 // components/camera/BarcodeScanner.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Animated, Easing, Dimensions } from 'react-native';
 import { CameraView, BarcodeScanningResult } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';

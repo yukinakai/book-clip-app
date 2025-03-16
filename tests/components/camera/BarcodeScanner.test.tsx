@@ -1,6 +1,9 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 
+// テスト対象をインポート
+import BarcodeScanner from "../../../components/camera/BarcodeScanner";
+
 // コンポーネントをモックする
 jest.mock("../../../components/camera/BarcodeScanner", () => {
   const React = require("react");
@@ -68,9 +71,6 @@ jest.mock("expo-camera", () => ({
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: "Ionicons",
 }));
-
-// テスト対象をインポート
-import BarcodeScanner from "../../../components/camera/BarcodeScanner";
 
 describe("BarcodeScanner", () => {
   it("コンポーネントが正しくレンダリングされること", () => {

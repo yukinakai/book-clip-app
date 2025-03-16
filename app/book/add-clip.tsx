@@ -12,7 +12,6 @@ import {
   ScrollView,
   Keyboard,
   KeyboardEvent,
-  Dimensions,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Router } from "expo-router";
 import { ClipStorageService } from "../../services/ClipStorageService";

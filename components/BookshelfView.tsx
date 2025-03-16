@@ -8,7 +8,6 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Book } from "../constants/MockData";
 import { BookStorageService } from "../services/BookStorageService";
 import { useThemeColor } from "../hooks/useThemeColor";

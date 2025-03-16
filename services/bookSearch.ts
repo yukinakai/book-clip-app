@@ -1,4 +1,3 @@
-import { Alert } from "react-native";
 
 interface BookInfo {
   title: string;

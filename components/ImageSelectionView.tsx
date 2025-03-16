@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -11,13 +11,10 @@ import {
   GestureResponderEvent,
   PanResponderGestureState,
   Alert,
-  Platform,
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../hooks/useThemeColor";
-import * as ImageManipulator from "expo-image-manipulator";
-import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
 
