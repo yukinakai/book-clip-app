@@ -10,7 +10,6 @@
 ├── .cursorignore
 ├── .env
 ├── .env.sample
-├── .eslintrc.js
 ├── .gitignore
 ├── .ts-prunerc.json
 ├── README.md
@@ -25,6 +24,7 @@
 │   │   └── add-clip.tsx
 │   └── clip
 │       └── [id].tsx
+├── app.config.js
 ├── app.json
 ├── assets
 │   ├── fonts
@@ -39,7 +39,7 @@
 │       ├── react-logo@2x.png
 │       ├── react-logo@3x.png
 │       └── splash-icon.png
-├── babel.config.js
+├── babel.config.cjs
 ├── components
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
@@ -69,14 +69,15 @@
 │   ├── PRD.md
 │   ├── PRODUCT_OVERVIEW.md
 │   └── PROGRESS.md
+├── eslint.config.js
 ├── expo-env.d.ts
 ├── hooks
 │   ├── useBookScanner.ts
 │   ├── useColorScheme.ts
 │   ├── useColorScheme.web.ts
 │   └── useThemeColor.ts
-├── jest.config.js
-├── jest.setup.js
+├── jest.config.cjs
+├── jest.setup.cjs
 ├── package-lock.json
 ├── package.json
 ├── scripts
@@ -122,4 +123,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 92 files
+31 directories, 93 files

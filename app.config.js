@@ -1,7 +1,5 @@
 // @ts-check
 
-import { ExpoConfig } from "expo/config";
-import { ConfigContext } from "@expo/config";
 
 /**
  * @param {ConfigContext} config
