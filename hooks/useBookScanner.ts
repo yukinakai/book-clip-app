@@ -66,8 +66,8 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
           },
         },
       ]);
-    } catch (error) {
-      console.error("Error saving manual book entry:", error);
+    } catch (__) {
+      console.error("Error saving manual book entry:", __);
       Alert.alert("エラー", "書籍の保存中にエラーが発生しました。", [
         { text: "OK" },
       ]);
@@ -188,7 +188,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                               ]
                             );
                           }
-                        } catch (_error) {
+                        } catch (__) {
                           Alert.alert(
                             "エラー",
                             "本の保存中にエラーが発生しました。",
@@ -207,7 +207,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                     },
                   ]
                 );
-              } catch (_error) {
+              } catch (__) {
                 Alert.alert("エラー", "本の検索中にエラーが発生しました。", [
                   {
                     text: "OK",
