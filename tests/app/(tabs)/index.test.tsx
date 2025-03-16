@@ -29,7 +29,7 @@ jest.mock("../../../services/BookStorageService", () => ({
 
 // BookshelfViewコンポーネントのモック
 jest.mock("../../../components/BookshelfView", () => {
-  const React = require("react");
+  const _React = require("react");
   const { View, Text, TouchableOpacity } = require("react-native");
 
   return {
@@ -59,7 +59,7 @@ jest.mock("../../../components/BookshelfView", () => {
 
 // CameraModalコンポーネントをモック
 jest.mock("../../../components/camera/CameraModal", () => {
-  const React = require("react");
+  const _React = require("react");
   const { View, TouchableOpacity, Text } = require("react-native");
   return {
     __esModule: true,
