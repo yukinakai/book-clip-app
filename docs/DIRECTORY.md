@@ -41,7 +41,6 @@
 │       └── splash-icon.png
 ├── babel.config.js
 ├── components
-│   ├── BookItem.tsx
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
 │   ├── HapticTab.tsx
@@ -101,7 +100,6 @@
 │   │   └── clip
 │   │       └── clip-detail.test.tsx
 │   ├── components
-│   │   ├── BookItem.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── CameraView.test.tsx
 │   │   ├── ImageSelectionView.test.tsx
@@ -124,4 +122,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 94 files
+31 directories, 92 files
