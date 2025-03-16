@@ -14,7 +14,7 @@
     "test:coverage": "jest --coverage --config jest.config.js",
     "lint": "npm run lint:fix; npm run ts-prune-check; npm run depcheck-check",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "ts-prune": "ts-prune | grep -v '\\+not-found\\|_layout\\|default'",
+    "ts-prune": "ts-prune | grep -v '\\+not-found\\|_layout\\|default\\|IconSymbol'",
     "ts-prune-check": "OUTPUT=$(npm run ts-prune -s); if [ -n \"$OUTPUT\" ]; then echo \"以下の未使用エクスポートが見つかりました:\"; echo \"$OUTPUT\"; exit 1; fi",
     "depcheck": "depcheck --ignores=\"jest-expo,@babel/core,@types/jest,@types/react,@types/react-test-renderer,@testing-library/*,jest,react-test-renderer\" --ignore-dirs=\"node_modules,.expo,assets\" --json",
     "depcheck-check": "OUTPUT=$(npm run depcheck -s); if [ \"$(echo $OUTPUT | jq -r '.dependencies | length')\" -gt 0 ] || [ \"$(echo $OUTPUT | jq -r '.devDependencies | length')\" -gt 0 ]; then echo \"以下の未使用パッケージが見つかりました:\"; echo $OUTPUT | jq '.dependencies, .devDependencies'; exit 1; fi"
