@@ -146,7 +146,6 @@ const CameraModal: React.FC<CameraModalProps> = ({
 
   const {
     handleBarcodeScanned,
-    isLoading,
     resetScanner,
     // 手動入力関連の機能を取得
     showManualEntryForm,

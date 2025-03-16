@@ -92,7 +92,7 @@ export default function AddClipScreen() {
   }, []);
 
   // キーボードを閉じる関数
-  const dismissKeyboard = () => {
+  const _dismissKeyboard = () => {
     Keyboard.dismiss();
   };
 
@@ -290,11 +290,7 @@ export default function AddClipScreen() {
           animationType="slide"
           onRequestClose={handleCameraClose}
         >
-          <CameraView
-            onCapture={handleCapture}
-            onClose={handleCameraClose}
-            router={routerShim}
-          />
+          <CameraView onCapture={handleCapture} onClose={handleCameraClose} />
         </Modal>
       )}
 
@@ -309,7 +305,6 @@ export default function AddClipScreen() {
             imageUri={capturedImageUri}
             onConfirm={handleSelectionConfirm}
             onCancel={handleSelectionCancel}
-            router={routerShim}
           />
         </Modal>
       )}
@@ -326,7 +321,6 @@ export default function AddClipScreen() {
             selectionArea={selectedArea}
             onConfirm={handleConfirmOCRText}
             onCancel={handleCancelOCR}
-            router={routerShim}
           />
         </Modal>
       )}
