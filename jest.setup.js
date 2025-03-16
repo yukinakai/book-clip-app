@@ -47,3 +47,25 @@ jest.mock("expo-font/src/memory", () => {
     loadAsync: jest.fn(),
   };
 });
+
+// setImmediateのポリフィル
+global.setImmediate = (callback, ...args) =>
+  global.setTimeout(callback, 0, ...args);
+
+// React NativeのInteractionManagerのモック
+jest.mock("react-native/Libraries/Interaction/InteractionManager", () => ({
+  createInteractionHandle: jest.fn(),
+  clearInteractionHandle: jest.fn(),
+  runAfterInteractions: jest.fn((task) => {
+    if (task) {
+      task();
+    }
+    return {
+      then: jest.fn((resolve) => resolve()),
+      done: jest.fn(),
+      cancel: jest.fn(),
+    };
+  }),
+  add: jest.fn(),
+  setDeadline: jest.fn(),
+}));

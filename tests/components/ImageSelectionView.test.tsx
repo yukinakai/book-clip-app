@@ -141,13 +141,15 @@ describe("ImageSelectionViewコンポーネント", () => {
     );
 
     // 戻るボタンを押す
-    fireEvent.press(getByTestId("back-button"));
+    act(() => {
+      fireEvent.press(getByTestId("back-button"));
+    });
 
     // onCancelが呼ばれたことを確認
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("すべて選択ボタンを押すと画像全体が選択されること", async () => {
+  it("すべて選択ボタンを押すと画像全体が選択されること", () => {
     const { getByTestId } = render(
       <ImageSelectionView
         imageUri={mockImageUri}
@@ -157,7 +159,7 @@ describe("ImageSelectionViewコンポーネント", () => {
     );
 
     // すべて選択ボタンを押す
-    await act(async () => {
+    act(() => {
       fireEvent.press(getByTestId("select-all-button"));
     });
 
@@ -165,7 +167,7 @@ describe("ImageSelectionViewコンポーネント", () => {
     expect(getByTestId("selection-box")).toBeTruthy();
   });
 
-  it("選択解除ボタンを押すと選択が解除されること", async () => {
+  it("選択解除ボタンを押すと選択が解除されること", () => {
     const { getByTestId, queryByTestId } = render(
       <ImageSelectionView
         imageUri={mockImageUri}
@@ -175,7 +177,7 @@ describe("ImageSelectionViewコンポーネント", () => {
     );
 
     // すべて選択ボタンを押す
-    await act(async () => {
+    act(() => {
       fireEvent.press(getByTestId("select-all-button"));
     });
 
@@ -183,7 +185,7 @@ describe("ImageSelectionViewコンポーネント", () => {
     expect(getByTestId("selection-box")).toBeTruthy();
 
     // 選択解除ボタンを押す
-    await act(async () => {
+    act(() => {
       fireEvent.press(getByTestId("clear-selection-button"));
     });
 
@@ -191,7 +193,7 @@ describe("ImageSelectionViewコンポーネント", () => {
     expect(queryByTestId("selection-box")).toBeNull();
   });
 
-  it("選択を確定ボタンを押すとonConfirmが呼ばれること", async () => {
+  it("選択を確定ボタンを押すとonConfirmが呼ばれること", () => {
     const { getByTestId } = render(
       <ImageSelectionView
         imageUri={mockImageUri}
@@ -201,12 +203,14 @@ describe("ImageSelectionViewコンポーネント", () => {
     );
 
     // すべて選択ボタンを押す
-    await act(async () => {
+    act(() => {
       fireEvent.press(getByTestId("select-all-button"));
     });
 
     // 選択を確定ボタンを押す
-    fireEvent.press(getByTestId("confirm-button"));
+    act(() => {
+      fireEvent.press(getByTestId("confirm-button"));
+    });
 
     // onConfirmが適切なパラメータで呼ばれたことを確認
     expect(mockOnConfirm).toHaveBeenCalledWith(
