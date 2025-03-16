@@ -4,7 +4,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
 
-export type ThemedTextProps = TextProps & {
+// コンポーネント内部で使用する型定義
+type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";

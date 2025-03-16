@@ -13,7 +13,8 @@ export interface Clip {
   createdAt: string;
 }
 
-export const MOCK_BOOKS: Book[] = [
+// モックデータは内部でのみ使用するためエクスポートしない
+const MOCK_BOOKS: Book[] = [
   {
     id: "1",
     title: "The Great Gatsby",
@@ -101,7 +102,7 @@ export const MOCK_BOOKS: Book[] = [
 ];
 
 // モッククリップデータ
-export const MOCK_CLIPS: Clip[] = [
+const MOCK_CLIPS: Clip[] = [
   {
     id: "1",
     bookId: "1",

@@ -1,4 +1,3 @@
-
 interface BookInfo {
   title: string;
   author: string;
@@ -7,9 +6,8 @@ interface BookInfo {
   // 必要に応じて他のフィールドを追加
 }
 
-export const searchBookByIsbn = async (
-  isbn: string
-): Promise<BookInfo | null> => {
+// 現在は使用されていないのでエクスポートしない
+const searchBookByIsbn = async (isbn: string): Promise<BookInfo | null> => {
   try {
     const applicationId = process.env.EXPO_PUBLIC_RAKUTEN_APP_ID;
 

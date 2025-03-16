@@ -5,7 +5,7 @@ import { BookStorageService } from "@/services/BookStorageService";
 import { Book } from "@/constants/MockData";
 
 // No-Image用のフラグ - この値がcoverImageに設定された場合はプレースホルダーを表示
-export const NO_IMAGE_FLAG = null;
+const NO_IMAGE_FLAG = null;
 
 interface UseBookScannerProps {
   onClose: () => void;
