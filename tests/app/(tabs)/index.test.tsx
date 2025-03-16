@@ -1,4 +1,3 @@
-import React from "react";
 import { render, fireEvent } from "../../test-utils";
 import HomeScreen from "../../../app/(tabs)/index";
 import { Alert } from "react-native";
