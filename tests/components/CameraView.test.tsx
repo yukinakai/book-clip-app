@@ -49,7 +49,7 @@ jest.mock("expo-media-library", () => ({
 }));
 
 jest.mock("@expo/vector-icons", () => ({
-  Ionicons: ({ name, size, color }) => {
+  Ionicons: ({ name, _size, _color }) => {
     const React = require("react");
     const { Text } = require("react-native");
     return React.createElement(

@@ -7,7 +7,7 @@ import ClipDetailScreen from "../../../app/clip/[id]";
 import { ClipStorageService } from "../../../services/ClipStorageService";
 
 // Alertのモック
-jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
+jest.spyOn(Alert, "alert").mockImplementation((title, _message, buttons) => {
   // 削除確認アラートの場合、削除を実行
   if (title === "確認" && buttons && buttons.length > 1) {
     const deleteButton = buttons.find((b) => b.text === "削除");
@@ -104,7 +104,7 @@ jest.mock("../../../app/clip/[id]", () => {
                       "クリップが削除されました。前の画面に戻ってください。"
                     );
                   }
-                } catch (error) {
+                } catch {
                   Alert.alert("エラー", "クリップの削除に失敗しました");
                 }
               },

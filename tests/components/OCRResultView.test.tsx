@@ -16,7 +16,7 @@ jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
 
 // Ioniconsのモック
 jest.mock("@expo/vector-icons", () => ({
-  Ionicons: ({ name, size, color }) => {
+  Ionicons: ({ name, _size, _color }) => {
     const React = require("react");
     const { Text } = require("react-native");
     return React.createElement(Text, { testID: `icon-${name}` }, name);
@@ -52,7 +52,7 @@ describe("OCRResultViewコンポーネント", () => {
         )
     );
 
-    const { getByText, getByTestId } = render(
+    const { getByText } = render(
       <OCRResultView
         imageUri={mockImageUri}
         onConfirm={mockOnConfirm}

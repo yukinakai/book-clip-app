@@ -35,7 +35,7 @@ jest.mock("../../../components/BookshelfView", () => {
 
   return {
     __esModule: true,
-    default: jest.fn(({ onSelectBook, headerTitle, refreshTrigger }) => {
+    default: jest.fn(({ onSelectBook, headerTitle, _refreshTrigger }) => {
       return (
         <View testID="bookshelf-view">
           <Text testID="header-title">{headerTitle}</Text>

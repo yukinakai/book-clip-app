@@ -9,7 +9,7 @@ jest.mock("../../../components/camera/BarcodeScanner", () => {
   const React = require("react");
   const { View, Text, TouchableOpacity } = require("react-native");
 
-  return function MockBarcodeScanner(props) {
+  return function MockBarcodeScanner(_props) {
     return (
       <View testID="barcode-scanner">
         <Text>上部のISBNバーコードを枠内に収めてください</Text>

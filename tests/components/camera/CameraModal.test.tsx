@@ -191,7 +191,7 @@ describe("CameraModal", () => {
       .mocked(require("expo-camera").useCameraPermissions)
       .mockReturnValue([null, jest.fn()]);
 
-    const { UNSAFE_getAllByType, UNSAFE_getAllByProps } = render(
+    const { UNSAFE_getAllByType } = render(
       <CameraModal
         isVisible={true}
         onClose={jest.fn()}

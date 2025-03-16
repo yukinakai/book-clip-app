@@ -36,7 +36,7 @@ describe("AddClipScreen", () => {
   });
 
   it("クリップ追加画面が正しく表示されること", () => {
-    const { getByText, getByTestId } = render(<AddClipScreen />);
+    const { getByText } = render(<AddClipScreen />);
 
     // 画面タイトルが表示されていることを確認
     expect(getByText("クリップを追加")).toBeTruthy();
@@ -69,7 +69,7 @@ describe("AddClipScreen", () => {
   });
 
   it("空のテキストで保存しようとするとエラーが表示されること", () => {
-    const { getByTestId, getByText } = render(<AddClipScreen />);
+    const { getByTestId } = render(<AddClipScreen />);
 
     // 空のテキストでフォームを送信
     const saveButton = getByTestId("save-clip-button");
