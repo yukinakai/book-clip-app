@@ -1,5 +1,5 @@
 module.exports = {
-  extends: "expo/native",
+  extends: ["eslint-config-expo"],
   parser: "@typescript-eslint/parser",
   plugins: ["unused-imports"],
   rules: {
@@ -15,4 +15,28 @@ module.exports = {
       },
     ],
   },
+  overrides: [
+    {
+      // Jestテストファイル用の設定
+      files: [
+        "**/*.test.js",
+        "**/*.test.jsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/tests/**/*.js",
+        "**/tests/**/*.jsx",
+        "**/tests/**/*.ts",
+        "**/tests/**/*.tsx",
+        "jest.setup.js",
+      ],
+      env: {
+        jest: true, // jestグローバル変数を有効化
+      },
+      rules: {
+        // テスト用の緩和ルール
+        "react/no-unknown-property": "off",
+        "import/first": "off",
+      },
+    },
+  ],
 };
