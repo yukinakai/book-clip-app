@@ -23,6 +23,12 @@ const mockGetClipsByBookId = jest.fn().mockResolvedValue([
   },
 ]);
 
+// NoImagePlaceholderのモック
+jest.mock(
+  "../../../components/NoImagePlaceholder",
+  () => "NoImagePlaceholder-Mock"
+);
+
 // 実際のコンポーネントをモックして、テスト用の簡易版を提供
 jest.mock("../../../app/book/[id]", () => {
   // 元のモジュールをrequireActualで取得
