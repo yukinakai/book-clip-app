@@ -23,7 +23,7 @@ const mockRouterBack = jest.fn();
 // 実際のコンポーネントをモックして、テスト用の簡易版を提供
 jest.mock("../../../app/clip/[id]", () => {
   // 元のモジュールの型情報を保持
-  const originalModule = jest.requireActual("../../../app/clip/[id]");
+  const _originalModule = jest.requireActual("../../../app/clip/[id]");
 
   // モック化されたコンポーネントを返す関数
   return {
@@ -40,7 +40,6 @@ jest.mock("../../../app/clip/[id]", () => {
 
       // モック用の背景色
       const backgroundColor = "#ffffff";
-      const textColor = "#000000";
 
       React.useEffect(() => {
         // コンポーネントマウント時にモックAPIを呼び出す

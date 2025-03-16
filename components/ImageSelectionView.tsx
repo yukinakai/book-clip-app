@@ -50,7 +50,7 @@ export default function ImageSelectionView({
   const [isSelecting, setIsSelecting] = useState(false);
   const [hasSelection, setHasSelection] = useState(false);
   const [_processing, setProcessing] = useState(false);
-  const [_isLoading, _setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
 
   // 画像コンテナのref
   const imageContainerRef = useRef<View>(null);
