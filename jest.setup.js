@@ -1,6 +1,6 @@
 // @expo/vector-icons のモック
-import React from "react";
-import { View } from "react-native";
+const React = require("react");
+const { View } = require("react-native");
 
 // アイコンコンポーネントのモック作成
 const createIconMock = (name) => {
