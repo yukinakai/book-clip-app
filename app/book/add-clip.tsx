@@ -69,11 +69,6 @@ export default function AddClipScreen() {
     };
   }, []);
 
-  // キーボードを閉じる関数
-  const _dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
-
   const handleSaveClip = async () => {
     if (!clipText.trim()) {
       Alert.alert("エラー", "クリップするテキストを入力してください");

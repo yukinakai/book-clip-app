@@ -18,22 +18,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
 
-// ルーターシムのインターフェース
-interface RouterShim {
-  back: () => void;
-}
-
 interface CameraViewProps {
   onCapture: (imageUri: string) => void;
   onClose: () => void;
-  _router?: RouterShim; // オプショナルなので既存のコードを壊さない
 }
 
-export default function CameraView({
-  onCapture,
-  onClose,
-  _router,
-}: CameraViewProps) {
+export default function CameraView({ onCapture, onClose }: CameraViewProps) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [facing, setFacing] = useState<"front" | "back">("back");
   const [isTakingPicture, setIsTakingPicture] = useState(false);

@@ -17,11 +17,6 @@ import { useThemeColor } from "../hooks/useThemeColor";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
 
-// ルーターシムのインターフェース
-interface RouterShim {
-  back: () => void;
-}
-
 // 選択領域の情報
 export interface SelectionArea {
   x: number;
@@ -36,14 +31,12 @@ interface ImageSelectionViewProps {
   imageUri: string;
   onConfirm: (selectionArea: SelectionArea) => void;
   onCancel: () => void;
-  _router?: RouterShim;
 }
 
 export default function ImageSelectionView({
   imageUri,
   onConfirm,
   onCancel,
-  _router,
 }: ImageSelectionViewProps) {
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [imageLayout, setImageLayout] = useState({
