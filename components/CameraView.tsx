@@ -75,7 +75,7 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
         setHasPermission(false);
       }
     })();
-  }, []); // 依存配列を空にして初回のみ実行
+  }, [cameraPermission?.granted, requestCameraPermission]);
 
   // 写真撮影
   const takePicture = async () => {

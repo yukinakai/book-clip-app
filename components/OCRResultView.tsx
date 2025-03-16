@@ -31,7 +31,7 @@ export default function OCRResultView({
 }: OCRResultViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [_extractedText, setExtractedText] = useState("");
+  const [, setExtractedText] = useState("");
   const [editedText, setEditedText] = useState("");
   const [confidence, setConfidence] = useState<number | undefined>(undefined);
 
