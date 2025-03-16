@@ -16,6 +16,13 @@ jest.mock("../../services/BookStorageService", () => ({
   },
 }));
 
+// expo-routerのモック
+jest.mock("expo-router", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
 // FlatListのモック
 jest.mock("react-native/Libraries/Lists/FlatList", () => {
   return function MockFlatList(props: any) {
