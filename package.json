@@ -13,10 +13,12 @@
     "test:lint": "npm run lint && npm run test",
     "test:watch": "jest --watch --config jest.config.js",
     "test:coverage": "jest --coverage --config jest.config.js",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx && npm run ts-prune-check",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix && npm run ts-prune-check",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx; npm run ts-prune-check; npm run depcheck-check",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix; npm run ts-prune-check; npm run depcheck-check",
     "ts-prune": "ts-prune | grep -v '\\+not-found\\|_layout\\|default'",
-    "ts-prune-check": "OUTPUT=$(npm run ts-prune -s); if [ -n \"$OUTPUT\" ]; then echo \"以下の未使用エクスポートが見つかりました:\"; echo \"$OUTPUT\"; exit 1; fi"
+    "ts-prune-check": "OUTPUT=$(npm run ts-prune -s); if [ -n \"$OUTPUT\" ]; then echo \"以下の未使用エクスポートが見つかりました:\"; echo \"$OUTPUT\"; exit 1; fi",
+    "depcheck": "depcheck --ignores=\"jest-expo,@babel/core,@types/jest,@types/react,@types/react-test-renderer,@testing-library/*,jest,react-test-renderer\" --ignore-dirs=\"node_modules,.expo,assets\" --json",
+    "depcheck-check": "OUTPUT=$(npm run depcheck -s); if [ \"$(echo $OUTPUT | jq -r '.dependencies | length')\" -gt 0 ] || [ \"$(echo $OUTPUT | jq -r '.devDependencies | length')\" -gt 0 ]; then echo \"以下の未使用パッケージが見つかりました:\"; echo $OUTPUT | jq '.dependencies, .devDependencies'; exit 1; fi"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
@@ -63,6 +65,7 @@
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
     "@typescript-eslint/parser": "^8.26.1",
+    "depcheck": "^1.4.7",
     "eslint": "^8.57.1",
     "eslint-config-expo": "~8.0.1",
     "eslint-plugin-unused-imports": "^4.1.4",
