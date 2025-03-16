@@ -5,7 +5,11 @@ import { BookStorageService } from "@/services/BookStorageService";
 import { Book } from "@/constants/MockData";
 
 // No-Image用のデフォルト画像URL
-const DEFAULT_BOOK_IMAGE = "https://via.placeholder.com/150x200?text=No+Image";
+const DEFAULT_BOOK_IMAGE =
+  "https://placehold.co/150x200/e0e0e0/696969?text=No+Image";
+
+// No-Image用のフラグ - この値がcoverImageに設定された場合はプレースホルダーを表示
+export const NO_IMAGE_FLAG = null;
 
 interface UseBookScannerProps {
   onClose: () => void;
@@ -51,7 +55,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
         id: `manual_${Date.now()}`,
         title: bookTitle.trim(),
         author: bookAuthor.trim() || "不明",
-        coverImage: DEFAULT_BOOK_IMAGE,
+        coverImage: NO_IMAGE_FLAG, // SVGプレースホルダーを使用するためnullを設定
       };
 
       // 書籍を保存

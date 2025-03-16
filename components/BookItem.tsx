@@ -11,6 +11,7 @@ import { Book } from "../constants/MockData";
 import { useThemeColor } from "../hooks/useThemeColor";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
+import NoImagePlaceholder from "./NoImagePlaceholder";
 
 interface BookItemProps {
   book: Book;
@@ -38,19 +39,33 @@ export default function BookItem({ book, onPress }: BookItemProps) {
       activeOpacity={0.7}
       testID="book-container"
     >
-      <Image
-        source={
-          typeof book.coverImage === "string"
-            ? { uri: book.coverImage }
-            : book.coverImage
-        }
-        style={[
-          styles.coverImage,
-          { backgroundColor: Colors[colorScheme].paper },
-        ]}
-        resizeMode="cover"
-        testID="book-cover"
-      />
+      {book.coverImage === null ? (
+        <View
+          style={[
+            styles.coverImage,
+            { backgroundColor: Colors[colorScheme].paper },
+          ]}
+        >
+          <NoImagePlaceholder
+            width={ITEM_WIDTH}
+            height={ITEM_WIDTH * ASPECT_RATIO}
+          />
+        </View>
+      ) : (
+        <Image
+          source={
+            typeof book.coverImage === "string"
+              ? { uri: book.coverImage }
+              : book.coverImage
+          }
+          style={[
+            styles.coverImage,
+            { backgroundColor: Colors[colorScheme].paper },
+          ]}
+          resizeMode="cover"
+          testID="book-cover"
+        />
+      )}
       <View style={styles.textContainer}>
         <Text
           style={[styles.title, { color: textColor }]}
