@@ -20,6 +20,12 @@ jest.mock("../../services/BookStorageService", () => ({
 // Alertのモック
 jest.spyOn(Alert, "alert").mockImplementation(() => 0);
 
+// React NativeのDOM実装がテスト環境で正しく動作するようにするためのモック
+global.document = {
+  createElement: jest.fn(),
+  // 必要に応じて他のDOM関連の機能を追加
+};
+
 describe("useBookScanner", () => {
   beforeEach(() => {
     jest.clearAllMocks();
