@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import NoImagePlaceholder from "../../components/NoImagePlaceholder";
 
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -137,7 +138,16 @@ export default function BookDetailScreen() {
 
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.bookInfoContainer}>
-          <Image source={{ uri: book.coverImage }} style={styles.coverImage} />
+          {book.coverImage ? (
+            <Image
+              source={{ uri: book.coverImage }}
+              style={styles.coverImage}
+            />
+          ) : (
+            <View style={styles.coverImage}>
+              <NoImagePlaceholder width={100} height={150} />
+            </View>
+          )}
           <View style={styles.bookInfo}>
             <Text style={[styles.title, { color: textColor }]}>
               {book.title}
