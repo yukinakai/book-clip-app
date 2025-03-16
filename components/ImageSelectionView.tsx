@@ -49,8 +49,6 @@ export default function ImageSelectionView({
   const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
   const [isSelecting, setIsSelecting] = useState(false);
   const [hasSelection, setHasSelection] = useState(false);
-  const [_processing, setProcessing] = useState(false);
-  const [_isLoading, setIsLoading] = useState(false);
 
   // 画像コンテナのref
   const imageContainerRef = useRef<View>(null);
@@ -87,8 +85,6 @@ export default function ImageSelectionView({
   const handleConfirmSelection = async () => {
     if (!hasSelection) return;
 
-    setProcessing(true);
-
     try {
       // 選択範囲をソートして確実に左上と右下の座標にする
       const startX = Math.min(selectionStart.x, selectionEnd.x);
@@ -114,8 +110,6 @@ export default function ImageSelectionView({
     } catch (error) {
       console.error("選択範囲の処理中にエラーが発生しました:", error);
       Alert.alert("エラー", "画像の処理に失敗しました");
-    } finally {
-      setProcessing(false);
     }
   };
 
@@ -218,7 +212,7 @@ export default function ImageSelectionView({
       </View>
 
       <View style={styles.imageContainer}>
-        {_isLoading ? (
+        {false ? (
           <ActivityIndicator
             size="large"
             color={Colors[colorScheme].primary}
