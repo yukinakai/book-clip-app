@@ -1,0 +1,7 @@
+<svg width="150" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 - より薄い灰色 -->
+  <rect width="150" height="200" fill="#9e9e9e" rx="8" />
+  
+  <!-- テキスト - 白色、サイズ拡大 -->
+  <text x="75" y="100" font-family="Arial, sans-serif" font-size="22" text-anchor="middle" alignment-baseline="middle" fill="#ffffff" font-weight="bold">No Image</text>
+</svg> 

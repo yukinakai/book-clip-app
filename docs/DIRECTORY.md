@@ -30,6 +30,7 @@
 │       ├── adaptive-icon.png
 │       ├── favicon.png
 │       ├── icon.png
+│       ├── no-image.svg
 │       ├── partial-react-logo.png
 │       ├── react-logo.png
 │       ├── react-logo@2x.png
@@ -37,12 +38,12 @@
 │       └── splash-icon.png
 ├── babel.config.js
 ├── components
-│   ├── BarcodeScanner.tsx
 │   ├── BookItem.tsx
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
 │   ├── HapticTab.tsx
 │   ├── ImageSelectionView.tsx
+│   ├── NoImagePlaceholder.tsx
 │   ├── OCRResultView.tsx
 │   ├── ParallaxScrollView.tsx
 │   ├── ThemedText.tsx
@@ -97,7 +98,6 @@
 │   │   └── clip
 │   │       └── clip-detail.test.tsx
 │   ├── components
-│   │   ├── BarcodeScanner.test.tsx
 │   │   ├── BookItem.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── CameraView.test.tsx
@@ -110,6 +110,8 @@
 │   │   └── camera
 │   │       ├── BarcodeScanner.test.tsx
 │   │       └── CameraModal.test.tsx
+│   ├── hooks
+│   │   └── useBookScanner.test.tsx
 │   ├── services
 │   │   ├── ClipStorageService.test.ts
 │   │   └── OCRService.test.ts
@@ -119,4 +121,4 @@
 └── types
     └── env.d.ts
 
-30 directories, 90 files
+31 directories, 91 files

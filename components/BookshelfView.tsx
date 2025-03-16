@@ -15,6 +15,7 @@ import { useThemeColor } from "../hooks/useThemeColor";
 import { useRouter } from "expo-router";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
+import NoImagePlaceholder from "./NoImagePlaceholder";
 
 interface BookshelfViewProps {
   onSelectBook?: (book: Book) => void;
@@ -59,7 +60,16 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
       onPress={() => handleBookPress(item)}
       testID={`book-item-${item.id}`}
     >
-      <Image source={{ uri: item.coverImage }} style={styles.coverImage} />
+      {item.coverImage === null ? (
+        <View style={styles.coverImage}>
+          <NoImagePlaceholder
+            width={ITEM_WIDTH - ITEM_MARGIN * 4}
+            height={(ITEM_WIDTH - ITEM_MARGIN * 4) * COVER_ASPECT_RATIO}
+          />
+        </View>
+      ) : (
+        <Image source={{ uri: item.coverImage }} style={styles.coverImage} />
+      )}
       <View style={styles.bookInfo}>
         <Text style={[styles.title, { color: textColor }]} numberOfLines={2}>
           {item.title}
