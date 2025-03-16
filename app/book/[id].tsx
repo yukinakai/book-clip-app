@@ -31,7 +31,7 @@ export default function BookDetailScreen() {
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
 
   // 書籍データとクリップを読み込む
-  const loadBookDetailsAndClips = async () => {
+  const loadBookDetailsAndClips = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -51,7 +51,7 @@ export default function BookDetailScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, setLoading, setBook, setClips]);
 
   // 画面がフォーカスされるたびにデータを再読み込み
   useFocusEffect(
@@ -59,7 +59,7 @@ export default function BookDetailScreen() {
       if (id) {
         loadBookDetailsAndClips();
       }
-    }, [id])
+    }, [id, loadBookDetailsAndClips])
   );
 
   const handleAddClip = () => {
