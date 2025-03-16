@@ -1,16 +1,25 @@
 module.exports = {
   extends: ["eslint-config-expo"],
   parser: "@typescript-eslint/parser",
-  plugins: ["unused-imports"],
+  plugins: ["unused-imports", "@typescript-eslint"],
   rules: {
     "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        vars: "all",
+        varsIgnorePattern: "^_",
+        args: "all",
+        argsIgnorePattern: "^_",
+      },
+    ],
     "unused-imports/no-unused-imports": "error",
     "unused-imports/no-unused-vars": [
       "warn",
       {
         vars: "all",
         varsIgnorePattern: "^_",
-        args: "after-used",
+        args: "all",
         argsIgnorePattern: "^_",
       },
     ],
@@ -36,6 +45,7 @@ module.exports = {
         // テスト用の緩和ルール
         "react/no-unknown-property": "off",
         "import/first": "off",
+        "@typescript-eslint/no-unused-vars": "warn", // テストでは警告に緩和
       },
     },
   ],
