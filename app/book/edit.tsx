@@ -119,11 +119,7 @@ export default function EditBookScreen() {
                 color={Colors[colorScheme].primary}
               />
             ) : (
-              <Ionicons
-                name="checkmark"
-                size={24}
-                color={textColor}
-              />
+              <Ionicons name="checkmark" size={24} color={textColor} />
             )}
           </TouchableOpacity>
         </View>
