@@ -7,28 +7,50 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+// オンボーディング完了のフラグをAsyncStorageに保存するキー
+const ONBOARDING_COMPLETE_KEY = "@bookclip:onboarding_complete";
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(
+    null
+  );
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
   useEffect(() => {
-    if (loaded) {
+    // アプリケーションのロード時にオンボーディングが完了しているか確認
+    const checkOnboardingStatus = async () => {
+      try {
+        const value = await AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY);
+        setOnboardingComplete(value === "true");
+      } catch (error) {
+        console.error("オンボーディング状態の取得に失敗しました", error);
+        setOnboardingComplete(false);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, []);
+
+  useEffect(() => {
+    if (loaded && onboardingComplete !== null) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, onboardingComplete]);
 
-  if (!loaded) {
+  if (!loaded || onboardingComplete === null) {
     return null;
   }
 
@@ -40,7 +62,12 @@ export default function RootLayout() {
             headerShown: false,
             contentStyle: { backgroundColor: "transparent" },
           }}
+          initialRouteName={onboardingComplete ? "(tabs)" : "onboarding"}
         >
+          <Stack.Screen
+            name="onboarding"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="book/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="book/add-clip" options={{ headerShown: false }} />
