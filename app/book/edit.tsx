@@ -30,21 +30,19 @@ export default function EditBookScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-  const placeholderTextColor = useThemeColor({}, "placeholderText");
+  const placeholderColor = useThemeColor({}, "icon");
 
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [coverImage, setCoverImage] = useState("");
+  // 直接初期値として設定
+  const [title, setTitle] = useState(
+    typeof params.title === "string" ? params.title : ""
+  );
+  const [author, setAuthor] = useState(
+    typeof params.author === "string" ? params.author : ""
+  );
+  const [coverImage, setCoverImage] = useState(
+    typeof params.coverImage === "string" ? params.coverImage : ""
+  );
   const [loading, setLoading] = useState(false);
-
-  // URLパラメータから初期値をセット
-  useEffect(() => {
-    if (params) {
-      setTitle(params.title || "");
-      setAuthor(params.author || "");
-      setCoverImage(params.coverImage || "");
-    }
-  }, [params]);
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -124,7 +122,7 @@ export default function EditBookScreen() {
               <Ionicons
                 name="checkmark"
                 size={24}
-                color={Colors[colorScheme].primary}
+                color={textColor}
               />
             )}
           </TouchableOpacity>
@@ -139,12 +137,12 @@ export default function EditBookScreen() {
               <TextInput
                 style={[
                   styles.input,
-                  { color: textColor, borderColor: Colors[colorScheme].border },
+                  { color: textColor, borderColor: Colors[colorScheme].icon },
                 ]}
                 value={title}
                 onChangeText={setTitle}
                 placeholder="書籍のタイトル"
-                placeholderTextColor={placeholderTextColor}
+                placeholderTextColor={placeholderColor}
                 testID="title-input"
               />
             </View>
@@ -154,12 +152,12 @@ export default function EditBookScreen() {
               <TextInput
                 style={[
                   styles.input,
-                  { color: textColor, borderColor: Colors[colorScheme].border },
+                  { color: textColor, borderColor: Colors[colorScheme].icon },
                 ]}
                 value={author}
                 onChangeText={setAuthor}
                 placeholder="著者名"
-                placeholderTextColor={placeholderTextColor}
+                placeholderTextColor={placeholderColor}
                 testID="author-input"
               />
             </View>
@@ -171,12 +169,12 @@ export default function EditBookScreen() {
               <TextInput
                 style={[
                   styles.input,
-                  { color: textColor, borderColor: Colors[colorScheme].border },
+                  { color: textColor, borderColor: Colors[colorScheme].icon },
                 ]}
                 value={coverImage}
                 onChangeText={setCoverImage}
                 placeholder="https://example.com/cover.jpg"
-                placeholderTextColor={placeholderTextColor}
+                placeholderTextColor={placeholderColor}
                 autoCapitalize="none"
                 keyboardType="url"
                 testID="cover-input"
