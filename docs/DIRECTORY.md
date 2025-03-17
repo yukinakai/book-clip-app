@@ -23,8 +23,9 @@
 │   │   ├── [id].tsx
 │   │   ├── add-clip.tsx
 │   │   └── edit.tsx
-│   └── clip
-│       └── [id].tsx
+│   ├── clip
+│   │   └── [id].tsx
+│   └── onboarding.tsx
 ├── app.config.js
 ├── app.json
 ├── assets
@@ -32,13 +33,19 @@
 │   │   └── SpaceMono-Regular.ttf
 │   └── images
 │       ├── adaptive-icon.png
+│       ├── bookclip-splash-icon-dark.svg
+│       ├── bookclip-splash-icon.svg
 │       ├── favicon.png
 │       ├── icon.png
 │       ├── no-image.svg
+│       ├── onboarding-barcode.svg
+│       ├── onboarding-camera.svg
+│       ├── onboarding-search.svg
 │       ├── partial-react-logo.png
 │       ├── react-logo.png
 │       ├── react-logo@2x.png
 │       ├── react-logo@3x.png
+│       ├── splash-icon-dark.png
 │       └── splash-icon.png
 ├── babel.config.cjs
 ├── components
@@ -82,7 +89,9 @@
 ├── package-lock.json
 ├── package.json
 ├── scripts
-│   └── reset-project.js
+│   ├── convert-svg-to-png.js
+│   ├── reset-project.js
+│   └── reset-walkthrough.js
 ├── services
 │   ├── BookStorageService.ts
 │   ├── ClipStorageService.ts
@@ -126,4 +135,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 96 files
+31 directories, 105 files

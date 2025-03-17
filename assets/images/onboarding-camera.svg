@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="20" fill="#F5F7F9"/>
+  <rect x="60" y="60" width="80" height="80" rx="10" fill="#4169E1" fill-opacity="0.1"/>
+  <circle cx="100" cy="100" r="30" stroke="#4169E1" stroke-width="3" fill="none"/>
+  <circle cx="100" cy="100" r="20" stroke="#4169E1" stroke-width="2" fill="none"/>
+  <circle cx="130" cy="70" r="5" fill="#4169E1"/>
+  <rect x="70" y="140" width="60" height="8" rx="4" fill="#4169E1" fill-opacity="0.2"/>
+  <rect x="75" y="150" width="50" height="5" rx="2.5" fill="#4169E1" fill-opacity="0.2"/>
+  <path d="M100 85V115M85 100H115" stroke="#4169E1" stroke-width="2" stroke-linecap="round"/>
+  <text x="100" y="170" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">ページを撮影</text>
+</svg> 

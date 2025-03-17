@@ -137,7 +137,10 @@ export default function HomeScreen() {
           ]}
           onPress={handleOpenCamera}
           onPressIn={() => console.log("Press In Event")}
-          android_ripple={{ color: "rgba(255,255,255,0.2)", borderless: false }}
+          android_ripple={{
+            color: "rgba(255,255,255,0.2)",
+            borderless: false,
+          }}
           testID="add-book-button"
           hitSlop={20}
         >
@@ -195,6 +198,10 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     marginTop: 0, // ヘッダーとコンテンツの間のスペースを削除
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 8,
   },
   addButton: {
     flexDirection: "row",
