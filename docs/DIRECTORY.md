@@ -23,8 +23,10 @@
 │   │   ├── [id].tsx
 │   │   ├── add-clip.tsx
 │   │   └── edit.tsx
-│   └── clip
-│       └── [id].tsx
+│   ├── clip
+│   │   └── [id].tsx
+│   ├── onboarding.tsx
+│   └── reset.tsx
 ├── app.config.js
 ├── app.json
 ├── assets
@@ -35,6 +37,9 @@
 │       ├── favicon.png
 │       ├── icon.png
 │       ├── no-image.svg
+│       ├── onboarding-barcode.svg
+│       ├── onboarding-camera.svg
+│       ├── onboarding-search.svg
 │       ├── partial-react-logo.png
 │       ├── react-logo.png
 │       ├── react-logo@2x.png
@@ -82,6 +87,8 @@
 ├── package-lock.json
 ├── package.json
 ├── scripts
+│   ├── reset-onboarding-simple.js
+│   ├── reset-onboarding.cjs
 │   └── reset-project.js
 ├── services
 │   ├── BookStorageService.ts
@@ -126,4 +133,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 96 files
+31 directories, 103 files
