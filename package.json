@@ -6,9 +6,7 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "start:reset": "node ./scripts/reset-onboarding.cjs && expo start",
-    "create:reset": "node ./scripts/reset-onboarding-simple.js && expo start",
-    "walkthrough": "node ./scripts/reset-walkthrough.js",
+    "walkthrough:reset": "node ./scripts/reset-walkthrough.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
