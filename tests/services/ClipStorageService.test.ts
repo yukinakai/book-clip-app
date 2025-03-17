@@ -157,4 +157,115 @@ describe("ClipStorageService", () => {
       );
     });
   });
+
+  describe("updateClip", () => {
+    it("指定したIDのクリップが更新されること", async () => {
+      // モックデータがAsyncStorageから返されるようにセット
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(mockClips));
+
+      // 更新するクリップデータ
+      const updatedClip: Clip = {
+        ...mockClip,
+        text: "更新されたテキスト",
+        page: 99,
+      };
+
+      await ClipStorageService.updateClip(updatedClip);
+
+      // 更新後のクリップリストを確認
+      const expectedClips = mockClips.map((clip) =>
+        clip.id === updatedClip.id ? updatedClip : clip
+      );
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        "@saved_clips",
+        JSON.stringify(expectedClips)
+      );
+    });
+
+    it("更新中にエラーが発生した場合、エラーがスローされること", async () => {
+      // AsyncStorage.getItemがエラーをスローするようにモック
+      const errorMessage = "更新中にエラーが発生しました";
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockRejectedValue(new Error(errorMessage));
+
+      // コンソールエラーをモック
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      await expect(ClipStorageService.updateClip(mockClip)).rejects.toThrow();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error updating clip:",
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("deleteClipsByBookId", () => {
+    it("指定した書籍IDに関連するすべてのクリップが削除されること", async () => {
+      // モックデータがAsyncStorageから返されるようにセット
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(mockClips));
+
+      const bookIdToRemove = "book-1";
+      await ClipStorageService.deleteClipsByBookId(bookIdToRemove);
+
+      // 削除後のクリップリストを確認（book-1以外のクリップのみが残る）
+      const expectedClips = mockClips.filter(
+        (clip) => clip.bookId !== bookIdToRemove
+      );
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        "@saved_clips",
+        JSON.stringify(expectedClips)
+      );
+      // book-1のクリップが2つあるので、1つのクリップだけが残ることを確認
+      expect(expectedClips.length).toBe(1);
+      expect(expectedClips[0].bookId).toBe("book-2");
+    });
+
+    it("指定した書籍IDに関連するクリップがない場合、変更なしで保存されること", async () => {
+      // モックデータがAsyncStorageから返されるようにセット
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(mockClips));
+
+      const nonExistingBookId = "non-existing-book";
+      await ClipStorageService.deleteClipsByBookId(nonExistingBookId);
+
+      // 元のクリップリストと同じ内容が保存されることを確認
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        "@saved_clips",
+        JSON.stringify(mockClips)
+      );
+    });
+
+    it("削除中にエラーが発生した場合、エラーがスローされること", async () => {
+      // AsyncStorage.getItemがエラーをスローするようにモック
+      const errorMessage = "削除中にエラーが発生しました";
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockRejectedValue(new Error(errorMessage));
+
+      // コンソールエラーをモック
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      await expect(
+        ClipStorageService.deleteClipsByBookId("book-1")
+      ).rejects.toThrow();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error deleting clips by book ID:",
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
 });
