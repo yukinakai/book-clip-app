@@ -1,6 +1,5 @@
 // @ts-check
 
-
 /**
  * @param {ConfigContext} config
  * @returns {ExpoConfig}
@@ -40,9 +39,14 @@ export default function ({ config }) {
         "expo-splash-screen",
         {
           image: "./assets/images/splash-icon.png",
-          imageWidth: 200,
-          resizeMode: "contain",
+          imageResizeMode: "contain",
+          imageWidth: 300,
           backgroundColor: "#ffffff",
+          dark: {
+            image: "./assets/images/splash-icon-dark.png",
+            backgroundColor: "#121212",
+          },
+          splashTransparent: false,
         },
       ],
       [
