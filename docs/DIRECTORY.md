@@ -33,6 +33,8 @@
 │   │   └── SpaceMono-Regular.ttf
 │   └── images
 │       ├── adaptive-icon.png
+│       ├── bookclip-splash-icon-dark.svg
+│       ├── bookclip-splash-icon.svg
 │       ├── favicon.png
 │       ├── icon.png
 │       ├── no-image.svg
@@ -43,6 +45,7 @@
 │       ├── react-logo.png
 │       ├── react-logo@2x.png
 │       ├── react-logo@3x.png
+│       ├── splash-icon-dark.png
 │       └── splash-icon.png
 ├── babel.config.cjs
 ├── components
@@ -86,6 +89,7 @@
 ├── package-lock.json
 ├── package.json
 ├── scripts
+│   ├── convert-svg-to-png.js
 │   ├── reset-project.js
 │   └── reset-walkthrough.js
 ├── services
@@ -131,4 +135,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 101 files
+31 directories, 105 files
