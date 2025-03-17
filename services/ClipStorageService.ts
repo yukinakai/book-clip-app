@@ -79,4 +79,24 @@ export class ClipStorageService {
       throw error;
     }
   }
+
+  // 特定の書籍に関連するすべてのクリップを削除
+  static async deleteClipsByBookId(bookId: string): Promise<void> {
+    try {
+      const existingClipsJson = await AsyncStorage.getItem(STORAGE_KEY);
+      const existingClips: Clip[] = existingClipsJson
+        ? JSON.parse(existingClipsJson)
+        : [];
+
+      // 指定された書籍ID以外のクリップを残す
+      const updatedClips = existingClips.filter(
+        (clip) => clip.bookId !== bookId
+      );
+
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClips));
+    } catch (error) {
+      console.error("Error deleting clips by book ID:", error);
+      throw error;
+    }
+  }
 }
