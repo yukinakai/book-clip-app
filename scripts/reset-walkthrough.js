@@ -13,12 +13,16 @@ const __dirname = path.dirname(__filename);
 const resetFilePath = path.join(__dirname, "..", "app", "_clear.tsx");
 
 const resetCode = `import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 export default function ClearStorageScreen() {
+  // カラーテーマを取得
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   useEffect(() => {
     const clearStorage = async () => {
       try {
@@ -39,11 +43,15 @@ export default function ClearStorageScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
+    <View style={[styles.container, isDark && styles.containerDark]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <ActivityIndicator size="large" color="#4169E1" style={styles.loader} />
-      <Text style={styles.text}>ウォークスルーをリセットしています...</Text>
-      <Text style={styles.subText}>自動的にホーム画面に戻ります</Text>
+      <Text style={[styles.text, isDark && styles.textDark]}>
+        ウォークスルーをリセットしています...
+      </Text>
+      <Text style={[styles.subText, isDark && styles.subTextDark]}>
+        自動的にホーム画面に戻ります
+      </Text>
     </View>
   );
 }
@@ -56,6 +64,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
   },
+  containerDark: {
+    backgroundColor: '#121212',
+  },
   loader: {
     marginBottom: 20,
   },
@@ -64,11 +75,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
+    color: '#333',
+  },
+  textDark: {
+    color: '#E0E0E0',
   },
   subText: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
+  },
+  subTextDark: {
+    color: '#A0A0A0',
   },
 });
 `;
