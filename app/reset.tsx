@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
   TouchableOpacity,
+  useColorScheme,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
@@ -14,6 +14,10 @@ import { StatusBar } from "expo-status-bar";
 const ONBOARDING_COMPLETE_KEY = "@bookclip:onboarding_complete";
 
 export default function ResetScreen() {
+  // カラーテーマを取得
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
   const resetStorage = async () => {
     try {
       await AsyncStorage.removeItem(ONBOARDING_COMPLETE_KEY);
@@ -26,11 +30,13 @@ export default function ResetScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-      <Text style={styles.title}>ウォークスルーリセット</Text>
+    <View style={[styles.container, isDark && styles.containerDark]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <Text style={[styles.title, isDark && styles.titleDark]}>
+        ウォークスルーリセット
+      </Text>
 
-      <Text style={styles.description}>
+      <Text style={[styles.description, isDark && styles.descriptionDark]}>
         アプリを初回起動時の状態に戻し、ウォークスルー画面を表示します。
       </Text>
 
@@ -43,11 +49,22 @@ export default function ResetScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.button, styles.cancelButton]}
+        style={[
+          styles.button,
+          styles.cancelButton,
+          isDark && styles.cancelButtonDark,
+        ]}
         onPress={() => router.back()}
         testID="cancel-button"
       >
-        <Text style={styles.cancelButtonText}>キャンセル</Text>
+        <Text
+          style={[
+            styles.cancelButtonText,
+            isDark && styles.cancelButtonTextDark,
+          ]}
+        >
+          キャンセル
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -61,11 +78,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
   },
+  containerDark: {
+    backgroundColor: "#121212",
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     color: "#333",
+  },
+  titleDark: {
+    color: "#E0E0E0",
   },
   description: {
     fontSize: 16,
@@ -73,6 +96,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     color: "#666",
     lineHeight: 22,
+  },
+  descriptionDark: {
+    color: "#A0A0A0",
   },
   button: {
     backgroundColor: "#4169E1",
@@ -93,8 +119,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#999",
   },
+  cancelButtonDark: {
+    borderColor: "#666",
+  },
   cancelButtonText: {
     color: "#666",
     fontSize: 16,
+  },
+  cancelButtonTextDark: {
+    color: "#A0A0A0",
   },
 });

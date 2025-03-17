@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
   useWindowDimensions,
   SafeAreaView,
+  useColorScheme,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
@@ -18,80 +18,71 @@ import Animated, {
 } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SvgXml } from "react-native-svg";
-import { Asset } from "expo-asset";
-import * as FileSystem from "expo-file-system";
 
-// SVGファイルの内容
-const barcodeSvgContent = `<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="200" height="200" rx="20" fill="#F5F7F9"/>
-  <rect x="40" y="70" width="120" height="60" rx="5" fill="#4169E1" fill-opacity="0.1"/>
-  <rect x="50" y="80" width="5" height="40" fill="#4169E1"/>
-  <rect x="60" y="80" width="2" height="40" fill="#4169E1"/>
-  <rect x="65" y="80" width="4" height="40" fill="#4169E1"/>
-  <rect x="72" y="80" width="6" height="40" fill="#4169E1"/>
-  <rect x="82" y="80" width="3" height="40" fill="#4169E1"/>
-  <rect x="90" y="80" width="5" height="40" fill="#4169E1"/>
-  <rect x="100" y="80" width="2" height="40" fill="#4169E1"/>
-  <rect x="105" y="80" width="6" height="40" fill="#4169E1"/>
-  <rect x="115" y="80" width="3" height="40" fill="#4169E1"/>
-  <rect x="122" y="80" width="4" height="40" fill="#4169E1"/>
-  <rect x="130" y="80" width="2" height="40" fill="#4169E1"/>
-  <rect x="135" y="80" width="5" height="40" fill="#4169E1"/>
-  <rect x="145" y="80" width="3" height="40" fill="#4169E1"/>
-  <circle cx="100" cy="140" r="15" fill="#4169E1" fill-opacity="0.2"/>
-  <path d="M100 135V145M95 140H105" stroke="#4169E1" stroke-width="2" stroke-linecap="round"/>
-  <text x="100" y="170" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">バーコードをスキャン</text>
-</svg>`;
+// SVGコンテンツを生成する関数（カラーテーマに応じて色を変更）
+const createBarcodeSvg = (isDark: boolean) => {
+  const bgColor = isDark ? "#1A1A1A" : "#F5F7F9";
+  const primaryColor = "#4169E1";
+  const textColor = isDark ? "#E0E0E0" : "#333333";
 
-const cameraSvgContent = `<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="200" height="200" rx="20" fill="#F5F7F9"/>
-  <rect x="60" y="60" width="80" height="80" rx="10" fill="#4169E1" fill-opacity="0.1"/>
-  <circle cx="100" cy="100" r="30" stroke="#4169E1" stroke-width="3" fill="none"/>
-  <circle cx="100" cy="100" r="20" stroke="#4169E1" stroke-width="2" fill="none"/>
-  <circle cx="130" cy="70" r="5" fill="#4169E1"/>
-  <rect x="70" y="140" width="60" height="8" rx="4" fill="#4169E1" fill-opacity="0.2"/>
-  <rect x="75" y="150" width="50" height="5" rx="2.5" fill="#4169E1" fill-opacity="0.2"/>
-  <path d="M100 85V115M85 100H115" stroke="#4169E1" stroke-width="2" stroke-linecap="round"/>
-  <text x="100" y="170" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">ページを撮影</text>
-</svg>`;
+  return `<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="200" rx="20" fill="${bgColor}"/>
+    <rect x="40" y="70" width="120" height="60" rx="5" fill="${primaryColor}" fill-opacity="0.2"/>
+    <rect x="50" y="80" width="5" height="40" fill="${primaryColor}"/>
+    <rect x="60" y="80" width="2" height="40" fill="${primaryColor}"/>
+    <rect x="65" y="80" width="4" height="40" fill="${primaryColor}"/>
+    <rect x="72" y="80" width="6" height="40" fill="${primaryColor}"/>
+    <rect x="82" y="80" width="3" height="40" fill="${primaryColor}"/>
+    <rect x="90" y="80" width="5" height="40" fill="${primaryColor}"/>
+    <rect x="100" y="80" width="2" height="40" fill="${primaryColor}"/>
+    <rect x="105" y="80" width="6" height="40" fill="${primaryColor}"/>
+    <rect x="115" y="80" width="3" height="40" fill="${primaryColor}"/>
+    <rect x="122" y="80" width="4" height="40" fill="${primaryColor}"/>
+    <rect x="130" y="80" width="2" height="40" fill="${primaryColor}"/>
+    <rect x="135" y="80" width="5" height="40" fill="${primaryColor}"/>
+    <rect x="145" y="80" width="3" height="40" fill="${primaryColor}"/>
+    <circle cx="100" cy="140" r="15" fill="${primaryColor}" fill-opacity="0.2"/>
+    <path d="M100 135V145M95 140H105" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round"/>
+    <text x="100" y="170" text-anchor="middle" font-family="Arial" font-size="12" fill="${textColor}">バーコードをスキャン</text>
+  </svg>`;
+};
 
-const searchSvgContent = `<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="200" height="200" rx="20" fill="#F5F7F9"/>
-  <circle cx="90" cy="90" r="30" stroke="#4169E1" stroke-width="3" fill="none"/>
-  <path d="M110 110L130 130" stroke="#4169E1" stroke-width="3" stroke-linecap="round"/>
-  <rect x="60" y="140" width="80" height="8" rx="4" fill="#4169E1" fill-opacity="0.2"/>
-  <rect x="70" y="152" width="60" height="5" rx="2.5" fill="#4169E1" fill-opacity="0.2"/>
-  <rect x="65" y="162" width="70" height="5" rx="2.5" fill="#4169E1" fill-opacity="0.2"/>
-  <rect x="50" y="85" width="30" height="2" rx="1" fill="#4169E1" fill-opacity="0.5"/>
-  <rect x="60" y="92" width="20" height="2" rx="1" fill="#4169E1" fill-opacity="0.5"/>
-  <rect x="55" y="99" width="25" height="2" rx="1" fill="#4169E1" fill-opacity="0.5"/>
-  <text x="100" y="190" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">キーワード検索</text>
-</svg>`;
+const createCameraSvg = (isDark: boolean) => {
+  const bgColor = isDark ? "#1A1A1A" : "#F5F7F9";
+  const primaryColor = "#4169E1";
+  const textColor = isDark ? "#E0E0E0" : "#333333";
 
-// オンボーディングの内容を定義
-const slides = [
-  {
-    id: "1",
-    title: "書籍情報を簡単に取得",
-    description:
-      "本のバーコードをスキャンするだけで、タイトルや著者情報を自動取得します。",
-    svgContent: barcodeSvgContent,
-  },
-  {
-    id: "2",
-    title: "気になるページを保存",
-    description:
-      "読んでいる本の気になるページをカメラで撮影し、テキストを自動的に抽出して保存します。",
-    svgContent: cameraSvgContent,
-  },
-  {
-    id: "3",
-    title: "いつでもどこでも検索",
-    description:
-      "保存したテキストや画像をキーワードで検索し、必要な時に必要な情報にアクセスできます。",
-    svgContent: searchSvgContent,
-  },
-];
+  return `<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="200" rx="20" fill="${bgColor}"/>
+    <rect x="60" y="60" width="80" height="80" rx="10" fill="${primaryColor}" fill-opacity="0.2"/>
+    <circle cx="100" cy="100" r="30" stroke="${primaryColor}" stroke-width="3" fill="none"/>
+    <circle cx="100" cy="100" r="20" stroke="${primaryColor}" stroke-width="2" fill="none"/>
+    <circle cx="130" cy="70" r="5" fill="${primaryColor}"/>
+    <rect x="70" y="140" width="60" height="8" rx="4" fill="${primaryColor}" fill-opacity="0.2"/>
+    <rect x="75" y="150" width="50" height="5" rx="2.5" fill="${primaryColor}" fill-opacity="0.2"/>
+    <path d="M100 85V115M85 100H115" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round"/>
+    <text x="100" y="170" text-anchor="middle" font-family="Arial" font-size="12" fill="${textColor}">ページを撮影</text>
+  </svg>`;
+};
+
+const createSearchSvg = (isDark: boolean) => {
+  const bgColor = isDark ? "#1A1A1A" : "#F5F7F9";
+  const primaryColor = "#4169E1";
+  const textColor = isDark ? "#E0E0E0" : "#333333";
+
+  return `<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="200" rx="20" fill="${bgColor}"/>
+    <circle cx="90" cy="90" r="30" stroke="${primaryColor}" stroke-width="3" fill="none"/>
+    <path d="M110 110L130 130" stroke="${primaryColor}" stroke-width="3" stroke-linecap="round"/>
+    <rect x="60" y="140" width="80" height="8" rx="4" fill="${primaryColor}" fill-opacity="0.2"/>
+    <rect x="70" y="152" width="60" height="5" rx="2.5" fill="${primaryColor}" fill-opacity="0.2"/>
+    <rect x="65" y="162" width="70" height="5" rx="2.5" fill="${primaryColor}" fill-opacity="0.2"/>
+    <rect x="50" y="85" width="30" height="2" rx="1" fill="${primaryColor}" fill-opacity="0.5"/>
+    <rect x="60" y="92" width="20" height="2" rx="1" fill="${primaryColor}" fill-opacity="0.5"/>
+    <rect x="55" y="99" width="25" height="2" rx="1" fill="${primaryColor}" fill-opacity="0.5"/>
+    <text x="100" y="190" text-anchor="middle" font-family="Arial" font-size="12" fill="${textColor}">キーワード検索</text>
+  </svg>`;
+};
 
 // オンボーディング完了のフラグをAsyncStorageに保存するキー
 const ONBOARDING_COMPLETE_KEY = "@bookclip:onboarding_complete";
@@ -101,6 +92,35 @@ export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useSharedValue(0);
   const flatListRef = useRef(null);
+
+  // カラーテーマを取得
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  // カラーテーマに応じたスライド内容を生成
+  const slides = [
+    {
+      id: "1",
+      title: "書籍情報を簡単に取得",
+      description:
+        "本のバーコードをスキャンするだけで、タイトルや著者情報を自動取得します。",
+      svgContent: createBarcodeSvg(isDark),
+    },
+    {
+      id: "2",
+      title: "気になるページを保存",
+      description:
+        "読んでいる本の気になるページをカメラで撮影し、テキストを自動的に抽出して保存します。",
+      svgContent: createCameraSvg(isDark),
+    },
+    {
+      id: "3",
+      title: "いつでもどこでも検索",
+      description:
+        "保存したテキストや画像をキーワードで検索し、必要な時に必要な情報にアクセスできます。",
+      svgContent: createSearchSvg(isDark),
+    },
+  ];
 
   const handleScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -132,13 +152,17 @@ export default function OnboardingScreen() {
     }
   };
 
-  const renderItem = ({ item, index }) => {
+  const renderItem = ({ item, _index }) => {
     return (
       <View style={[styles.slide, { width }]}>
         <SvgXml xml={item.svgContent} width={200} height={200} />
         <View style={styles.textContainer}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
+          <Text style={[styles.title, isDark && styles.titleDark]}>
+            {item.title}
+          </Text>
+          <Text style={[styles.description, isDark && styles.descriptionDark]}>
+            {item.description}
+          </Text>
         </View>
       </View>
     );
@@ -185,15 +209,17 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="auto" />
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       <TouchableOpacity
         style={styles.skipButton}
         onPress={handleSkip}
         testID="skip-button"
       >
-        <Text style={styles.skipText}>スキップ</Text>
+        <Text style={[styles.skipText, isDark && styles.skipTextDark]}>
+          スキップ
+        </Text>
       </TouchableOpacity>
 
       <Animated.FlatList
@@ -234,6 +260,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  containerDark: {
+    backgroundColor: "#121212",
+  },
   slide: {
     flex: 1,
     justifyContent: "center",
@@ -256,12 +285,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333",
   },
+  titleDark: {
+    color: "#E0E0E0",
+  },
   description: {
     fontSize: 16,
     textAlign: "center",
     color: "#666",
     paddingHorizontal: 20,
     lineHeight: 22,
+  },
+  descriptionDark: {
+    color: "#A0A0A0",
   },
   dotsContainer: {
     flexDirection: "row",
@@ -301,5 +336,8 @@ const styles = StyleSheet.create({
   skipText: {
     fontSize: 16,
     color: "#666",
+  },
+  skipTextDark: {
+    color: "#A0A0A0",
   },
 });
