@@ -45,4 +45,9 @@ export class BookStorageService {
       throw error;
     }
   }
+
+  // エイリアスとしてdeleteBookを提供 (互換性のため)
+  static async deleteBook(bookId: string): Promise<void> {
+    return this.removeBook(bookId);
+  }
 }

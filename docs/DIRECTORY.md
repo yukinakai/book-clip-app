@@ -21,7 +21,8 @@
 │   ├── _layout.tsx
 │   ├── book
 │   │   ├── [id].tsx
-│   │   └── add-clip.tsx
+│   │   ├── add-clip.tsx
+│   │   └── edit.tsx
 │   └── clip
 │       └── [id].tsx
 ├── app.config.js
@@ -97,7 +98,8 @@
 │   │   │   └── index.test.tsx
 │   │   ├── book
 │   │   │   ├── add-clip.test.tsx
-│   │   │   └── book-detail.test.tsx
+│   │   │   ├── book-detail.test.tsx
+│   │   │   └── edit.test.tsx
 │   │   └── clip
 │   │       └── clip-detail.test.tsx
 │   ├── components
@@ -115,6 +117,7 @@
 │   ├── hooks
 │   │   └── useBookScanner.test.tsx
 │   ├── services
+│   │   ├── BookStorageService.test.ts
 │   │   ├── ClipStorageService.test.ts
 │   │   └── OCRService.test.ts
 │   ├── setup.js
@@ -123,4 +126,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 93 files
+31 directories, 96 files
