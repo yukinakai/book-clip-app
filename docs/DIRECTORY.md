@@ -25,8 +25,7 @@
 │   │   └── edit.tsx
 │   ├── clip
 │   │   └── [id].tsx
-│   ├── onboarding.tsx
-│   └── reset.tsx
+│   └── onboarding.tsx
 ├── app.config.js
 ├── app.json
 ├── assets
@@ -87,9 +86,8 @@
 ├── package-lock.json
 ├── package.json
 ├── scripts
-│   ├── reset-onboarding-simple.js
-│   ├── reset-onboarding.cjs
-│   └── reset-project.js
+│   ├── reset-project.js
+│   └── reset-walkthrough.js
 ├── services
 │   ├── BookStorageService.ts
 │   ├── ClipStorageService.ts
@@ -133,4 +131,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 103 files
+31 directories, 101 files
