@@ -30,7 +30,7 @@ function AddClipButton() {
         onPress={handleAddClip}
         activeOpacity={0.7}
       >
-        <Ionicons name="camera" size={24} color="white" />
+        <Ionicons name="camera" size={32} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -105,30 +105,30 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   addButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 5,
+    elevation: 7,
   },
   centerButtonContainer: {
     position: "absolute",
     alignSelf: "center",
     alignItems: "center",
     justifyContent: "center",
-    bottom: 12, // タブバーからの距離を調整
+    bottom: 8,
     left: 0,
     right: 0,
-    zIndex: 1000, // 確実に他の要素の上に表示
+    zIndex: 1000,
   },
   placeholder: {
     width: 24,
     height: 24,
-    opacity: 0, // 完全に透明にする
+    opacity: 0,
   },
 });
