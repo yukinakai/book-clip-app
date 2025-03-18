@@ -16,13 +16,19 @@
 ├── app
 │   ├── (tabs)
 │   │   ├── _layout.tsx
-│   │   └── index.tsx
+│   │   ├── add-clip-tab.tsx
+│   │   ├── index.tsx
+│   │   └── profile.tsx
 │   ├── +not-found.tsx
 │   ├── _layout.tsx
 │   ├── book
 │   │   ├── [id].tsx
 │   │   ├── add-clip.tsx
-│   │   └── edit.tsx
+│   │   ├── edit.tsx
+│   │   └── select.tsx
+│   ├── camera
+│   │   ├── _layout.tsx
+│   │   └── ocr.tsx
 │   ├── clip
 │   │   └── [id].tsx
 │   └── onboarding.tsx
@@ -108,7 +114,10 @@
 │   │   ├── book
 │   │   │   ├── add-clip.test.tsx
 │   │   │   ├── book-detail.test.tsx
-│   │   │   └── edit.test.tsx
+│   │   │   ├── edit.test.tsx
+│   │   │   └── select.test.tsx
+│   │   ├── camera
+│   │   │   └── ocr.test.tsx
 │   │   └── clip
 │   │       └── clip-detail.test.tsx
 │   ├── components
@@ -135,4 +144,4 @@
 └── types
     └── env.d.ts
 
-31 directories, 105 files
+33 directories, 112 files

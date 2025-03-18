@@ -10,4 +10,8 @@ const asyncStorageMock = {
   mergeItem: jest.fn(() => Promise.resolve()),
 };
 
+// CommonJS形式のエクスポート
+module.exports = asyncStorageMock;
+
+// ESモジュール形式のエクスポート
 export default asyncStorageMock;

@@ -2,6 +2,19 @@
 const React = require("react");
 const { View } = require("react-native");
 
+// AsyncStorageのモック
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  setItem: jest.fn(() => Promise.resolve()),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+  getAllKeys: jest.fn(() => Promise.resolve([])),
+  multiGet: jest.fn(() => Promise.resolve([])),
+  multiSet: jest.fn(() => Promise.resolve()),
+  multiRemove: jest.fn(() => Promise.resolve()),
+  mergeItem: jest.fn(() => Promise.resolve()),
+}));
+
 // アイコンコンポーネントのモック作成
 const createIconMock = (name) => {
   const Icon = ({ name, _size, _color, style }) => {
