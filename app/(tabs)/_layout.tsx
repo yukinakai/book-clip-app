@@ -75,7 +75,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "ホーム",
+          title: "マイライブラリ",
           tabBarIcon: ({ color }: { color: string }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),

@@ -161,26 +161,6 @@ export default function HomeScreen() {
                 transform: [{ scale: pressed ? 0.98 : 1 }],
               },
             ]}
-            onPress={handleAddClip}
-            android_ripple={{
-              color: "rgba(255,255,255,0.2)",
-              borderless: false,
-            }}
-            testID="add-clip-button"
-            hitSlop={20}
-          >
-            <Ionicons name="bookmark-outline" size={18} color="white" />
-            <Text style={styles.buttonText}>クリップを追加</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.addButton,
-              {
-                backgroundColor: Colors[colorScheme].primary,
-                opacity: pressed ? 0.7 : 1,
-                transform: [{ scale: pressed ? 0.98 : 1 }],
-              },
-            ]}
             onPress={handleOpenCamera}
             onPressIn={() => console.log("Press In Event")}
             android_ripple={{
