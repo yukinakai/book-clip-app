@@ -107,9 +107,26 @@ export default function HomeScreen() {
     }, 500);
   };
 
-  const handleAddClip = () => {
-    // クリップ追加ボタンでカメラを開く
-    handleOpenCamera();
+  const handleAddClip = async () => {
+    try {
+      // 最後にクリップを登録した書籍を取得
+      const lastClipBook = await BookStorageService.getLastClipBook();
+
+      if (lastClipBook) {
+        // 最後に使用した書籍がある場合は、その書籍にクリップを追加
+        router.push(
+          `/book/add-clip?bookId=${
+            lastClipBook.id
+          }&bookTitle=${encodeURIComponent(lastClipBook.title)}`
+        );
+      } else {
+        // 最後に使用した書籍がない場合は、書籍選択画面を表示
+        router.push("/book/select?fromClip=true");
+      }
+    } catch (error) {
+      console.error("Error handling add clip:", error);
+      Alert.alert("エラー", "クリップの追加に失敗しました");
+    }
   };
 
   return (
