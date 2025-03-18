@@ -1,6 +1,12 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, TouchableOpacity, StyleSheet, View } from "react-native";
+import {
+  Platform,
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  Text,
+} from "react-native";
 import { useRouter } from "expo-router";
 
 import { HapticTab } from "@/components/HapticTab";
@@ -30,7 +36,10 @@ function AddClipButton() {
         onPress={handleAddClip}
         activeOpacity={0.7}
       >
-        <Ionicons name="camera" size={32} color="white" />
+        <View style={styles.buttonContent}>
+          <Ionicons name="camera" size={28} color="white" />
+          <Text style={styles.buttonText}>クリップを追加</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -105,9 +114,9 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   addButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 170,
+    height: 60,
+    borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -116,12 +125,23 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 7,
   },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 15,
+    marginLeft: 8,
+  },
   centerButtonContainer: {
     position: "absolute",
     alignSelf: "center",
     alignItems: "center",
     justifyContent: "center",
-    bottom: 8,
+    bottom: 20,
     left: 0,
     right: 0,
     zIndex: 1000,
