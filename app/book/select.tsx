@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Book } from "../../constants/MockData";
 import { BookStorageService } from "../../services/BookStorageService";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +23,7 @@ export default function BookSelectScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
+  const { fromClip } = useLocalSearchParams<{ fromClip: string }>();
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
@@ -45,11 +46,19 @@ export default function BookSelectScreen() {
   };
 
   const handleBookSelect = (book: Book) => {
-    router.push(
-      `/book/add-clip?bookId=${book.id}&bookTitle=${encodeURIComponent(
-        book.title
-      )}`
-    );
+    if (fromClip === "true") {
+      router.push(
+        `/book/add-clip?bookId=${book.id}&bookTitle=${encodeURIComponent(
+          book.title
+        )}`
+      );
+    } else {
+      router.push(
+        `/book/add-clip?bookId=${book.id}&bookTitle=${encodeURIComponent(
+          book.title
+        )}`
+      );
+    }
   };
 
   const renderBookItem = ({ item }: { item: Book }) => (

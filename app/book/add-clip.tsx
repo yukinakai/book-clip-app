@@ -12,9 +12,11 @@ import {
   ScrollView,
   Keyboard,
   KeyboardEvent,
+  Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ClipStorageService } from "../../services/ClipStorageService";
+import { BookStorageService } from "../../services/BookStorageService";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "../../hooks/useThemeColor";
 import CameraView from "../../components/CameraView";
@@ -24,11 +26,14 @@ import ImageSelectionView, {
 } from "../../components/ImageSelectionView";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { Book } from "../../constants/MockData";
+import NoImagePlaceholder from "../../components/NoImagePlaceholder";
 
 export default function AddClipScreen() {
-  const { bookId, bookTitle } = useLocalSearchParams<{
+  const { bookId, bookTitle, imageUri } = useLocalSearchParams<{
     bookId: string;
     bookTitle: string;
+    imageUri: string;
   }>();
   const [clipText, setClipText] = useState("");
   const [pageNumber, setPageNumber] = useState("");
@@ -40,6 +45,8 @@ export default function AddClipScreen() {
   const [selectedArea, setSelectedArea] = useState<SelectionArea | undefined>(
     undefined
   );
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [isLoadingBook, setIsLoadingBook] = useState(true);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
 
@@ -47,6 +54,45 @@ export default function AddClipScreen() {
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const borderColor = Colors[colorScheme].tabIconDefault;
+
+  // 書籍情報をロード
+  useEffect(() => {
+    async function loadBook() {
+      try {
+        setIsLoadingBook(true);
+        if (bookId) {
+          // 指定されたIDの書籍を取得
+          const books = await BookStorageService.getAllBooks();
+          const book = books.find((b) => b.id === bookId);
+          if (book) {
+            setSelectedBook(book);
+          } else {
+            // 最後に使用した書籍を取得
+            const lastBook = await BookStorageService.getLastClipBook();
+            setSelectedBook(lastBook);
+          }
+        } else {
+          // 最後に使用した書籍を取得
+          const lastBook = await BookStorageService.getLastClipBook();
+          setSelectedBook(lastBook);
+        }
+      } catch (error) {
+        console.error("Error loading book:", error);
+      } finally {
+        setIsLoadingBook(false);
+      }
+    }
+
+    loadBook();
+  }, [bookId]);
+
+  // 画像が渡された場合の処理
+  useEffect(() => {
+    if (imageUri) {
+      setCapturedImageUri(imageUri);
+      setShowImageSelection(true);
+    }
+  }, [imageUri]);
 
   // キーボードの表示を監視
   useEffect(() => {
@@ -69,9 +115,19 @@ export default function AddClipScreen() {
     };
   }, []);
 
+  // 書籍選択画面に遷移
+  const handleBookSelect = () => {
+    router.push("/book/select?fromClip=true");
+  };
+
   const handleSaveClip = async () => {
     if (!clipText.trim()) {
       Alert.alert("エラー", "クリップするテキストを入力してください");
+      return;
+    }
+
+    if (!selectedBook) {
+      Alert.alert("エラー", "書籍を選択してください");
       return;
     }
 
@@ -85,7 +141,7 @@ export default function AddClipScreen() {
     try {
       await ClipStorageService.saveClip({
         id: Date.now().toString(),
-        bookId: bookId as string,
+        bookId: selectedBook.id,
         text: clipText.trim(),
         page,
         createdAt: new Date().toISOString(),
@@ -93,8 +149,8 @@ export default function AddClipScreen() {
 
       // 保存成功したら前の画面に戻る
       router.back();
-    } catch {
-      console.error("Failed to save clip");
+    } catch (error) {
+      console.error("Failed to save clip:", error);
       Alert.alert("エラー", "クリップの保存に失敗しました");
     }
   };
@@ -174,9 +230,76 @@ export default function AddClipScreen() {
         showsVerticalScrollIndicator={true}
       >
         <View style={styles.form}>
-          <Text style={[styles.bookTitle, { color: textColor }]}>
-            {bookTitle || "書籍タイトル"}
-          </Text>
+          {/* 書籍選択UI */}
+          <View style={styles.bookSelectionContainer}>
+            <View style={styles.bookInfoHeader}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>
+                書籍を選択
+              </Text>
+              <TouchableOpacity
+                style={styles.changeBookButton}
+                onPress={handleBookSelect}
+                testID="change-book-button"
+              >
+                <Text
+                  style={[
+                    styles.changeBookButtonText,
+                    { color: Colors[colorScheme].primary },
+                  ]}
+                >
+                  変更
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {isLoadingBook ? (
+              <Text style={[styles.loadingText, { color: textColor }]}>
+                読み込み中...
+              </Text>
+            ) : selectedBook ? (
+              <View
+                style={[
+                  styles.selectedBookContainer,
+                  { backgroundColor: secondaryBackgroundColor },
+                ]}
+              >
+                <View style={styles.bookContent}>
+                  {selectedBook.coverImage ? (
+                    <Image
+                      source={{ uri: selectedBook.coverImage }}
+                      style={styles.coverImage}
+                    />
+                  ) : (
+                    <View style={styles.coverImage}>
+                      <NoImagePlaceholder width={50} height={75} />
+                    </View>
+                  )}
+                  <View style={styles.bookInfo}>
+                    <Text style={[styles.bookTitle, { color: textColor }]}>
+                      {selectedBook.title}
+                    </Text>
+                    <Text style={[styles.bookAuthor, { color: textColor }]}>
+                      {selectedBook.author}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[
+                  styles.selectBookPrompt,
+                  { backgroundColor: secondaryBackgroundColor },
+                ]}
+                onPress={handleBookSelect}
+              >
+                <Text style={[styles.selectBookText, { color: textColor }]}>
+                  書籍を選択してください
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.divider} />
 
           <View style={styles.inputGroup}>
             <View style={styles.labelContainer}>
@@ -269,7 +392,7 @@ export default function AddClipScreen() {
         </Modal>
       )}
 
-      {/* 画像選択モーダル（新規追加） */}
+      {/* 画像選択モーダル */}
       {showImageSelection && capturedImageUri && (
         <Modal
           visible={true}
@@ -339,10 +462,70 @@ const styles = StyleSheet.create({
   form: {
     padding: 20,
   },
+  bookInfoHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  changeBookButton: {
+    padding: 8,
+  },
+  changeBookButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  bookSelectionContainer: {
+    marginBottom: 20,
+  },
+  selectedBookContainer: {
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  bookContent: {
+    flexDirection: "row",
+    padding: 12,
+    alignItems: "center",
+  },
+  coverImage: {
+    width: 50,
+    height: 75,
+    borderRadius: 4,
+    marginRight: 12,
+  },
+  bookInfo: {
+    flex: 1,
+  },
   bookTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 24,
+  },
+  bookAuthor: {
+    fontSize: 14,
+    opacity: 0.7,
+    marginTop: 4,
+  },
+  selectBookPrompt: {
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectBookText: {
+    fontSize: 16,
+  },
+  loadingText: {
+    padding: 16,
+    textAlign: "center",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginBottom: 20,
   },
   inputGroup: {
     marginBottom: 24,
