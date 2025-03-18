@@ -30,11 +30,18 @@ import { Book } from "../../constants/MockData";
 import NoImagePlaceholder from "../../components/NoImagePlaceholder";
 
 export default function AddClipScreen() {
-  const { bookId, bookTitle, imageUri, isOcr } = useLocalSearchParams<{
+  const {
+    bookId,
+    bookTitle,
+    imageUri,
+    isOcr,
+    clipText: urlClipText,
+  } = useLocalSearchParams<{
     bookId: string;
     bookTitle: string;
     imageUri: string;
     isOcr: string;
+    clipText: string;
   }>();
   const [clipText, setClipText] = useState("");
   const [pageNumber, setPageNumber] = useState("");
@@ -56,27 +63,44 @@ export default function AddClipScreen() {
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const borderColor = Colors[colorScheme].tabIconDefault;
 
+  // URLパラメータのクリップテキストを設定
+  useEffect(() => {
+    if (urlClipText) {
+      setClipText(urlClipText);
+    }
+  }, [urlClipText]);
+
   // 書籍情報をロード
   useEffect(() => {
     async function loadBook() {
       try {
         setIsLoadingBook(true);
+
+        // 書籍の読み込み優先順位:
+        // 1. URL指定のbookId
+        // 2. 最後に使用した書籍
+        // 3. 最初に見つかった書籍（書籍がない場合はnull）
+
+        let bookToSet: Book | null = null;
+        const books = await BookStorageService.getAllBooks();
+
         if (bookId) {
-          // 指定されたIDの書籍を取得
-          const books = await BookStorageService.getAllBooks();
-          const book = books.find((b) => b.id === bookId);
-          if (book) {
-            setSelectedBook(book);
-          } else {
-            // 最後に使用した書籍を取得
-            const lastBook = await BookStorageService.getLastClipBook();
-            setSelectedBook(lastBook);
-          }
-        } else {
+          // URLで指定された書籍を探す
+          bookToSet = books.find((b) => b.id === bookId) || null;
+        }
+
+        if (!bookToSet) {
           // 最後に使用した書籍を取得
           const lastBook = await BookStorageService.getLastClipBook();
-          setSelectedBook(lastBook);
+          bookToSet = lastBook;
         }
+
+        if (!bookToSet && books.length > 0) {
+          // どの書籍も見つからなかった場合は最初の書籍を使用
+          bookToSet = books[0];
+        }
+
+        setSelectedBook(bookToSet);
       } catch (error) {
         console.error("Error loading book:", error);
       } finally {
@@ -121,7 +145,10 @@ export default function AddClipScreen() {
 
   // 書籍選択画面に遷移
   const handleBookSelect = () => {
-    router.push("/book/select?fromClip=true");
+    // OCRのテキストを保持するために、現在のテキストをクエリパラメータとして渡す
+    router.push(
+      `/book/select?fromClip=true&clipText=${encodeURIComponent(clipText)}`
+    );
   };
 
   const handleSaveClip = async () => {

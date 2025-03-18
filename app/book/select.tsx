@@ -23,7 +23,10 @@ export default function BookSelectScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
-  const { fromClip } = useLocalSearchParams<{ fromClip: string }>();
+  const { fromClip, clipText } = useLocalSearchParams<{
+    fromClip: string;
+    clipText: string;
+  }>();
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
@@ -47,10 +50,13 @@ export default function BookSelectScreen() {
 
   const handleBookSelect = (book: Book) => {
     if (fromClip === "true") {
+      const textParam = clipText
+        ? `&clipText=${encodeURIComponent(clipText)}`
+        : "";
       router.push(
         `/book/add-clip?bookId=${book.id}&bookTitle=${encodeURIComponent(
           book.title
-        )}`
+        )}${textParam}`
       );
     } else {
       router.push(
