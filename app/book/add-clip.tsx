@@ -30,10 +30,11 @@ import { Book } from "../../constants/MockData";
 import NoImagePlaceholder from "../../components/NoImagePlaceholder";
 
 export default function AddClipScreen() {
-  const { bookId, bookTitle, imageUri } = useLocalSearchParams<{
+  const { bookId, bookTitle, imageUri, isOcr } = useLocalSearchParams<{
     bookId: string;
     bookTitle: string;
     imageUri: string;
+    isOcr: string;
   }>();
   const [clipText, setClipText] = useState("");
   const [pageNumber, setPageNumber] = useState("");
@@ -90,9 +91,12 @@ export default function AddClipScreen() {
   useEffect(() => {
     if (imageUri) {
       setCapturedImageUri(imageUri);
-      setShowImageSelection(true);
+      if (isOcr === "true") {
+        // OCRカメラからの画像の場合、直接画像選択画面を表示
+        setShowImageSelection(true);
+      }
     }
-  }, [imageUri]);
+  }, [imageUri, isOcr]);
 
   // キーボードの表示を監視
   useEffect(() => {

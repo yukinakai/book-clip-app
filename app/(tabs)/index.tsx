@@ -7,18 +7,21 @@ import {
   Alert,
   Text,
   SafeAreaView,
+  Modal,
 } from "react-native";
 import { Book } from "../../constants/MockData";
 import { Colors } from "../../constants/Colors";
 import BookshelfView from "../../components/BookshelfView";
 import { Ionicons } from "@expo/vector-icons";
 import CameraModal from "../../components/camera/CameraModal";
+import CameraView from "../../components/CameraView";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useRouter } from "expo-router";
 import { BookStorageService } from "../../services/BookStorageService";
 
 export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isOcrCameraOpen, setIsOcrCameraOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const colorScheme = useColorScheme() ?? "light";
   const [isOpeningCamera, setIsOpeningCamera] = useState(false);
@@ -50,10 +53,26 @@ export default function HomeScreen() {
     setRefreshTrigger((prev) => prev + 1);
   };
 
+  // 書籍追加カメラでの画像キャプチャ処理
   const handleImageCaptured = (imageUri: string) => {
     console.log("画像が選択されました:", imageUri);
     // クリップ登録画面に遷移
     router.push(`/book/add-clip?imageUri=${encodeURIComponent(imageUri)}`);
+  };
+
+  // OCRカメラでの画像キャプチャ処理
+  const handleOcrImageCaptured = (imageUri: string) => {
+    console.log("OCR用画像が選択されました:", imageUri);
+    // クリップ登録画面に遷移（OCR処理用として）
+    router.push(
+      `/book/add-clip?imageUri=${encodeURIComponent(imageUri)}&isOcr=true`
+    );
+    setIsOcrCameraOpen(false);
+  };
+
+  // OCRカメラを閉じる
+  const handleOcrCameraClose = () => {
+    setIsOcrCameraOpen(false);
   };
 
   const handleOpenCamera = () => {
@@ -107,26 +126,9 @@ export default function HomeScreen() {
     }, 500);
   };
 
-  const handleAddClip = async () => {
-    try {
-      // 最後にクリップを登録した書籍を取得
-      const lastClipBook = await BookStorageService.getLastClipBook();
-
-      if (lastClipBook) {
-        // 最後に使用した書籍がある場合は、その書籍にクリップを追加
-        router.push(
-          `/book/add-clip?bookId=${
-            lastClipBook.id
-          }&bookTitle=${encodeURIComponent(lastClipBook.title)}`
-        );
-      } else {
-        // 最後に使用した書籍がない場合は、書籍選択画面を表示
-        router.push("/book/select?fromClip=true");
-      }
-    } catch (error) {
-      console.error("Error handling add clip:", error);
-      Alert.alert("エラー", "クリップの追加に失敗しました");
-    }
+  // クリップ追加ボタン処理 - OCRカメラを開く
+  const handleAddClip = () => {
+    setIsOcrCameraOpen(true);
   };
 
   return (
@@ -202,12 +204,27 @@ export default function HomeScreen() {
         />
       </View>
 
+      {/* 書籍追加用カメラモーダル */}
       <CameraModal
         isVisible={isCameraOpen}
         onClose={handleClose}
         onImageCaptured={handleImageCaptured}
         key={`camera-modal-${isCameraOpen}`}
       />
+
+      {/* OCR用カメラモーダル */}
+      {isOcrCameraOpen && (
+        <Modal
+          visible={true}
+          animationType="slide"
+          onRequestClose={handleOcrCameraClose}
+        >
+          <CameraView
+            onCapture={handleOcrImageCaptured}
+            onClose={handleOcrCameraClose}
+          />
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
