@@ -256,18 +256,6 @@ export default function BookDetailScreen() {
           />
         </View>
       </ScrollView>
-
-      <TouchableOpacity
-        style={[
-          styles.addButton,
-          { backgroundColor: Colors[colorScheme].primary },
-        ]}
-        activeOpacity={0.8}
-        testID="add-clip-button"
-        onPress={handleAddClip}
-      >
-        <Ionicons name="add" size={24} color="white" />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }

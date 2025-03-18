@@ -14,12 +14,15 @@ import BookshelfView from "../../components/BookshelfView";
 import { Ionicons } from "@expo/vector-icons";
 import CameraModal from "../../components/camera/CameraModal";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { useRouter } from "expo-router";
+import { BookStorageService } from "../../services/BookStorageService";
 
 export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const colorScheme = useColorScheme() ?? "light";
   const [isOpeningCamera, setIsOpeningCamera] = useState(false);
+  const router = useRouter();
 
   // タイマー参照を保持
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -106,6 +109,28 @@ export default function HomeScreen() {
     }, 500);
   };
 
+  const handleAddClip = async () => {
+    try {
+      // 最後にクリップを登録した書籍を取得
+      const lastClipBook = await BookStorageService.getLastClipBook();
+
+      if (lastClipBook) {
+        // 最後に使用した書籍がある場合は、その書籍にクリップを追加
+        router.push(
+          `/book/add-clip?bookId=${
+            lastClipBook.id
+          }&bookTitle=${encodeURIComponent(lastClipBook.title)}`
+        );
+      } else {
+        // 最後に使用した書籍がない場合は、書籍選択画面を表示
+        router.push("/book/select");
+      }
+    } catch (error) {
+      console.error("Error handling add clip:", error);
+      Alert.alert("エラー", "クリップの追加に失敗しました");
+    }
+  };
+
   return (
     <SafeAreaView
       style={[
@@ -126,27 +151,49 @@ export default function HomeScreen() {
             マイライブラリ
           </Text>
         </View>
-        <Pressable
-          style={({ pressed }) => [
-            styles.addButton,
-            {
-              backgroundColor: Colors[colorScheme].primary,
-              opacity: pressed ? 0.7 : 1,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
-            },
-          ]}
-          onPress={handleOpenCamera}
-          onPressIn={() => console.log("Press In Event")}
-          android_ripple={{
-            color: "rgba(255,255,255,0.2)",
-            borderless: false,
-          }}
-          testID="add-book-button"
-          hitSlop={20}
-        >
-          <Ionicons name="book-outline" size={18} color="white" />
-          <Text style={styles.buttonText}>書籍を追加</Text>
-        </Pressable>
+        <View style={styles.buttonContainer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.addButton,
+              {
+                backgroundColor: Colors[colorScheme].primary,
+                opacity: pressed ? 0.7 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              },
+            ]}
+            onPress={handleAddClip}
+            android_ripple={{
+              color: "rgba(255,255,255,0.2)",
+              borderless: false,
+            }}
+            testID="add-clip-button"
+            hitSlop={20}
+          >
+            <Ionicons name="bookmark-outline" size={18} color="white" />
+            <Text style={styles.buttonText}>クリップを追加</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.addButton,
+              {
+                backgroundColor: Colors[colorScheme].primary,
+                opacity: pressed ? 0.7 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              },
+            ]}
+            onPress={handleOpenCamera}
+            onPressIn={() => console.log("Press In Event")}
+            android_ripple={{
+              color: "rgba(255,255,255,0.2)",
+              borderless: false,
+            }}
+            testID="add-book-button"
+            hitSlop={20}
+          >
+            <Ionicons name="book-outline" size={18} color="white" />
+            <Text style={styles.buttonText}>書籍を追加</Text>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.bookshelfContainer}>
@@ -218,7 +265,6 @@ const styles = StyleSheet.create({
     minWidth: 110,
     minHeight: 36,
     zIndex: 10,
-    marginRight: 5,
   },
   buttonText: {
     color: "white",

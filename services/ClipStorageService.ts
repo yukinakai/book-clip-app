@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Clip } from "../constants/MockData";
+import { BookStorageService } from "./BookStorageService";
 
 const STORAGE_KEY = "@saved_clips";
 
@@ -20,7 +21,13 @@ export class ClipStorageService {
 
       const updatedClips = [...existingClips, newClip];
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClips));
-      return;
+
+      // 最後に使用した書籍の情報を更新
+      const books = await BookStorageService.getAllBooks();
+      const book = books.find((b) => b.id === clip.bookId);
+      if (book) {
+        await BookStorageService.setLastClipBook(book);
+      }
     } catch (error) {
       console.error("Error saving clip:", error);
       throw error;
