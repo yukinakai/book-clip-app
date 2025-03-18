@@ -32,7 +32,7 @@ import NoImagePlaceholder from "../../components/NoImagePlaceholder";
 export default function AddClipScreen() {
   const {
     bookId,
-    _bookTitle,
+    bookTitle: _bookTitle,
     imageUri,
     isOcr,
     clipText: urlClipText,
