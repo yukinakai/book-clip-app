@@ -178,8 +178,16 @@ export default function AddClipScreen() {
         createdAt: new Date().toISOString(),
       });
 
-      // 保存成功したら前の画面に戻る
-      router.back();
+      // 保存成功したらホーム画面に戻る
+      Alert.alert("成功", "クリップを保存しました", [
+        {
+          text: "OK",
+          onPress: () => {
+            // ホーム画面に直接遷移（履歴をリセットして直接戻る）
+            router.replace("/");
+          },
+        },
+      ]);
     } catch (error) {
       console.error("Failed to save clip:", error);
       Alert.alert("エラー", "クリップの保存に失敗しました");
