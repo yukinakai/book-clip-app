@@ -1,12 +1,21 @@
 import { ClipStorageService } from "../../services/ClipStorageService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Clip } from "../../constants/MockData";
+import { BookStorageService } from "../../services/BookStorageService";
 
 // AsyncStorageのモックをセットアップ
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(() => Promise.resolve()),
   getItem: jest.fn(() => Promise.resolve(null)),
   removeItem: jest.fn(() => Promise.resolve()),
+}));
+
+// BookStorageServiceをモック
+jest.mock("../../services/BookStorageService", () => ({
+  BookStorageService: {
+    getAllBooks: jest.fn().mockResolvedValue([]),
+    setLastClipBook: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 
 describe("ClipStorageService", () => {
@@ -42,10 +51,20 @@ describe("ClipStorageService", () => {
     },
   ];
 
+  const mockBook = {
+    id: "book-1",
+    title: "テスト書籍",
+    author: "テスト著者",
+    coverImage: "https://example.com/cover.jpg",
+  };
+
   describe("saveClip", () => {
     it("クリップが正常に保存されること", async () => {
       // AsyncStorage.getItemが空の配列を返すようにモック
       AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+
+      // BookStorageService.getAllBooksが書籍を返すようにモック
+      BookStorageService.getAllBooks = jest.fn().mockResolvedValue([mockBook]);
 
       await ClipStorageService.saveClip(mockClip);
 
@@ -54,6 +73,10 @@ describe("ClipStorageService", () => {
         "@saved_clips",
         JSON.stringify([mockClip])
       );
+
+      // 最後に使用した書籍が更新されることを確認
+      expect(BookStorageService.getAllBooks).toHaveBeenCalled();
+      expect(BookStorageService.setLastClipBook).toHaveBeenCalledWith(mockBook);
     });
 
     it("既存のクリップがある場合、追加して保存されること", async () => {
@@ -71,6 +94,9 @@ describe("ClipStorageService", () => {
         .fn()
         .mockResolvedValue(JSON.stringify(existingClips));
 
+      // BookStorageService.getAllBooksが書籍を返すようにモック
+      BookStorageService.getAllBooks = jest.fn().mockResolvedValue([mockBook]);
+
       await ClipStorageService.saveClip(mockClip);
 
       // 既存のクリップと新しいクリップが結合されたことを確認
@@ -78,6 +104,50 @@ describe("ClipStorageService", () => {
         "@saved_clips",
         JSON.stringify([...existingClips, mockClip])
       );
+
+      // 最後に使用した書籍が更新されることを確認
+      expect(BookStorageService.setLastClipBook).toHaveBeenCalledWith(mockBook);
+    });
+
+    it("書籍が見つからない場合、setLastClipBookは呼ばれないこと", async () => {
+      // AsyncStorage.getItemが空の配列を返すようにモック
+      AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+
+      // BookStorageService.getAllBooksが空の配列を返すようにモック
+      BookStorageService.getAllBooks = jest.fn().mockResolvedValue([]);
+
+      await ClipStorageService.saveClip({
+        ...mockClip,
+        bookId: "non-existing-book",
+      });
+
+      // setItemが正しく呼ばれることを確認
+      expect(AsyncStorage.setItem).toHaveBeenCalled();
+
+      // 書籍が見つからない場合、setLastClipBookは呼ばれないことを確認
+      expect(BookStorageService.getAllBooks).toHaveBeenCalled();
+      expect(BookStorageService.setLastClipBook).not.toHaveBeenCalled();
+    });
+
+    it("保存中にエラーが発生した場合、エラーがスローされること", async () => {
+      // AsyncStorage.getItemがエラーをスローするようにモック
+      const errorMessage = "保存中にエラーが発生しました";
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockRejectedValue(new Error(errorMessage));
+
+      // コンソールエラーをモック
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      await expect(ClipStorageService.saveClip(mockClip)).rejects.toThrow();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error saving clip:",
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
     });
   });
 

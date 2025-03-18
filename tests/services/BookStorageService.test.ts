@@ -226,4 +226,86 @@ describe("BookStorageService", () => {
       removeBookSpy.mockRestore();
     });
   });
+
+  describe("setLastClipBook", () => {
+    it("最後に使用した書籍が正常に保存されること", async () => {
+      await BookStorageService.setLastClipBook(mockBook);
+
+      // setItemが正しいキーと値で呼ばれたことを確認
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        "@last_clip_book",
+        JSON.stringify(mockBook)
+      );
+    });
+
+    it("保存中にエラーが発生した場合、エラーがスローされること", async () => {
+      // AsyncStorage.setItemがエラーをスローするようにモック
+      const errorMessage = "保存中にエラーが発生しました";
+      AsyncStorage.setItem = jest
+        .fn()
+        .mockRejectedValue(new Error(errorMessage));
+
+      // コンソールエラーをモック
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      await expect(
+        BookStorageService.setLastClipBook(mockBook)
+      ).rejects.toThrow();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error saving last clip book:",
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("getLastClipBook", () => {
+    it("最後に使用した書籍を取得できること", async () => {
+      // モックデータがAsyncStorageから返されるようにセット
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(mockBook));
+
+      const book = await BookStorageService.getLastClipBook();
+
+      // getLastClipBookがモックデータと同じ結果を返すことを確認
+      expect(book).toEqual(mockBook);
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
+    });
+
+    it("保存されている書籍がない場合、nullを返すこと", async () => {
+      AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+
+      const book = await BookStorageService.getLastClipBook();
+
+      expect(book).toBeNull();
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
+    });
+
+    it("取得中にエラーが発生した場合、nullを返し、エラーをログ出力すること", async () => {
+      // AsyncStorage.getItemがエラーをスローするようにモック
+      const errorMessage = "取得中にエラーが発生しました";
+      AsyncStorage.getItem = jest
+        .fn()
+        .mockRejectedValue(new Error(errorMessage));
+
+      // コンソールエラーをモック
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      const book = await BookStorageService.getLastClipBook();
+
+      expect(book).toBeNull();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error getting last clip book:",
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
 });
