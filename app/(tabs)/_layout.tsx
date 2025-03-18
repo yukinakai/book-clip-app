@@ -21,16 +21,18 @@ function AddClipButton() {
   };
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.addButton,
-        { backgroundColor: Colors[colorScheme].primary },
-      ]}
-      onPress={handleAddClip}
-      activeOpacity={0.7}
-    >
-      <Ionicons name="camera" size={24} color="white" />
-    </TouchableOpacity>
+    <View style={styles.centerButtonContainer}>
+      <TouchableOpacity
+        style={[
+          styles.addButton,
+          { backgroundColor: Colors[colorScheme].primary },
+        ]}
+        onPress={handleAddClip}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="camera" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -54,6 +56,11 @@ export default function TabLayout() {
           height: 70,
           paddingBottom: 10,
         },
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        },
       }}
     >
       <Tabs.Screen
@@ -71,6 +78,7 @@ export default function TabLayout() {
         name="add-clip-tab"
         options={{
           title: "",
+          headerShown: false,
           tabBarIcon: () => <View style={styles.placeholder} />,
           tabBarButton: () => <AddClipButton />,
         }}
@@ -102,15 +110,25 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 5,
   },
+  centerButtonContainer: {
+    position: "absolute",
+    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
+    bottom: 12, // タブバーからの距離を調整
+    left: 0,
+    right: 0,
+    zIndex: 1000, // 確実に他の要素の上に表示
+  },
   placeholder: {
     width: 24,
     height: 24,
+    opacity: 0, // 完全に透明にする
   },
 });
