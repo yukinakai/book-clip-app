@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Pressable,
   View,
-  Alert,
   Text,
   SafeAreaView,
   Modal,
@@ -17,7 +16,6 @@ import CameraModal from "../../components/camera/CameraModal";
 import CameraView from "../../components/CameraView";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useRouter } from "expo-router";
-import { BookStorageService } from "../../services/BookStorageService";
 
 export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -124,11 +122,6 @@ export default function HomeScreen() {
       setIsOpeningCamera(false);
       timerRef.current = null;
     }, 500);
-  };
-
-  // クリップ追加ボタン処理 - OCRカメラを開く
-  const handleAddClip = () => {
-    setIsOcrCameraOpen(true);
   };
 
   return (

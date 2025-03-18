@@ -1,5 +1,4 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
 import { Redirect } from "expo-router";
 
 // このファイルは中央ボタン用のダミータブであり、
@@ -10,9 +9,3 @@ export default function AddClipTabScreen() {
   // OCRカメラページにリダイレクトします
   return <Redirect href="/camera/ocr" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
