@@ -4,22 +4,26 @@ import {
   StyleSheet,
   Pressable,
   View,
-  Alert,
   Text,
   SafeAreaView,
+  Modal,
 } from "react-native";
 import { Book } from "../../constants/MockData";
 import { Colors } from "../../constants/Colors";
 import BookshelfView from "../../components/BookshelfView";
 import { Ionicons } from "@expo/vector-icons";
 import CameraModal from "../../components/camera/CameraModal";
+import CameraView from "../../components/CameraView";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isOcrCameraOpen, setIsOcrCameraOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const colorScheme = useColorScheme() ?? "light";
   const [isOpeningCamera, setIsOpeningCamera] = useState(false);
+  const router = useRouter();
 
   // タイマー参照を保持
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -47,12 +51,26 @@ export default function HomeScreen() {
     setRefreshTrigger((prev) => prev + 1);
   };
 
+  // 書籍追加カメラでの画像キャプチャ処理
   const handleImageCaptured = (imageUri: string) => {
     console.log("画像が選択されました:", imageUri);
-    Alert.alert(
-      "画像キャプチャ",
-      "写真の処理が完了しました。この後、OCRやバーコードスキャンなどの処理を追加できます。"
+    // クリップ登録画面に遷移
+    router.push(`/book/add-clip?imageUri=${encodeURIComponent(imageUri)}`);
+  };
+
+  // OCRカメラでの画像キャプチャ処理
+  const handleOcrImageCaptured = (imageUri: string) => {
+    console.log("OCR用画像が選択されました:", imageUri);
+    // クリップ登録画面に遷移（OCR処理用として）
+    router.push(
+      `/book/add-clip?imageUri=${encodeURIComponent(imageUri)}&isOcr=true`
     );
+    setIsOcrCameraOpen(false);
+  };
+
+  // OCRカメラを閉じる
+  const handleOcrCameraClose = () => {
+    setIsOcrCameraOpen(false);
   };
 
   const handleOpenCamera = () => {
@@ -126,27 +144,29 @@ export default function HomeScreen() {
             マイライブラリ
           </Text>
         </View>
-        <Pressable
-          style={({ pressed }) => [
-            styles.addButton,
-            {
-              backgroundColor: Colors[colorScheme].primary,
-              opacity: pressed ? 0.7 : 1,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
-            },
-          ]}
-          onPress={handleOpenCamera}
-          onPressIn={() => console.log("Press In Event")}
-          android_ripple={{
-            color: "rgba(255,255,255,0.2)",
-            borderless: false,
-          }}
-          testID="add-book-button"
-          hitSlop={20}
-        >
-          <Ionicons name="book-outline" size={18} color="white" />
-          <Text style={styles.buttonText}>書籍を追加</Text>
-        </Pressable>
+        <View style={styles.buttonContainer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.addButton,
+              {
+                backgroundColor: Colors[colorScheme].primary,
+                opacity: pressed ? 0.7 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              },
+            ]}
+            onPress={handleOpenCamera}
+            onPressIn={() => console.log("Press In Event")}
+            android_ripple={{
+              color: "rgba(255,255,255,0.2)",
+              borderless: false,
+            }}
+            testID="add-book-button"
+            hitSlop={20}
+          >
+            <Ionicons name="book-outline" size={18} color="white" />
+            <Text style={styles.buttonText}>書籍を追加</Text>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.bookshelfContainer}>
@@ -157,12 +177,27 @@ export default function HomeScreen() {
         />
       </View>
 
+      {/* 書籍追加用カメラモーダル */}
       <CameraModal
         isVisible={isCameraOpen}
         onClose={handleClose}
         onImageCaptured={handleImageCaptured}
         key={`camera-modal-${isCameraOpen}`}
       />
+
+      {/* OCR用カメラモーダル */}
+      {isOcrCameraOpen && (
+        <Modal
+          visible={true}
+          animationType="slide"
+          onRequestClose={handleOcrCameraClose}
+        >
+          <CameraView
+            onCapture={handleOcrImageCaptured}
+            onClose={handleOcrCameraClose}
+          />
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -218,7 +253,6 @@ const styles = StyleSheet.create({
     minWidth: 110,
     minHeight: 36,
     zIndex: 10,
-    marginRight: 5,
   },
   buttonText: {
     color: "white",
