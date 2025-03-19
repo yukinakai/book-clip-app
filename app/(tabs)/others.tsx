@@ -28,7 +28,6 @@ export default function OthersScreen() {
   const menuItems: MenuItem[] = user
     ? [
         // ログイン済みのメニュー項目
-        { id: "account", title: "アカウント設定", icon: "person-outline" },
         { id: "logout", title: "ログアウト", icon: "log-out-outline" },
         { id: "withdraw", title: "退会", icon: "trash-outline" },
         { id: "terms", title: "利用規約", icon: "document-text-outline" },
@@ -74,9 +73,6 @@ export default function OthersScreen() {
         break;
       case "logout":
         // ログアウト処理は別途実装
-        break;
-      case "account":
-        // アカウント設定画面に遷移
         break;
       case "withdraw":
         // 退会処理画面に遷移
