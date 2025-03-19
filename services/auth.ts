@@ -39,9 +39,10 @@ export class AuthService {
   }
 
   // OTPコードの検証
-  static async verifyOtp(otp: string) {
+  static async verifyOtp(email: string, otp: string) {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
+        email,
         type: "email",
         token: otp,
       });

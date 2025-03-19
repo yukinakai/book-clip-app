@@ -92,7 +92,7 @@ export default function LoginScreen() {
       try {
         setLoading(true);
         setError(null);
-        await AuthService.verifyOtp(otp);
+        await AuthService.verifyOtp(email, otp);
         setVerificationSuccess(true);
       } catch (err) {
         setError(err as Error);
