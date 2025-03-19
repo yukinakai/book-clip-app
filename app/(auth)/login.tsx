@@ -180,7 +180,7 @@ export default function LoginScreen() {
           color={Colors[colorScheme].primary}
         />
       )}
-      {error && (
+      {error && error.message && (
         <Text
           style={[styles.error, { color: Colors[colorScheme].error }]}
           testID="error-message"

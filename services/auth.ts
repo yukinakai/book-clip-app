@@ -38,6 +38,22 @@ export class AuthService {
     }
   }
 
+  // OTPコードの検証
+  static async verifyOtp(otp: string) {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        type: "email",
+        token: otp,
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("OTP検証エラー:", error);
+      throw error;
+    }
+  }
+
   // 現在の認証状態を取得
   static async getCurrentUser() {
     try {
