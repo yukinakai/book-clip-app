@@ -6,6 +6,7 @@
 │       ├── expo-router-testing.mdc
 │       ├── jest-mock-lessons.mdc
 │       ├── jest-testing-guide.mdc
+│       ├── react-hooks-testing.mdc
 │       └── unused-variables.mdc
 ├── .cursorignore
 ├── .env
@@ -14,6 +15,8 @@
 ├── .ts-prunerc.json
 ├── README.md
 ├── app
+│   ├── (auth)
+│   │   └── login.tsx
 │   ├── (tabs)
 │   │   ├── _layout.tsx
 │   │   ├── add-clip-tab.tsx
@@ -55,6 +58,7 @@
 │       └── splash-icon.png
 ├── babel.config.cjs
 ├── components
+│   ├── AuthWrapper.tsx
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
 │   ├── HapticTab.tsx
@@ -77,6 +81,8 @@
 ├── constants
 │   ├── Colors.ts
 │   └── MockData.ts
+├── contexts
+│   └── AuthContext.tsx
 ├── docs
 │   ├── ARCHITECTURE.md
 │   ├── DIRECTORY.md
@@ -86,6 +92,7 @@
 ├── eslint.config.js
 ├── expo-env.d.ts
 ├── hooks
+│   ├── useAuth.ts
 │   ├── useBookScanner.ts
 │   ├── useColorScheme.ts
 │   ├── useColorScheme.web.ts
@@ -103,12 +110,15 @@
 │   ├── ClipStorageService.ts
 │   ├── OCRService.ts
 │   ├── RakutenBookService.ts
+│   ├── auth.ts
 │   └── bookSearch.ts
 ├── tests
 │   ├── __mocks__
 │   │   └── @react-native-async-storage
 │   │       └── async-storage.js
 │   ├── app
+│   │   ├── (auth)
+│   │   │   └── login.test.tsx
 │   │   ├── (tabs)
 │   │   │   ├── index.test.tsx
 │   │   │   └── others.test.tsx
@@ -122,6 +132,7 @@
 │   │   └── clip
 │   │       └── clip-detail.test.tsx
 │   ├── components
+│   │   ├── AuthWrapper.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── CameraView.test.tsx
 │   │   ├── ImageSelectionView.test.tsx
@@ -133,16 +144,20 @@
 │   │   └── camera
 │   │       ├── BarcodeScanner.test.tsx
 │   │       └── CameraModal.test.tsx
+│   ├── contexts
+│   │   └── AuthContext.test.tsx
 │   ├── hooks
+│   │   ├── useAuth.test.tsx
 │   │   └── useBookScanner.test.tsx
 │   ├── services
 │   │   ├── BookStorageService.test.ts
 │   │   ├── ClipStorageService.test.ts
-│   │   └── OCRService.test.ts
+│   │   ├── OCRService.test.ts
+│   │   └── auth.test.ts
 │   ├── setup.js
 │   └── test-utils.tsx
 ├── tsconfig.json
 └── types
     └── env.d.ts
 
-33 directories, 113 files
+37 directories, 124 files

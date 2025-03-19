@@ -14,7 +14,6 @@ import {
 } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from "../hooks/useColorScheme";
 
@@ -122,7 +121,7 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
   // パーミッションが拒否された場合
   if (hasPermission === false) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <Text style={[styles.text, { color: Colors[colorScheme].background }]}>
           カメラへのアクセスが拒否されました
         </Text>
@@ -143,13 +142,13 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
         >
           <Text style={styles.buttonText}>閉じる</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // カメラ表示
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ExpoCameraView
         ref={cameraRef}
         style={styles.camera}
@@ -197,7 +196,7 @@ export default function CameraView({ onCapture, onClose }: CameraViewProps) {
           </View>
         </View>
       </ExpoCameraView>
-    </SafeAreaView>
+    </View>
   );
 }
 

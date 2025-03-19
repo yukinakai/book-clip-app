@@ -28,6 +28,7 @@ const darkPaperColor = "#2A2F3F"; // ダークモードの紙色
 export const Colors = {
   light: {
     text: inkBlack,
+    secondaryText: libraryGray,
     background: paperWhite,
     secondaryBackground: vintageBeige,
     tint: bookNavy,
@@ -39,10 +40,12 @@ export const Colors = {
     accent2: insightGreen,
     paper: vintageBeige,
     alert: classicRed,
+    error: classicRed,
     success: insightGreen,
   },
   dark: {
     text: darkTextColor,
+    secondaryText: "#9999A8",
     background: darkBackground,
     secondaryBackground: darkSecondaryBackground,
     tint: bookNavy,
@@ -54,6 +57,7 @@ export const Colors = {
     accent2: insightGreen,
     paper: darkPaperColor,
     alert: classicRed,
+    error: classicRed,
     success: insightGreen,
   },
 };

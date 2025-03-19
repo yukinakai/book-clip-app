@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { PaperProvider } from "react-native-paper";
+import { AuthProvider } from "../contexts/AuthContext";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
@@ -57,24 +59,42 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: "transparent" },
-          }}
-          initialRouteName={onboardingComplete ? "(tabs)" : "onboarding"}
-        >
-          <Stack.Screen
-            name="onboarding"
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="book/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="book/add-clip" options={{ headerShown: false }} />
-          <Stack.Screen name="clip/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
+        <PaperProvider>
+          <AuthProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: "transparent" },
+              }}
+              initialRouteName={onboardingComplete ? "(tabs)" : "onboarding"}
+            >
+              <Stack.Screen
+                name="onboarding"
+                options={{ headerShown: false, gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="(auth)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="(tabs)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen name="book/[id]" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="book/add-clip"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen name="clip/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+          </AuthProvider>
+        </PaperProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

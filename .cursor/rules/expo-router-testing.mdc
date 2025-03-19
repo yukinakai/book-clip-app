@@ -1,5 +1,5 @@
 ---
-description: 
+description: Expo Router開発とテストガイドライン
 globs: ["*.ts", "*.tsx"]
 alwaysApply: false
 ---
