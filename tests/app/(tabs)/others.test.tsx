@@ -1,7 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import OthersScreen from "../../../app/(tabs)/others";
-import { Colors } from "../../../constants/Colors";
 
 // useColorSchemeフックをモック
 jest.mock("../../../hooks/useColorScheme", () => ({
@@ -11,7 +10,7 @@ jest.mock("../../../hooks/useColorScheme", () => ({
 // Ioniconsをモック - Jestモッキングのベストプラクティスに従う
 jest.mock("@expo/vector-icons", () => {
   const React = require("react");
-  const { View, Text } = require("react-native");
+  const { View } = require("react-native");
 
   return {
     Ionicons: (props) => {
