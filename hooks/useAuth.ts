@@ -24,7 +24,7 @@ export function useAuth() {
     // 認証状態の変更を監視
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });

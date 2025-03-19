@@ -21,7 +21,7 @@ describe("LoginScreen", () => {
   });
 
   it("メールアドレスを入力してボタンをクリックするとsignInWithEmailが呼ばれる", async () => {
-    const { getByTestId, getByText } = render(<LoginScreen />);
+    const { getByTestId } = render(<LoginScreen />);
     const emailInput = getByTestId("email-input");
     const submitButton = getByTestId("login-button");
 
