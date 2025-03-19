@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
+  TextInput as RNTextInput,
 } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -24,6 +25,10 @@ export default function LoginScreen() {
   const returnTo = (params.returnTo as string) || "/(tabs)";
   const colorScheme = useColorScheme() ?? "light";
 
+  // TextInputへの参照を作成
+  const emailInputRef = useRef<any>(null);
+  const otpInputRef = useRef<any>(null);
+
   // 状態管理をcontextから独立して行う
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -33,6 +38,19 @@ export default function LoginScreen() {
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [verificationSuccess, setVerificationSuccess] = useState(false);
+
+  // 画面表示時に適切なフィールドに自動フォーカス
+  useEffect(() => {
+    const focusTimeout = setTimeout(() => {
+      if (!emailSent && emailInputRef.current) {
+        emailInputRef.current.focus();
+      } else if (emailSent && otpInputRef.current) {
+        otpInputRef.current.focus();
+      }
+    }, 300); // 短い遅延を設定してUIがレンダリングされるのを待つ
+
+    return () => clearTimeout(focusTimeout);
+  }, [emailSent]);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -143,6 +161,7 @@ export default function LoginScreen() {
                     disabled={loading}
                     testID="email-input"
                     accessibilityLabel="メールアドレス"
+                    ref={emailInputRef}
                     theme={{
                       colors: {
                         primary: "#ffffff",
@@ -207,6 +226,7 @@ export default function LoginScreen() {
                     disabled={loading}
                     testID="otp-input"
                     accessibilityLabel="認証コード"
+                    ref={otpInputRef}
                     theme={{
                       colors: {
                         primary: "#ffffff",
