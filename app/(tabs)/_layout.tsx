@@ -8,6 +8,7 @@ import {
   Text,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { AuthWrapper } from "../../components/AuthWrapper";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -49,66 +50,75 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: {
-          ...Platform.select({
-            ios: {
-              position: "absolute",
-            },
-            default: {},
-          }),
-          height: 70,
-          paddingBottom: 10,
-        },
-        tabBarItemStyle: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "マイライブラリ",
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          ),
-        }}
-      />
-
-      {/* 中央の追加ボタンとダミータブ（タブとして機能しないが、スペースを確保するため） */}
-      <Tabs.Screen
-        name="add-clip-tab"
-        options={{
-          title: "",
+    <AuthWrapper>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
           headerShown: false,
-          tabBarIcon: () => <View style={styles.placeholder} />,
-          tabBarButton: () => <AddClipButton />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            // タブとして機能させないようにタブのナビゲーションをキャンセル
-            e.preventDefault();
+          tabBarButton: HapticTab,
+          tabBarBackground: TabBarBackground,
+          tabBarStyle: {
+            ...Platform.select({
+              ios: {
+                position: "absolute",
+              },
+              default: {},
+            }),
+            height: 70,
+            paddingBottom: 10,
+          },
+          tabBarItemStyle: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
           },
         }}
-      />
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "ホーム",
+            tabBarIcon: ({ color }: { color: string }) => (
+              <IconSymbol size={28} name="house.fill" color={color} />
+            ),
+          }}
+        />
 
-      <Tabs.Screen
-        name="others"
-        options={{
-          title: "その他",
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="ellipsis.circle.fill" color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+        {/* 中央の追加ボタンとダミータブ（タブとして機能しないが、スペースを確保するため） */}
+        <Tabs.Screen
+          name="add-clip-tab"
+          options={{
+            title: "",
+            headerShown: false,
+            tabBarIcon: () => <View style={styles.placeholder} />,
+            tabBarButton: () => <AddClipButton />,
+          }}
+          listeners={{
+            tabPress: (e) => {
+              // タブとして機能させないようにタブのナビゲーションをキャンセル
+              e.preventDefault();
+            },
+          }}
+        />
+
+        <Tabs.Screen
+          name="search"
+          options={{
+            title: "検索",
+          }}
+        />
+
+        <Tabs.Screen
+          name="others"
+          options={{
+            title: "その他",
+            tabBarIcon: ({ color }: { color: string }) => (
+              <IconSymbol size={28} name="ellipsis.circle.fill" color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </AuthWrapper>
   );
 }
 

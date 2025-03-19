@@ -1,50 +1,64 @@
-# Welcome to your Expo app 👋
+# Book Clip App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+本の名言を共有するためのアプリケーション
 
-## Get started
+## 機能
 
-1. Install dependencies
+- メールアドレスによるパスワードレス認証（マジックリンク）
+- 本の名言の保存
+- 名言の共有
+- 検索機能
 
-   ```bash
-   npm install
-   ```
+## 開発環境のセットアップ
 
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+1. リポジトリのクローン
 
 ```bash
-npm run reset-project
+git clone https://github.com/yourusername/book-clip-app.git
+cd book-clip-app
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. 依存パッケージのインストール
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. 環境変数の設定
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+cp .env.sample .env
+```
 
-## Join the community
+`.env`ファイルを編集し、必要な環境変数を設定してください。
 
-Join our community of developers creating universal apps.
+### 必要な環境変数
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `EXPO_PUBLIC_SUPABASE_URL`: Supabase プロジェクトの URL
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY`: Supabase プロジェクトの匿名キー
+- `EXPO_PUBLIC_AUTH_REDIRECT_URL`: 認証後のリダイレクト URL
+- `EXPO_PUBLIC_RAKUTEN_APP_ID`: 楽天 API のアプリケーション ID（書籍情報の取得に使用）
+- `EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY`: Google Cloud Vision API キー（OCR 機能に使用）
+
+### Supabase の設定
+
+1. [Supabase](https://supabase.com)でプロジェクトを作成
+2. Authentication > Email providers で Email 認証を有効化
+3. Email Template を必要に応じてカスタマイズ
+4. 本番環境では適切なリダイレクト URL を設定
+
+## 開発サーバーの起動
+
+```bash
+npm start
+```
+
+## テストの実行
+
+```bash
+npm test
+```
+
+## ライセンス
+
+MIT
