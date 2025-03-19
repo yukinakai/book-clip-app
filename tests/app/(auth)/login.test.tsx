@@ -1,26 +1,45 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import LoginScreen from "../../../app/(auth)/login";
 import { useAuthContext } from "../../../contexts/AuthContext";
+import LoginScreen from "../../../app/(auth)/login";
 
-// AuthContextのモック
+// モックの設定
+const mockRouter = {
+  replace: jest.fn(),
+  isReady: true,
+};
+
+jest.mock("expo-router", () => ({
+  useRouter: () => mockRouter,
+  Link: () => null,
+}));
+
 jest.mock("../../../contexts/AuthContext", () => ({
   useAuthContext: jest.fn(),
 }));
 
 describe("LoginScreen", () => {
   const mockSignInWithEmail = jest.fn();
+  const mockVerifyOtp = jest.fn();
+  const mockVerificationSuccess = false;
+  const mockLoading = false;
+  const mockError = null;
 
   beforeEach(() => {
     (useAuthContext as jest.Mock).mockReturnValue({
       signInWithEmail: mockSignInWithEmail,
-      loading: false,
-      error: null,
-      emailSent: false,
+      verifyOtp: mockVerifyOtp,
+      verificationSuccess: mockVerificationSuccess,
+      loading: mockLoading,
+      error: mockError,
     });
   });
 
-  it("メールアドレスを入力してボタンをクリックするとsignInWithEmailが呼ばれる", async () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("メールアドレスを入力してサインインできる", async () => {
     const { getByTestId } = render(<LoginScreen />);
     const emailInput = getByTestId("email-input");
     const submitButton = getByTestId("login-button");
@@ -28,14 +47,11 @@ describe("LoginScreen", () => {
     fireEvent.changeText(emailInput, "test@example.com");
     fireEvent.press(submitButton);
 
-    await waitFor(() => {
-      expect(mockSignInWithEmail).toHaveBeenCalledWith("test@example.com");
-    });
+    expect(mockSignInWithEmail).toHaveBeenCalledWith("test@example.com");
   });
 
-  it("メールアドレスが無効の場合、エラーメッセージが表示される", () => {
-    mockSignInWithEmail.mockClear(); // モックをクリアして呼び出し履歴をリセット
-    const { getByText, getByTestId } = render(<LoginScreen />);
+  it("無効なメールアドレスを入力するとエラーメッセージが表示される", () => {
+    const { getByTestId, getByText } = render(<LoginScreen />);
     const emailInput = getByTestId("email-input");
     const submitButton = getByTestId("login-button");
 
@@ -49,38 +65,102 @@ describe("LoginScreen", () => {
   it("ローディング中はボタンが無効化される", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       signInWithEmail: mockSignInWithEmail,
+      verifyOtp: mockVerifyOtp,
+      verificationSuccess: mockVerificationSuccess,
       loading: true,
-      error: null,
-      emailSent: false,
+      error: mockError,
     });
 
     const { getByTestId } = render(<LoginScreen />);
     const submitButton = getByTestId("login-button");
 
-    // 代わりにaccessibilityStateを確認
     expect(submitButton.props.accessibilityState.disabled).toBe(true);
   });
 
-  it("メール送信成功後は成功メッセージが表示される", () => {
+  it("メール送信成功後はOTPコード入力フォームが表示される", async () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       signInWithEmail: mockSignInWithEmail,
+      verifyOtp: mockVerifyOtp,
+      verificationSuccess: mockVerificationSuccess,
       loading: false,
       error: null,
       emailSent: true,
     });
 
-    const { getByText, getByTestId } = render(<LoginScreen />);
-    expect(getByText(/にログインリンクを送信しました。/)).toBeTruthy();
-    expect(getByTestId("back-button")).toBeTruthy();
+    const { getByTestId } = render(<LoginScreen />);
+    const otpInput = getByTestId("otp-input");
+    const verifyButton = getByTestId("verify-button");
+
+    expect(otpInput).toBeTruthy();
+    expect(verifyButton).toBeTruthy();
   });
 
-  it("エラーが発生した場合、エラーメッセージが表示される", () => {
-    const errorMessage = "認証エラーが発生しました";
+  it("OTPコードが6桁でない場合はエラーメッセージが表示される", async () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       signInWithEmail: mockSignInWithEmail,
+      verifyOtp: mockVerifyOtp,
+      verificationSuccess: mockVerificationSuccess,
       loading: false,
-      error: new Error(errorMessage),
-      emailSent: false,
+      error: null,
+      emailSent: true,
+    });
+
+    const { getByTestId, getByText } = render(<LoginScreen />);
+    const otpInput = getByTestId("otp-input");
+    const verifyButton = getByTestId("verify-button");
+
+    fireEvent.changeText(otpInput, "12345");
+    fireEvent.press(verifyButton);
+
+    expect(getByText("6桁のコードを入力してください")).toBeTruthy();
+    expect(mockVerifyOtp).not.toHaveBeenCalled();
+  });
+
+  it("正しいOTPコードを入力すると検証が実行される", async () => {
+    (useAuthContext as jest.Mock).mockReturnValue({
+      signInWithEmail: mockSignInWithEmail,
+      verifyOtp: mockVerifyOtp,
+      verificationSuccess: mockVerificationSuccess,
+      loading: false,
+      error: null,
+      emailSent: true,
+    });
+
+    const { getByTestId } = render(<LoginScreen />);
+    const otpInput = getByTestId("otp-input");
+    const verifyButton = getByTestId("verify-button");
+
+    fireEvent.changeText(otpInput, "123456");
+    fireEvent.press(verifyButton);
+
+    expect(mockVerifyOtp).toHaveBeenCalledWith("123456");
+  });
+
+  it("認証成功時はホーム画面に遷移する", async () => {
+    (useAuthContext as jest.Mock).mockReturnValue({
+      signInWithEmail: mockSignInWithEmail,
+      verifyOtp: mockVerifyOtp,
+      verificationSuccess: true,
+      loading: false,
+      error: null,
+      emailSent: true,
+    });
+
+    render(<LoginScreen />);
+
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)");
+    });
+  });
+
+  it("エラーが発生した場合はエラーメッセージが表示される", () => {
+    const errorMessage = "認証に失敗しました";
+    (useAuthContext as jest.Mock).mockReturnValue({
+      signInWithEmail: mockSignInWithEmail,
+      verifyOtp: mockVerifyOtp,
+      verificationSuccess: mockVerificationSuccess,
+      loading: false,
+      error: errorMessage,
     });
 
     const { getByTestId } = render(<LoginScreen />);
