@@ -33,21 +33,7 @@ export default function HomeScreen() {
   const [isOcrCameraOpen, setIsOcrCameraOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const colorScheme = useColorScheme() ?? "light";
-  const [isOpeningCamera, setIsOpeningCamera] = useState(false);
   const router = useRouter();
-
-  // タイマー参照を保持
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  // クリーンアップ
-  useEffect(() => {
-    return () => {
-      // コンポーネントのアンマウント時にタイマーをクリア
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
 
   // モーダルの状態をログに出力
   useEffect(() => {
@@ -86,39 +72,15 @@ export default function HomeScreen() {
   };
 
   const handleOpenCamera = () => {
-    console.log("handleOpenCameraが呼ばれました");
-
-    // 既に処理中なら何もしない（連続タップ防止）
-    if (isOpeningCamera) {
-      console.log("処理中のため無視します");
-      return;
-    }
-
-    console.log("カメラを開こうとしています");
-    setIsOpeningCamera(true);
+    console.log("カメラを開きます");
     setIsCameraOpen(true);
-    console.log("isCameraOpen設定後:", true);
-
-    // 処理完了フラグをリセット (100ms後に短縮)
-    setTimeout(() => {
-      console.log("isOpeningCameraをリセット");
-      setIsOpeningCamera(false);
-    }, 100);
   };
 
   const handleClose = () => {
     console.log("カメラを閉じます");
-
-    // 遅延をかけずに即座に閉じる
     setIsCameraOpen(false);
     // 書籍が追加された場合のリフレッシュ処理
     handleBookAdded();
-
-    // この後100msは操作を受け付けない状態にする
-    setIsOpeningCamera(true);
-    setTimeout(() => {
-      setIsOpeningCamera(false);
-    }, 100);
   };
 
   // ログイン処理
@@ -147,42 +109,20 @@ export default function HomeScreen() {
           </Text>
         </View>
         <View style={styles.buttonContainer}>
-          <Pressable
-            style={({ pressed }) => [
+          <TouchableOpacity
+            style={[
               styles.addButton,
-              {
-                backgroundColor: isOpeningCamera
-                  ? Colors[colorScheme].tabIconDefault // 非活性時は薄いグレー
-                  : Colors[colorScheme].primary,
-                opacity: pressed || isOpeningCamera ? 0.7 : 1,
-                transform: [{ scale: pressed && !isOpeningCamera ? 0.98 : 1 }],
-              },
+              { backgroundColor: Colors[colorScheme].primary },
             ]}
-            onPress={!isOpeningCamera ? handleOpenCamera : undefined}
-            onPressIn={() => console.log("Press In Event")}
-            android_ripple={{
-              color: "rgba(255,255,255,0.2)",
-              borderless: false,
-              foreground: !isOpeningCamera,
-            }}
+            onPress={handleOpenCamera}
+            activeOpacity={0.7}
             testID="add-book-button"
-            hitSlop={20}
-            disabled={isOpeningCamera}
           >
-            <Ionicons
-              name="book-outline"
-              size={18}
-              color={isOpeningCamera ? "#9e9e9e" : "white"}
-            />
-            <Text
-              style={[
-                styles.buttonText,
-                { color: isOpeningCamera ? "#9e9e9e" : "white" },
-              ]}
-            >
-              書籍を追加
-            </Text>
-          </Pressable>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons name="book-outline" size={18} color="white" />
+              <Text style={styles.buttonText}>書籍を追加</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
 
