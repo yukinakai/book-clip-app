@@ -8,7 +8,7 @@ jest.mock("../../services/auth", () => ({
   AuthService: {
     signInWithEmail: jest.fn(),
     signOut: jest.fn(),
-    getCurrentUser: jest.fn(),
+    getCurrentUser: jest.fn().mockResolvedValue(null),
   },
   supabase: {
     auth: {

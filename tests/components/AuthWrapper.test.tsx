@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 import { AuthWrapper } from "../../components/AuthWrapper";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { View, Text } from "react-native";
 
 // AuthContextのモック
 jest.mock("../../contexts/AuthContext", () => ({
@@ -75,13 +76,18 @@ describe("AuthWrapper", () => {
       loading: false,
     });
 
-    const { getByText } = render(
+    const { getByText, debug } = render(
       <TestWrapper>
         <AuthWrapper>
-          <React.Fragment>Test Content</React.Fragment>
+          <View testID="test-content">
+            <Text>Test Content</Text>
+          </View>
         </AuthWrapper>
       </TestWrapper>
     );
+
+    // デバッグ出力を追加
+    debug();
 
     expect(getByText("Test Content")).toBeTruthy();
   });

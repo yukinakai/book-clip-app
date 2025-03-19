@@ -34,6 +34,7 @@ describe("LoginScreen", () => {
   });
 
   it("メールアドレスが無効の場合、エラーメッセージが表示される", () => {
+    mockSignInWithEmail.mockClear(); // モックをクリアして呼び出し履歴をリセット
     const { getByText, getByTestId } = render(<LoginScreen />);
     const emailInput = getByTestId("email-input");
     const submitButton = getByTestId("login-button");
@@ -56,7 +57,8 @@ describe("LoginScreen", () => {
     const { getByTestId } = render(<LoginScreen />);
     const submitButton = getByTestId("login-button");
 
-    expect(submitButton.props.disabled).toBe(true);
+    // 代わりにaccessibilityStateを確認
+    expect(submitButton.props.accessibilityState.disabled).toBe(true);
   });
 
   it("メール送信成功後は成功メッセージが表示される", () => {

@@ -6,6 +6,7 @@
 │       ├── expo-router-testing.mdc
 │       ├── jest-mock-lessons.mdc
 │       ├── jest-testing-guide.mdc
+│       ├── react-hooks-testing.mdc
 │       └── unused-variables.mdc
 ├── .cursorignore
 ├── .env
@@ -156,4 +157,4 @@
 └── types
     └── env.d.ts
 
-36 directories, 121 files
+36 directories, 122 files
