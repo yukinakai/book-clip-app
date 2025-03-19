@@ -3,12 +3,15 @@ import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { Colors } from "../../constants/Colors";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function LoginScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const isRegisterMode = params.mode === "register";
   const returnTo = (params.returnTo as string) || "/(tabs)";
+  const colorScheme = useColorScheme() ?? "light";
 
   const {
     signInWithEmail,
@@ -62,11 +65,22 @@ export default function LoginScreen() {
   }, [verificationSuccess, returnTo]);
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: Colors[colorScheme].background },
+      ]}
+    >
+      <Text
+        variant="headlineMedium"
+        style={[styles.title, { color: Colors[colorScheme].text }]}
+      >
         Book Clip
       </Text>
-      <Text variant="bodyLarge" style={styles.subtitle}>
+      <Text
+        variant="bodyLarge"
+        style={[styles.subtitle, { color: Colors[colorScheme].text }]}
+      >
         {isRegisterMode ? "アカウント作成" : "ログイン"}
       </Text>
 
@@ -83,8 +97,13 @@ export default function LoginScreen() {
             disabled={loading}
             testID="email-input"
             accessibilityLabel="メールアドレス"
+            theme={{ colors: { primary: Colors[colorScheme].primary } }}
           />
-          {emailError ? <Text style={styles.error}>{emailError}</Text> : null}
+          {emailError ? (
+            <Text style={[styles.error, { color: Colors[colorScheme].error }]}>
+              {emailError}
+            </Text>
+          ) : null}
 
           <Button
             mode="contained"
@@ -92,10 +111,17 @@ export default function LoginScreen() {
             style={styles.button}
             disabled={loading}
             testID="login-button"
+            buttonColor={Colors[colorScheme].primary}
+            textColor="white"
           >
             {isRegisterMode ? "会員登録" : "ログイン"}
           </Button>
-          <Text style={styles.infoText}>
+          <Text
+            style={[
+              styles.infoText,
+              { color: Colors[colorScheme].secondaryText },
+            ]}
+          >
             {isRegisterMode
               ? "メールアドレスを入力すると、認証コードが送信されます。"
               : "メールアドレスに認証コードを送信します。"}
@@ -103,7 +129,7 @@ export default function LoginScreen() {
         </View>
       ) : (
         <View style={styles.formContainer}>
-          <Text style={styles.message}>
+          <Text style={[styles.message, { color: Colors[colorScheme].text }]}>
             {email}に送信された6桁のコードを入力してください
           </Text>
           <TextInput
@@ -117,8 +143,13 @@ export default function LoginScreen() {
             disabled={loading}
             testID="otp-input"
             accessibilityLabel="認証コード"
+            theme={{ colors: { primary: Colors[colorScheme].primary } }}
           />
-          {otpError ? <Text style={styles.error}>{otpError}</Text> : null}
+          {otpError ? (
+            <Text style={[styles.error, { color: Colors[colorScheme].error }]}>
+              {otpError}
+            </Text>
+          ) : null}
 
           <Button
             mode="contained"
@@ -126,6 +157,8 @@ export default function LoginScreen() {
             style={styles.button}
             disabled={loading}
             testID="verify-button"
+            buttonColor={Colors[colorScheme].primary}
+            textColor="white"
           >
             認証
           </Button>
@@ -134,15 +167,24 @@ export default function LoginScreen() {
             onPress={() => setEmailSent(false)}
             style={styles.button}
             testID="back-button"
+            textColor={Colors[colorScheme].primary}
           >
             戻る
           </Button>
         </View>
       )}
 
-      {loading && <ActivityIndicator style={styles.loading} />}
+      {loading && (
+        <ActivityIndicator
+          style={styles.loading}
+          color={Colors[colorScheme].primary}
+        />
+      )}
       {error && (
-        <Text style={styles.error} testID="error-message">
+        <Text
+          style={[styles.error, { color: Colors[colorScheme].error }]}
+          testID="error-message"
+        >
           {error.message}
         </Text>
       )}
@@ -183,7 +225,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   error: {
-    color: "red",
     marginTop: 5,
     marginBottom: 15,
     textAlign: "left",
