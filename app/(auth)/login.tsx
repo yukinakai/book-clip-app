@@ -10,7 +10,6 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
-  TextInput as RNTextInput,
 } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
