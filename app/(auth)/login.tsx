@@ -264,7 +264,7 @@ export default function LoginScreen() {
                     onPress={() => setEmailSent(false)}
                     style={styles.button}
                     testID="back-button"
-                    textColor={Colors[colorScheme].primary}
+                    textColor="#ffffff"
                   >
                     戻る
                   </Button>
