@@ -1,0 +1,106 @@
+# React Hooks テスト最新ガイドライン
+
+## `@testing-library/react-hooks` 非推奨の対応
+
+### 背景
+
+`@testing-library/react-hooks`は以前、React Hooksをテストするための標準的なライブラリでしたが、React 18以降では非推奨となりました。このライブラリは現在はメンテナンスモードで、新規機能の追加は行われていません。
+
+### 最新の推奨アプローチ
+
+React 18以降では、`renderHook`と`act`が通常のReact Testing Libraryに統合されました。以下のライブラリから直接インポートできます：
+
+- Webアプリ: `@testing-library/react`
+- React Nativeアプリ: `@testing-library/react-native`
+
+### コード例
+
+#### 古い方法 (非推奨)
+
+```typescript
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useCounter } from './useCounter';
+
+test('カウンターの値を増加できる', () => {
+  const { result } = renderHook(() => useCounter());
+  
+  act(() => {
+    result.current.increment();
+  });
+  
+  expect(result.current.count).toBe(1);
+});
+```
+
+#### 新しい方法 (推奨)
+
+```typescript
+// Webアプリの場合
+import { renderHook, act } from '@testing-library/react';
+import { useCounter } from './useCounter';
+
+// React Nativeアプリの場合
+import { renderHook } from '@testing-library/react-native';
+import { act } from 'react-test-renderer';
+import { useCounter } from './useCounter';
+
+test('カウンターの値を増加できる', () => {
+  const { result } = renderHook(() => useCounter());
+  
+  act(() => {
+    result.current.increment();
+  });
+  
+  expect(result.current.count).toBe(1);
+});
+```
+
+### コンテキストプロバイダーを使用するフックのテスト
+
+コンテキストを使用するフックをテストする場合、`wrapper`オプションを使用します：
+
+```typescript
+const wrapper = ({ children }) => (
+  <AuthProvider>
+    {children}
+  </AuthProvider>
+);
+
+const { result } = renderHook(() => useAuth(), { wrapper });
+```
+
+### 非同期フックのテスト
+
+非同期フックのテスト時は、`act`内で非同期処理を行います：
+
+```typescript
+test('非同期処理を行うフックのテスト', async () => {
+  const { result } = renderHook(() => useAsyncHook());
+  
+  await act(async () => {
+    await result.current.fetchData();
+  });
+  
+  expect(result.current.data).toEqual(expectedData);
+});
+```
+
+### 注意点
+
+1. `act`の使用について
+   - Reactコンポーネントの状態を更新する操作は必ず`act`でラップする
+   - 非同期処理はasync/awaitと組み合わせて使用する
+
+2. UIイベントのシミュレーション
+   - `@testing-library/react-hooks`ではなく、`@testing-library/react`や`@testing-library/react-native`の`fireEvent`や`userEvent`を使用
+
+3. 移行のヒント
+   - インポート文を変更するだけで多くの場合は動作する
+   - `act`の使い方は基本的に同じ
+   - 複雑なラッパーを使用している場合は注意が必要
+
+### 参考リソース
+
+- [React Testing Libraryの公式ドキュメント](https://testing-library.com/docs/react-testing-library/intro/)
+- [renderHookのAPI](https://testing-library.com/docs/react-testing-library/api/#renderhook)
+- [actのドキュメント](https://reactjs.org/docs/test-utils.html#act) 
