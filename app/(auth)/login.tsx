@@ -2,11 +2,22 @@ import React, { useState } from "react";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
-  const { signInWithEmail, loading, error, emailSent } = useAuthContext();
+  const router = useRouter();
+  const {
+    signInWithEmail,
+    verifyOtp,
+    loading,
+    error,
+    emailSent,
+    verificationSuccess,
+  } = useAuthContext();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,6 +34,28 @@ export default function LoginScreen() {
       signInWithEmail(email);
     }
   };
+
+  const validateOtp = (otp: string): boolean => {
+    if (!otp || otp.length !== 6) {
+      setOtpError("6桁のコードを入力してください");
+      return false;
+    }
+    setOtpError("");
+    return true;
+  };
+
+  const handleVerifyOtp = () => {
+    if (validateOtp(otp)) {
+      verifyOtp(otp);
+    }
+  };
+
+  // 認証成功時にホーム画面に遷移
+  React.useEffect(() => {
+    if (verificationSuccess) {
+      router.replace("/(tabs)");
+    }
+  }, [verificationSuccess]);
 
   return (
     <View style={styles.container}>
@@ -56,15 +89,37 @@ export default function LoginScreen() {
             disabled={loading}
             testID="login-button"
           >
-            ログインリンクを送信
+            OTPコードを送信
           </Button>
         </View>
       ) : (
-        <View style={styles.messageContainer}>
-          <Text style={styles.successMessage}>
-            {email}にログインリンクを送信しました。
-            メールを確認してリンクをクリックしてください。
+        <View style={styles.formContainer}>
+          <Text style={styles.message}>
+            {email}に送信された6桁のコードを入力してください
           </Text>
+          <TextInput
+            label="認証コード"
+            value={otp}
+            onChangeText={setOtp}
+            keyboardType="number-pad"
+            maxLength={6}
+            style={styles.input}
+            error={!!otpError}
+            disabled={loading}
+            testID="otp-input"
+            accessibilityLabel="認証コード"
+          />
+          {otpError ? <Text style={styles.error}>{otpError}</Text> : null}
+
+          <Button
+            mode="contained"
+            onPress={handleVerifyOtp}
+            style={styles.button}
+            disabled={loading}
+            testID="verify-button"
+          >
+            認証
+          </Button>
           <Button
             mode="outlined"
             onPress={() => setEmailSent(false)}
@@ -125,6 +180,11 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   successMessage: {
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  message: {
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 24,
