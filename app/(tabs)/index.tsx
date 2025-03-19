@@ -108,23 +108,22 @@ export default function HomeScreen() {
             マイライブラリ
           </Text>
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[
-              styles.addButton,
-              { backgroundColor: Colors[colorScheme].primary },
-            ]}
-            onPress={handleOpenCamera}
-            activeOpacity={0.7}
-            testID="add-book-button"
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="book-outline" size={18} color="white" />
-              <Text style={styles.buttonText}>書籍を追加</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
       </View>
+
+      {/* ボタンをヘッダーから分離して独立した位置に配置 */}
+      <TouchableOpacity
+        style={[
+          styles.floatingAddButton,
+          { backgroundColor: Colors[colorScheme].primary },
+        ]}
+        onPress={handleOpenCamera}
+        activeOpacity={0.7}
+        testID="add-book-button"
+        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+      >
+        <Ionicons name="book-outline" size={20} color="white" />
+        <Text style={styles.buttonText}>書籍を追加</Text>
+      </TouchableOpacity>
 
       <View style={styles.bookshelfContainer}>
         <BookshelfView
@@ -168,8 +167,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#E8E0D1", // Vintage Beige
     position: "relative",
@@ -191,22 +189,22 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 0, // ヘッダーとコンテンツの間のスペースを削除
   },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  addButton: {
+  floatingAddButton: {
+    position: "absolute",
+    top: 70,
+    right: 16,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 6,
     elevation: 3,
+    zIndex: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   buttonText: {
     color: "white",
