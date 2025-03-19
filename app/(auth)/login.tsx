@@ -97,7 +97,15 @@ export default function LoginScreen() {
             disabled={loading}
             testID="email-input"
             accessibilityLabel="メールアドレス"
-            theme={{ colors: { primary: Colors[colorScheme].primary } }}
+            theme={{
+              colors: {
+                primary: Colors[colorScheme].accent1,
+                onSurfaceVariant: Colors[colorScheme].text,
+                onBackground: Colors[colorScheme].text,
+                background: Colors[colorScheme].background,
+                error: Colors[colorScheme].error,
+              },
+            }}
           />
           {emailError ? (
             <Text style={[styles.error, { color: Colors[colorScheme].error }]}>
@@ -143,7 +151,15 @@ export default function LoginScreen() {
             disabled={loading}
             testID="otp-input"
             accessibilityLabel="認証コード"
-            theme={{ colors: { primary: Colors[colorScheme].primary } }}
+            theme={{
+              colors: {
+                primary: Colors[colorScheme].accent1,
+                onSurfaceVariant: Colors[colorScheme].text,
+                onBackground: Colors[colorScheme].text,
+                background: Colors[colorScheme].background,
+                error: Colors[colorScheme].error,
+              },
+            }}
           />
           {otpError ? (
             <Text style={[styles.error, { color: Colors[colorScheme].error }]}>
