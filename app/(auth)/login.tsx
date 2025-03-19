@@ -2,10 +2,14 @@ import React, { useState } from "react";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { useAuthContext } from "../../contexts/AuthContext";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const isRegisterMode = params.mode === "register";
+  const returnTo = (params.returnTo as string) || "/(tabs)";
+
   const {
     signInWithEmail,
     verifyOtp,
@@ -50,12 +54,12 @@ export default function LoginScreen() {
     }
   };
 
-  // 認証成功時にホーム画面に遷移
+  // 認証成功時に指定された画面に遷移
   React.useEffect(() => {
     if (verificationSuccess) {
-      router.replace("/(tabs)");
+      router.replace(returnTo);
     }
-  }, [verificationSuccess]);
+  }, [verificationSuccess, returnTo]);
 
   return (
     <View style={styles.container}>
@@ -63,7 +67,7 @@ export default function LoginScreen() {
         Book Clip
       </Text>
       <Text variant="bodyLarge" style={styles.subtitle}>
-        本の名言を共有しよう
+        {isRegisterMode ? "アカウント作成" : "ログイン"}
       </Text>
 
       {!emailSent ? (
@@ -89,8 +93,13 @@ export default function LoginScreen() {
             disabled={loading}
             testID="login-button"
           >
-            OTPコードを送信
+            {isRegisterMode ? "会員登録" : "ログイン"}
           </Button>
+          <Text style={styles.infoText}>
+            {isRegisterMode
+              ? "メールアドレスを入力すると、認証コードが送信されます。"
+              : "メールアドレスに認証コードを送信します。"}
+          </Text>
         </View>
       ) : (
         <View style={styles.formContainer}>
@@ -188,5 +197,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 24,
+  },
+  infoText: {
+    marginTop: 10,
+    textAlign: "center",
+    fontSize: 14,
+    color: "#666",
   },
 });
