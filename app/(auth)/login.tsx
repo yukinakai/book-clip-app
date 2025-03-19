@@ -5,6 +5,11 @@ import {
   ActivityIndicator,
   SafeAreaView,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -111,133 +116,159 @@ export default function LoginScreen() {
         <View style={styles.rightPlaceholder} />
       </View>
 
-      {/* コンテンツ部分 */}
-      <View style={styles.content}>
-        {!emailSent ? (
-          <View style={styles.formContainer}>
-            <TextInput
-              label="メールアドレス"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              style={styles.input}
-              error={!!emailError}
-              disabled={loading}
-              testID="email-input"
-              accessibilityLabel="メールアドレス"
-              theme={{
-                colors: {
-                  primary: "#ffffff",
-                  onSurfaceVariant: Colors[colorScheme].text,
-                  onBackground: Colors[colorScheme].text,
-                  background: Colors[colorScheme].background,
-                  error: Colors[colorScheme].error,
-                },
-              }}
-            />
-            {emailError ? (
-              <Text
-                style={[styles.error, { color: Colors[colorScheme].error }]}
-              >
-                {emailError}
-              </Text>
-            ) : null}
-
-            <Button
-              mode="contained"
-              onPress={handleSignIn}
-              style={styles.button}
-              disabled={loading}
-              testID="login-button"
-              buttonColor={Colors[colorScheme].primary}
-              textColor="white"
-            >
-              {isRegisterMode ? "会員登録" : "ログイン"}
-            </Button>
-            <Text
-              style={[
-                styles.infoText,
-                { color: Colors[colorScheme].secondaryText },
-              ]}
-            >
-              {isRegisterMode
-                ? "メールアドレスを入力すると、認証コードが送信されます。"
-                : "メールアドレスに認証コードを送信します。"}
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.formContainer}>
-            <Text style={[styles.message, { color: Colors[colorScheme].text }]}>
-              {email}に送信された6桁のコードを入力してください
-            </Text>
-            <TextInput
-              label="認証コード"
-              value={otp}
-              onChangeText={setOtp}
-              keyboardType="number-pad"
-              maxLength={6}
-              style={styles.input}
-              error={!!otpError}
-              disabled={loading}
-              testID="otp-input"
-              accessibilityLabel="認証コード"
-              theme={{
-                colors: {
-                  primary: "#ffffff",
-                  onSurfaceVariant: Colors[colorScheme].text,
-                  onBackground: Colors[colorScheme].text,
-                  background: Colors[colorScheme].background,
-                  error: Colors[colorScheme].error,
-                },
-              }}
-            />
-            {otpError ? (
-              <Text
-                style={[styles.error, { color: Colors[colorScheme].error }]}
-              >
-                {otpError}
-              </Text>
-            ) : null}
-
-            <Button
-              mode="contained"
-              onPress={handleVerifyOtp}
-              style={styles.button}
-              disabled={loading}
-              testID="verify-button"
-              buttonColor={Colors[colorScheme].primary}
-              textColor="white"
-            >
-              認証
-            </Button>
-            <Button
-              mode="outlined"
-              onPress={() => setEmailSent(false)}
-              style={styles.button}
-              testID="back-button"
-              textColor={Colors[colorScheme].primary}
-            >
-              戻る
-            </Button>
-          </View>
-        )}
-
-        {loading && (
-          <ActivityIndicator
-            style={styles.loading}
-            color={Colors[colorScheme].primary}
-          />
-        )}
-        {error && error.message && (
-          <Text
-            style={[styles.error, { color: Colors[colorScheme].error }]}
-            testID="error-message"
+      {/* キーボード表示時の調整 */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            {error.message}
-          </Text>
-        )}
-      </View>
+            {/* コンテンツ部分 */}
+            <View style={styles.content}>
+              {!emailSent ? (
+                <View style={styles.formContainer}>
+                  <TextInput
+                    label="メールアドレス"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.input}
+                    error={!!emailError}
+                    disabled={loading}
+                    testID="email-input"
+                    accessibilityLabel="メールアドレス"
+                    theme={{
+                      colors: {
+                        primary: "#ffffff",
+                        onSurfaceVariant: Colors[colorScheme].text,
+                        onBackground: Colors[colorScheme].text,
+                        background: Colors[colorScheme].background,
+                        error: Colors[colorScheme].error,
+                      },
+                    }}
+                  />
+                  {emailError ? (
+                    <Text
+                      style={[
+                        styles.error,
+                        { color: Colors[colorScheme].error },
+                      ]}
+                    >
+                      {emailError}
+                    </Text>
+                  ) : null}
+
+                  <Button
+                    mode="contained"
+                    onPress={handleSignIn}
+                    style={styles.button}
+                    disabled={loading}
+                    testID="login-button"
+                    buttonColor={Colors[colorScheme].primary}
+                    textColor="white"
+                  >
+                    {isRegisterMode ? "会員登録" : "ログイン"}
+                  </Button>
+                  <Text
+                    style={[
+                      styles.infoText,
+                      { color: Colors[colorScheme].secondaryText },
+                    ]}
+                  >
+                    {isRegisterMode
+                      ? "メールアドレスを入力すると、認証コードが送信されます。"
+                      : "メールアドレスに認証コードを送信します。"}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.formContainer}>
+                  <Text
+                    style={[
+                      styles.message,
+                      { color: Colors[colorScheme].text },
+                    ]}
+                  >
+                    {email}に送信された6桁のコードを入力してください
+                  </Text>
+                  <TextInput
+                    label="認証コード"
+                    value={otp}
+                    onChangeText={setOtp}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    style={styles.input}
+                    error={!!otpError}
+                    disabled={loading}
+                    testID="otp-input"
+                    accessibilityLabel="認証コード"
+                    theme={{
+                      colors: {
+                        primary: "#ffffff",
+                        onSurfaceVariant: Colors[colorScheme].text,
+                        onBackground: Colors[colorScheme].text,
+                        background: Colors[colorScheme].background,
+                        error: Colors[colorScheme].error,
+                      },
+                    }}
+                  />
+                  {otpError ? (
+                    <Text
+                      style={[
+                        styles.error,
+                        { color: Colors[colorScheme].error },
+                      ]}
+                    >
+                      {otpError}
+                    </Text>
+                  ) : null}
+
+                  <Button
+                    mode="contained"
+                    onPress={handleVerifyOtp}
+                    style={styles.button}
+                    disabled={loading}
+                    testID="verify-button"
+                    buttonColor={Colors[colorScheme].primary}
+                    textColor="white"
+                  >
+                    認証
+                  </Button>
+                  <Button
+                    mode="outlined"
+                    onPress={() => setEmailSent(false)}
+                    style={styles.button}
+                    testID="back-button"
+                    textColor={Colors[colorScheme].primary}
+                  >
+                    戻る
+                  </Button>
+                </View>
+              )}
+
+              {loading && (
+                <ActivityIndicator
+                  style={styles.loading}
+                  color={Colors[colorScheme].primary}
+                />
+              )}
+              {error && error.message && (
+                <Text
+                  style={[styles.error, { color: Colors[colorScheme].error }]}
+                  testID="error-message"
+                >
+                  {error.message}
+                </Text>
+              )}
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -269,11 +300,15 @@ const styles = StyleSheet.create({
     width: 24,
     marginLeft: 10,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   content: {
     flex: 1,
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
+    minHeight: 400, // 最小高さを設定してスクロール可能にする
   },
   formContainer: {
     width: "100%",
