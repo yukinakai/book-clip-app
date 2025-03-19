@@ -100,11 +100,11 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="profile"
+        name="others"
         options={{
-          title: "プロフィール",
+          title: "その他",
           tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <IconSymbol size={28} name="ellipsis.circle.fill" color={color} />
           ),
         }}
       />

@@ -18,7 +18,7 @@
 │   │   ├── _layout.tsx
 │   │   ├── add-clip-tab.tsx
 │   │   ├── index.tsx
-│   │   └── profile.tsx
+│   │   └── others.tsx
 │   ├── +not-found.tsx
 │   ├── _layout.tsx
 │   ├── book
@@ -110,7 +110,8 @@
 │   │       └── async-storage.js
 │   ├── app
 │   │   ├── (tabs)
-│   │   │   └── index.test.tsx
+│   │   │   ├── index.test.tsx
+│   │   │   └── others.test.tsx
 │   │   ├── book
 │   │   │   ├── add-clip.test.tsx
 │   │   │   ├── book-detail.test.tsx
@@ -144,4 +145,4 @@
 └── types
     └── env.d.ts
 
-33 directories, 112 files
+33 directories, 113 files
