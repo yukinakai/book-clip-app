@@ -21,9 +21,9 @@ describe("LoginScreen", () => {
   });
 
   it("メールアドレスを入力してボタンをクリックするとsignInWithEmailが呼ばれる", async () => {
-    const { getByText, getByLabelText } = render(<LoginScreen />);
-    const emailInput = getByLabelText("メールアドレス");
-    const submitButton = getByText("ログインリンクを送信");
+    const { getByTestId, getByText } = render(<LoginScreen />);
+    const emailInput = getByTestId("email-input");
+    const submitButton = getByTestId("login-button");
 
     fireEvent.changeText(emailInput, "test@example.com");
     fireEvent.press(submitButton);
@@ -34,9 +34,9 @@ describe("LoginScreen", () => {
   });
 
   it("メールアドレスが無効の場合、エラーメッセージが表示される", () => {
-    const { getByText, getByLabelText } = render(<LoginScreen />);
-    const emailInput = getByLabelText("メールアドレス");
-    const submitButton = getByText("ログインリンクを送信");
+    const { getByText, getByTestId } = render(<LoginScreen />);
+    const emailInput = getByTestId("email-input");
+    const submitButton = getByTestId("login-button");
 
     fireEvent.changeText(emailInput, "invalid-email");
     fireEvent.press(submitButton);
@@ -53,8 +53,8 @@ describe("LoginScreen", () => {
       emailSent: false,
     });
 
-    const { getByText } = render(<LoginScreen />);
-    const submitButton = getByText("ログインリンクを送信");
+    const { getByTestId } = render(<LoginScreen />);
+    const submitButton = getByTestId("login-button");
 
     expect(submitButton.props.disabled).toBe(true);
   });
@@ -67,9 +67,9 @@ describe("LoginScreen", () => {
       emailSent: true,
     });
 
-    const { getByText } = render(<LoginScreen />);
+    const { getByText, getByTestId } = render(<LoginScreen />);
     expect(getByText(/にログインリンクを送信しました。/)).toBeTruthy();
-    expect(getByText("戻る")).toBeTruthy();
+    expect(getByTestId("back-button")).toBeTruthy();
   });
 
   it("エラーが発生した場合、エラーメッセージが表示される", () => {
@@ -81,7 +81,7 @@ describe("LoginScreen", () => {
       emailSent: false,
     });
 
-    const { getByText } = render(<LoginScreen />);
-    expect(getByText(errorMessage)).toBeTruthy();
+    const { getByTestId } = render(<LoginScreen />);
+    expect(getByTestId("error-message")).toBeTruthy();
   });
 });

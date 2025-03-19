@@ -44,6 +44,8 @@ export default function LoginScreen() {
             style={styles.input}
             error={!!emailError}
             disabled={loading}
+            testID="email-input"
+            accessibilityLabel="メールアドレス"
           />
           {emailError ? <Text style={styles.error}>{emailError}</Text> : null}
 
@@ -52,6 +54,7 @@ export default function LoginScreen() {
             onPress={handleSignIn}
             style={styles.button}
             disabled={loading}
+            testID="login-button"
           >
             ログインリンクを送信
           </Button>
@@ -66,6 +69,7 @@ export default function LoginScreen() {
             mode="outlined"
             onPress={() => setEmailSent(false)}
             style={styles.button}
+            testID="back-button"
           >
             戻る
           </Button>
@@ -73,7 +77,11 @@ export default function LoginScreen() {
       )}
 
       {loading && <ActivityIndicator style={styles.loading} />}
-      {error && <Text style={styles.error}>{error.message}</Text>}
+      {error && (
+        <Text style={styles.error} testID="error-message">
+          {error.message}
+        </Text>
+      )}
     </View>
   );
 }
