@@ -115,7 +115,7 @@ export default function HomeScreen() {
       {/* ヘッダー部分 - 固定表示 */}
       <View
         style={[
-          styles.headerContainer,
+          styles.header,
           { backgroundColor: Colors[colorScheme].background },
         ]}
       >
@@ -199,23 +199,19 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
-  headerContainer: {
+  header: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#E8E0D1", // Vintage Beige
+    borderBottomColor: "#ddd",
     position: "relative",
-    zIndex: 10, // ヘッダーを最前面に
+    height: 56, // ヘッダーの高さを固定
   },
   titleContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1,
   },
   headerTitle: {
     fontSize: 18,
