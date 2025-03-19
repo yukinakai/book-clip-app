@@ -122,8 +122,6 @@
 │   │   ├── (tabs)
 │   │   │   ├── index.test.tsx
 │   │   │   └── others.test.tsx
-│   │   ├── auth
-│   │   │   └── login.test.tsx
 │   │   ├── book
 │   │   │   ├── add-clip.test.tsx
 │   │   │   ├── book-detail.test.tsx
@@ -146,17 +144,20 @@
 │   │   └── camera
 │   │       ├── BarcodeScanner.test.tsx
 │   │       └── CameraModal.test.tsx
+│   ├── contexts
+│   │   └── AuthContext.test.tsx
 │   ├── hooks
 │   │   ├── useAuth.test.tsx
 │   │   └── useBookScanner.test.tsx
 │   ├── services
 │   │   ├── BookStorageService.test.ts
 │   │   ├── ClipStorageService.test.ts
-│   │   └── OCRService.test.ts
+│   │   ├── OCRService.test.ts
+│   │   └── auth.test.ts
 │   ├── setup.js
 │   └── test-utils.tsx
 ├── tsconfig.json
 └── types
     └── env.d.ts
 
-37 directories, 123 files
+37 directories, 124 files

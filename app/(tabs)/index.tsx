@@ -16,20 +16,10 @@ import { Ionicons } from "@expo/vector-icons";
 import CameraModal from "../../components/camera/CameraModal";
 import CameraView from "../../components/CameraView";
 import { useColorScheme } from "../../hooks/useColorScheme";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { BookStorageService } from "../../services/BookStorageService";
 
 export default function HomeScreen() {
-  const params = useLocalSearchParams();
-  // expo-routerで渡されたパラメータからログイン状態を取得
-  const _isLoggedIn = params.isLoggedIn === "true";
-
-  // JSON.parseのエラーを修正
-  const _user =
-    params.user && params.user !== "undefined"
-      ? JSON.parse(decodeURIComponent(String(params.user)))
-      : null;
-
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isOcrCameraOpen, setIsOcrCameraOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -97,11 +87,6 @@ export default function HomeScreen() {
     setIsCameraOpen(false);
     // 書籍が追加された場合のリフレッシュ処理
     handleBookAdded();
-  };
-
-  // ログイン処理
-  const _handleLogin = () => {
-    router.push("/login?returnTo=/");
   };
 
   return (
