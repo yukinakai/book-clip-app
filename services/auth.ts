@@ -9,14 +9,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // 認証サービスクラス
 export class AuthService {
-  // メールによるパスワードレス認証リンクの送信
+  // メールによるパスワードレス認証（OTP）の送信
   static async signInWithEmail(email: string) {
     try {
       const { data, error } = await supabase.auth.signInWithOtp({
         email,
-        options: {
-          emailRedirectTo: process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL,
-        },
+        // OTP認証ではリダイレクトURLは不要
       });
 
       if (error) throw error;

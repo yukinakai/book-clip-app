@@ -30,7 +30,6 @@ beforeAll(() => {
     ...originalEnv,
     EXPO_PUBLIC_SUPABASE_URL: "https://mock-supabase-url.com",
     EXPO_PUBLIC_SUPABASE_ANON_KEY: "mock-anon-key",
-    EXPO_PUBLIC_AUTH_REDIRECT_URL: "https://mock-redirect-url.com",
   };
 });
 
@@ -66,9 +65,6 @@ describe("AuthService", () => {
 
       expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({
         email,
-        options: {
-          emailRedirectTo: process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL,
-        },
       });
       expect(result).toEqual(mockResponse.data);
     });
