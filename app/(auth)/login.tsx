@@ -17,6 +17,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
+import { AuthService } from "../../services/auth";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -62,14 +63,18 @@ export default function LoginScreen() {
     return true;
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (validateEmail(email)) {
-      // 実際のAPI呼び出しはここで行う
-      setLoading(true);
-      setTimeout(() => {
+      try {
+        setLoading(true);
+        setError(null);
+        await AuthService.signInWithEmail(email);
         setEmailSent(true);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     }
   };
 
@@ -82,14 +87,18 @@ export default function LoginScreen() {
     return true;
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     if (validateOtp(otp)) {
-      // OTP検証をシミュレート
-      setLoading(true);
-      setTimeout(() => {
+      try {
+        setLoading(true);
+        setError(null);
+        await AuthService.verifyOtp(otp);
         setVerificationSuccess(true);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     }
   };
 
