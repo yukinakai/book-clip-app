@@ -18,12 +18,12 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 
 // カスタムの中央ボタンコンポーネント
-function AddClipButton() {
+function AddClipButton({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
 
   const handleAddClip = () => {
-    // カメラを開いてクリップ追加画面に遷移するロジック
+    // ログイン状態に関わらずカメラを開く
     router.push("/camera/ocr");
   };
 
@@ -36,6 +36,7 @@ function AddClipButton() {
         ]}
         onPress={handleAddClip}
         activeOpacity={0.7}
+        testID="add-clip-button"
       >
         <View style={styles.buttonContent}>
           <Ionicons name="camera" size={28} color="white" />
@@ -46,7 +47,13 @@ function AddClipButton() {
   );
 }
 
-export default function TabLayout() {
+export default function TabLayout({
+  isLoggedIn,
+  user,
+}: {
+  isLoggedIn?: boolean;
+  user?: any;
+}) {
   const colorScheme = useColorScheme();
 
   return (
@@ -82,6 +89,7 @@ export default function TabLayout() {
               <IconSymbol size={28} name="house.fill" color={color} />
             ),
           }}
+          initialParams={{ isLoggedIn, user }}
         />
 
         {/* 中央の追加ボタンとダミータブ（タブとして機能しないが、スペースを確保するため） */}
@@ -91,7 +99,7 @@ export default function TabLayout() {
             title: "",
             headerShown: false,
             tabBarIcon: () => <View style={styles.placeholder} />,
-            tabBarButton: () => <AddClipButton />,
+            tabBarButton: () => <AddClipButton isLoggedIn={isLoggedIn} />,
           }}
           listeners={{
             tabPress: (e) => {
@@ -99,6 +107,7 @@ export default function TabLayout() {
               e.preventDefault();
             },
           }}
+          initialParams={{ isLoggedIn, user }}
         />
 
         <Tabs.Screen
@@ -106,6 +115,7 @@ export default function TabLayout() {
           options={{
             title: "検索",
           }}
+          initialParams={{ isLoggedIn, user }}
         />
 
         <Tabs.Screen
@@ -116,6 +126,7 @@ export default function TabLayout() {
               <IconSymbol size={28} name="ellipsis.circle.fill" color={color} />
             ),
           }}
+          initialParams={{ isLoggedIn, user }}
         />
       </Tabs>
     </AuthWrapper>
