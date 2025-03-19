@@ -7,6 +7,7 @@ import {
   Text,
   SafeAreaView,
   Modal,
+  TouchableOpacity,
 } from "react-native";
 import { Book } from "../../constants/MockData";
 import { Colors } from "../../constants/Colors";
@@ -15,9 +16,19 @@ import { Ionicons } from "@expo/vector-icons";
 import CameraModal from "../../components/camera/CameraModal";
 import CameraView from "../../components/CameraView";
 import { useColorScheme } from "../../hooks/useColorScheme";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function HomeScreen() {
+  const params = useLocalSearchParams();
+  // expo-routerで渡されたパラメータからログイン状態を取得
+  const isLoggedIn = params.isLoggedIn === "true";
+
+  // JSON.parseのエラーを修正
+  const user =
+    params.user && params.user !== "undefined"
+      ? JSON.parse(decodeURIComponent(String(params.user)))
+      : null;
+
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isOcrCameraOpen, setIsOcrCameraOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -122,6 +133,11 @@ export default function HomeScreen() {
       setIsOpeningCamera(false);
       timerRef.current = null;
     }, 500);
+  };
+
+  // ログイン処理
+  const handleLogin = () => {
+    router.push("/login?returnTo=/");
   };
 
   return (
@@ -248,16 +264,40 @@ const styles = StyleSheet.create({
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 3,
-    minWidth: 110,
-    minHeight: 36,
-    zIndex: 10,
   },
   buttonText: {
     color: "white",
     fontSize: 14,
-    fontWeight: "600",
-    marginLeft: 6,
+    fontWeight: "500",
+    marginLeft: 4,
   },
+  loginPromptContainer: {
+    margin: 12,
+    padding: 16,
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  loginPromptText: {
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  loginButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignSelf: "center",
+  },
+  loginButtonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  // 既存のスタイル定義が続く...
 });
