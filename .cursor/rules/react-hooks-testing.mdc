@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 # React Hooks テスト最新ガイドライン
 
 ## `@testing-library/react-hooks` 非推奨の対応
@@ -101,6 +106,6 @@ test('非同期処理を行うフックのテスト', async () => {
 
 ### 参考リソース
 
-- [React Testing Libraryの公式ドキュメント](https://testing-library.com/docs/react-testing-library/intro/)
-- [renderHookのAPI](https://testing-library.com/docs/react-testing-library/api/#renderhook)
-- [actのドキュメント](https://reactjs.org/docs/test-utils.html#act) 
+- [React Testing Libraryの公式ドキュメント](mdc:https:/testing-library.com/docs/react-testing-library/intro)
+- [renderHookのAPI](mdc:https:/testing-library.com/docs/react-testing-library/api/#renderhook)
+- [actのドキュメント](mdc:https:/reactjs.org/docs/test-utils.html#act) 
