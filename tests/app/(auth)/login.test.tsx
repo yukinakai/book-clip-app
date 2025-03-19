@@ -77,7 +77,7 @@ describe("LoginScreen", () => {
       () => new Promise((resolve) => setTimeout(resolve, 100))
     );
 
-    const { getByTestId, queryByTestId } = render(<LoginScreen />);
+    const { getByTestId } = render(<LoginScreen />);
     const emailInput = getByTestId("email-input");
     const submitButton = getByTestId("login-button");
 

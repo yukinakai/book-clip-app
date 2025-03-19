@@ -18,7 +18,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 
 // カスタムの中央ボタンコンポーネント
-function AddClipButton({ isLoggedIn }: { isLoggedIn?: boolean }) {
+function AddClipButton({ _isLoggedIn }: { _isLoggedIn?: boolean }) {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
 
@@ -48,10 +48,10 @@ function AddClipButton({ isLoggedIn }: { isLoggedIn?: boolean }) {
 }
 
 export default function TabLayout({
-  isLoggedIn,
+  _isLoggedIn,
   user,
 }: {
-  isLoggedIn?: boolean;
+  _isLoggedIn?: boolean;
   user?: any;
 }) {
   const colorScheme = useColorScheme();
@@ -89,7 +89,7 @@ export default function TabLayout({
               <IconSymbol size={28} name="house.fill" color={color} />
             ),
           }}
-          initialParams={{ isLoggedIn, user }}
+          initialParams={{ isLoggedIn: _isLoggedIn, user }}
         />
 
         {/* 中央の追加ボタンとダミータブ（タブとして機能しないが、スペースを確保するため） */}
@@ -99,7 +99,7 @@ export default function TabLayout({
             title: "",
             headerShown: false,
             tabBarIcon: () => <View style={styles.placeholder} />,
-            tabBarButton: () => <AddClipButton isLoggedIn={isLoggedIn} />,
+            tabBarButton: () => <AddClipButton _isLoggedIn={_isLoggedIn} />,
           }}
           listeners={{
             tabPress: (e) => {
@@ -107,7 +107,7 @@ export default function TabLayout({
               e.preventDefault();
             },
           }}
-          initialParams={{ isLoggedIn, user }}
+          initialParams={{ isLoggedIn: _isLoggedIn, user }}
         />
 
         <Tabs.Screen
@@ -115,7 +115,7 @@ export default function TabLayout({
           options={{
             title: "検索",
           }}
-          initialParams={{ isLoggedIn, user }}
+          initialParams={{ isLoggedIn: _isLoggedIn, user }}
         />
 
         <Tabs.Screen
@@ -126,7 +126,7 @@ export default function TabLayout({
               <IconSymbol size={28} name="ellipsis.circle.fill" color={color} />
             ),
           }}
-          initialParams={{ isLoggedIn, user }}
+          initialParams={{ isLoggedIn: _isLoggedIn, user }}
         />
       </Tabs>
     </AuthWrapper>

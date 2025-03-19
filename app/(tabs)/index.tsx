@@ -22,10 +22,10 @@ import { BookStorageService } from "../../services/BookStorageService";
 export default function HomeScreen() {
   const params = useLocalSearchParams();
   // expo-routerで渡されたパラメータからログイン状態を取得
-  const isLoggedIn = params.isLoggedIn === "true";
+  const _isLoggedIn = params.isLoggedIn === "true";
 
   // JSON.parseのエラーを修正
-  const user =
+  const _user =
     params.user && params.user !== "undefined"
       ? JSON.parse(decodeURIComponent(String(params.user)))
       : null;
@@ -100,7 +100,7 @@ export default function HomeScreen() {
   };
 
   // ログイン処理
-  const handleLogin = () => {
+  const _handleLogin = () => {
     router.push("/login?returnTo=/");
   };
 
