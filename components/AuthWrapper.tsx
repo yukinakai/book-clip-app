@@ -1,7 +1,6 @@
 import React from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useAuthContext } from "../contexts/AuthContext";
-import { Redirect } from "expo-router";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -18,9 +17,14 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     );
   }
 
-  if (!user) {
-    return <Redirect href="/login" testID="redirect" />;
-  }
-
-  return <>{children}</>;
+  // リダイレクトの代わりに、isLoggedInとuserの情報を子コンポーネントに渡す
+  return React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        isLoggedIn: !!user,
+        user: user,
+      });
+    }
+    return child;
+  });
 }

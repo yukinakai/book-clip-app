@@ -122,6 +122,8 @@
 │   │   ├── (tabs)
 │   │   │   ├── index.test.tsx
 │   │   │   └── others.test.tsx
+│   │   ├── auth
+│   │   │   └── login.test.tsx
 │   │   ├── book
 │   │   │   ├── add-clip.test.tsx
 │   │   │   ├── book-detail.test.tsx
@@ -157,4 +159,4 @@
 └── types
     └── env.d.ts
 
-36 directories, 122 files
+37 directories, 123 files

@@ -9,25 +9,22 @@ jest.mock("../../contexts/AuthContext", () => ({
   useAuthContext: jest.fn(),
 }));
 
-// expo-routerのモック
-jest.mock("expo-router", () => ({
-  useNavigation: jest.fn(() => ({
-    navigate: jest.fn(),
-  })),
-  useRouter: jest.fn(() => ({
-    replace: jest.fn(),
-  })),
-  Redirect: jest.fn().mockImplementation(({ href }) => (
-    <div testID="redirect" data-href={href}>
-      Redirecting to {href}
-    </div>
-  )),
-}));
-
-// TestWrapperコンポーネント追加
-const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  return children;
-};
+// TestComponentを追加
+const TestComponent = ({
+  isLoggedIn,
+  user,
+}: {
+  isLoggedIn?: boolean;
+  user?: any;
+}) => (
+  <View testID="test-component">
+    <Text>Test Content</Text>
+    <Text testID="login-status">
+      ログイン状態: {isLoggedIn ? "ログイン済み" : "未ログイン"}
+    </Text>
+    {user && <Text testID="user-email">ユーザーメール: {user.email}</Text>}
+  </View>
+);
 
 describe("AuthWrapper", () => {
   const mockUser = { id: "1", email: "test@example.com" };
@@ -43,52 +40,42 @@ describe("AuthWrapper", () => {
     });
 
     const { getByTestId } = render(
-      <TestWrapper>
-        <AuthWrapper>
-          <React.Fragment>Test Content</React.Fragment>
-        </AuthWrapper>
-      </TestWrapper>
+      <AuthWrapper>
+        <TestComponent />
+      </AuthWrapper>
     );
 
     expect(getByTestId("activity-indicator")).toBeTruthy();
   });
 
-  it("ユーザーが未認証の場合はログイン画面にリダイレクト", () => {
+  it("ユーザーが未認証の場合はisLoggedIn=falseを渡す", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       user: null,
       loading: false,
     });
 
     const { getByTestId } = render(
-      <TestWrapper>
-        <AuthWrapper>
-          <React.Fragment>Test Content</React.Fragment>
-        </AuthWrapper>
-      </TestWrapper>
+      <AuthWrapper>
+        <TestComponent />
+      </AuthWrapper>
     );
 
-    expect(getByTestId("redirect")).toBeTruthy();
+    expect(getByTestId("login-status").props.children[1]).toBe("未ログイン");
   });
 
-  it("ユーザーが認証済みの場合は子コンポーネントを表示", () => {
+  it("ユーザーが認証済みの場合はisLoggedIn=trueとuserを渡す", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       user: mockUser,
       loading: false,
     });
 
-    const { getByText, debug } = render(
-      <TestWrapper>
-        <AuthWrapper>
-          <View testID="test-content">
-            <Text>Test Content</Text>
-          </View>
-        </AuthWrapper>
-      </TestWrapper>
+    const { getByTestId } = render(
+      <AuthWrapper>
+        <TestComponent />
+      </AuthWrapper>
     );
 
-    // デバッグ出力を追加
-    debug();
-
-    expect(getByText("Test Content")).toBeTruthy();
+    expect(getByTestId("login-status").props.children[1]).toBe("ログイン済み");
+    expect(getByTestId("user-email").props.children[1]).toBe(mockUser.email);
   });
 });
