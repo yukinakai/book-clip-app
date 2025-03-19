@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Modal,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { Book } from "../../constants/MockData";
 import { Colors } from "../../constants/Colors";
@@ -17,6 +18,7 @@ import CameraModal from "../../components/camera/CameraModal";
 import CameraView from "../../components/CameraView";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { BookStorageService } from "../../services/BookStorageService";
 
 export default function HomeScreen() {
   const params = useLocalSearchParams();
@@ -34,6 +36,21 @@ export default function HomeScreen() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
+  const [bookCount, setBookCount] = useState(0);
+
+  // 書籍の件数を取得
+  useEffect(() => {
+    const fetchBookCount = async () => {
+      try {
+        const books = await BookStorageService.getAllBooks();
+        setBookCount(books.length);
+      } catch (error) {
+        console.error("Error fetching book count:", error);
+      }
+    };
+
+    fetchBookCount();
+  }, [refreshTrigger]);
 
   // モーダルの状態をログに出力
   useEffect(() => {
@@ -95,6 +112,7 @@ export default function HomeScreen() {
         { backgroundColor: Colors[colorScheme].background },
       ]}
     >
+      {/* ヘッダー部分 - 固定表示 */}
       <View
         style={[
           styles.headerContainer,
@@ -110,28 +128,46 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* ボタンをヘッダーから分離して独立した位置に配置 */}
-      <TouchableOpacity
-        style={[
-          styles.floatingAddButton,
-          { backgroundColor: Colors[colorScheme].primary },
-        ]}
-        onPress={handleOpenCamera}
-        activeOpacity={0.7}
-        testID="add-book-button"
-        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+      {/* スクロール可能な領域 - メニューバーとブックシェルフを含む */}
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
       >
-        <Ionicons name="book-outline" size={20} color="white" />
-        <Text style={styles.buttonText}>書籍を追加</Text>
-      </TouchableOpacity>
+        {/* メニューバー - 件数表示と書籍追加ボタン */}
+        <View style={styles.menuBar}>
+          <View style={styles.bookCountContainer}>
+            <Text
+              style={[
+                styles.bookCountText,
+                { color: Colors[colorScheme].text },
+              ]}
+            >
+              {bookCount}冊の書籍
+            </Text>
+          </View>
 
-      <View style={styles.bookshelfContainer}>
-        <BookshelfView
-          onSelectBook={handleBookSelect}
-          headerTitle=""
-          refreshTrigger={refreshTrigger}
-        />
-      </View>
+          <TouchableOpacity
+            style={[
+              styles.addBookButton,
+              { backgroundColor: Colors[colorScheme].primary },
+            ]}
+            onPress={handleOpenCamera}
+            activeOpacity={0.7}
+            testID="add-book-button"
+          >
+            <Ionicons name="book-outline" size={16} color="white" />
+            <Text style={styles.buttonText}>書籍を追加</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.bookshelfContainer}>
+          <BookshelfView
+            onSelectBook={handleBookSelect}
+            headerTitle=""
+            refreshTrigger={refreshTrigger}
+          />
+        </View>
+      </ScrollView>
 
       {/* 書籍追加用カメラモーダル */}
       <CameraModal
@@ -171,6 +207,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E8E0D1", // Vintage Beige
     position: "relative",
+    zIndex: 10, // ヘッダーを最前面に
   },
   titleContainer: {
     position: "absolute",
@@ -184,27 +221,40 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
+  scrollContainer: {
+    flex: 1,
+    width: "100%",
+  },
+  menuBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  bookCountContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  bookCountText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  addBookButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
   bookshelfContainer: {
     flex: 1,
     width: "100%",
-    marginTop: 0, // ヘッダーとコンテンツの間のスペースを削除
-  },
-  floatingAddButton: {
-    position: "absolute",
-    top: 70,
-    right: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    elevation: 3,
-    zIndex: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
   buttonText: {
     color: "white",
@@ -238,5 +288,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 14,
   },
-  // 既存のスタイル定義が続く...
 });
