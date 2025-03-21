@@ -60,7 +60,11 @@ export default function WithdrawConfirmDialog({
               testID="withdraw-confirm-button"
             >
               {loading ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator
+                  size="small"
+                  color="#fff"
+                  testID="withdraw-loading"
+                />
               ) : (
                 <Text style={styles.confirmButtonText}>退会する</Text>
               )}

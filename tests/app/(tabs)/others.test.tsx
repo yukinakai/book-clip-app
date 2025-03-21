@@ -198,6 +198,71 @@ describe("OthersScreen", () => {
 
     // deleteAccountメソッドが呼ばれること
     expect(mockDeleteAccount).toHaveBeenCalled();
+    // ホーム画面に遷移すること
+    expect(mockReplace).toHaveBeenCalledWith("/(tabs)");
+  });
+
+  it("退会処理中はローディング状態が表示されること", async () => {
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    // 退会処理を遅延させるためのモック
+    const mockDeleteAccount = jest.fn().mockImplementation(() => {
+      return new Promise((resolve) => setTimeout(resolve, 100));
+    });
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: mockDeleteAccount,
+    });
+
+    render(<OthersScreen />);
+
+    // 退会ボタンをタップして退会確認ダイアログを表示
+    const withdrawButton = screen.getByText("退会");
+    fireEvent.press(withdrawButton);
+
+    // 退会確認ダイアログの「退会する」ボタンをタップ
+    const confirmButton = screen.getByText("退会する");
+    fireEvent.press(confirmButton);
+
+    // ローディング状態が表示されること
+    expect(screen.getByTestId("withdraw-loading")).toBeTruthy();
+  });
+
+  it("退会処理が失敗した場合、エラーがログに出力されること", async () => {
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    const mockError = new Error("退会処理に失敗しました");
+    const mockDeleteAccount = jest.fn().mockRejectedValue(mockError);
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: mockDeleteAccount,
+    });
+
+    // console.errorをモック
+    const mockConsoleError = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    render(<OthersScreen />);
+
+    // 退会ボタンをタップして退会確認ダイアログを表示
+    const withdrawButton = screen.getByText("退会");
+    fireEvent.press(withdrawButton);
+
+    // 退会確認ダイアログの「退会する」ボタンをタップ
+    const confirmButton = screen.getByText("退会する");
+    fireEvent.press(confirmButton);
+
+    // エラーがログに出力されること
+    await expect(mockDeleteAccount).rejects.toThrow("退会処理に失敗しました");
+    expect(mockConsoleError).toHaveBeenCalledWith("退会処理エラー:", mockError);
+
+    // クリーンアップ
+    mockConsoleError.mockRestore();
   });
 
   it("退会確認ダイアログで「キャンセル」をタップするとダイアログが閉じること", () => {
