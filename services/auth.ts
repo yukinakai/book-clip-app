@@ -72,14 +72,28 @@ export class AuthService {
   static async deleteAccount() {
     try {
       // Edge Functionを呼び出してアカウントを削除
-      const { error: functionError } = await supabase.functions.invoke(
+      const { data, error: functionError } = await supabase.functions.invoke(
         "delete-account",
         {
           method: "POST",
         }
       );
 
-      if (functionError) throw functionError;
+      if (functionError) {
+        console.error("Edge Function error:", functionError);
+        throw new Error(
+          `アカウント削除に失敗しました: ${functionError.message}`
+        );
+      }
+
+      if (!data?.success) {
+        console.error("Account deletion failed:", data);
+        throw new Error(
+          "アカウント削除に失敗しました。管理者に連絡してください。"
+        );
+      }
+
+      return data;
     } catch (error) {
       console.error("アカウント削除エラー:", error);
       throw error;

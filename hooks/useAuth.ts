@@ -109,18 +109,21 @@ export function useAuth() {
 
   // アカウント削除（退会処理）
   const deleteAccount = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
       await AuthService.deleteAccount();
-      // アカウント削除が成功した場合のみユーザー状態をクリア
+      // アカウント削除が成功した場合、ユーザー状態をクリア
       setUser(null);
-      setVerificationSuccess(false);
-    } catch (error) {
-      setError(filterError(error as Error));
-      // エラー時はユーザー状態を維持
-    } finally {
       setLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      const filteredError = filterError(error as Error);
+      if (filteredError) {
+        setError(filteredError);
+      }
+      setLoading(false);
+      return false;
     }
   };
 
