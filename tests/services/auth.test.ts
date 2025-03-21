@@ -64,11 +64,35 @@ jest.mock("../../services/auth", () => {
 
   return {
     AuthService: {
-      signInWithEmail: jest.fn(),
-      signOut: jest.fn(),
-      verifyOtp: jest.fn(),
-      getCurrentUser: jest.fn(),
-      deleteAccount: jest.fn(),
+      signInWithEmail: async (email: string) => {
+        const response = await mockSupabase.auth.signInWithOtp({ email });
+        if (response.error) throw response.error;
+        return response.data;
+      },
+      signOut: async () => {
+        const response = await mockSupabase.auth.signOut();
+        if (response.error) throw response.error;
+      },
+      verifyOtp: async (email: string, otp: string) => {
+        const response = await mockSupabase.auth.verifyOtp({
+          email,
+          type: "email",
+          token: otp,
+        });
+        if (response.error) throw response.error;
+        return response.data;
+      },
+      getCurrentUser: async () => {
+        const response = await mockSupabase.auth.getUser();
+        if (response.error) throw response.error;
+        return response.data.user;
+      },
+      deleteAccount: async () => {
+        const response = await mockSupabase.functions.invoke("delete-account", {
+          method: "POST",
+        });
+        if (response.error) throw response.error;
+      },
     },
     supabase: mockSupabase,
   };

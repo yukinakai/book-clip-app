@@ -113,10 +113,12 @@ export function useAuth() {
       setLoading(true);
       setError(null);
       await AuthService.deleteAccount();
+      // アカウント削除が成功した場合のみユーザー状態をクリア
       setUser(null);
       setVerificationSuccess(false);
     } catch (error) {
       setError(filterError(error as Error));
+      // エラー時はユーザー状態を維持
     } finally {
       setLoading(false);
     }
