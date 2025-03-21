@@ -69,33 +69,61 @@ jest.mock("../../services/auth", () => {
   return {
     AuthService: {
       signInWithEmail: async (email: string) => {
-        const response = await mockSupabase.auth.signInWithOtp({ email });
-        if (response.error) throw response.error;
-        return response.data;
+        try {
+          const response = await mockSupabase.auth.signInWithOtp({ email });
+          if (response.error) throw response.error;
+          return response.data;
+        } catch (error) {
+          console.error("メール認証リンク送信エラー:", error);
+          throw error;
+        }
       },
       signOut: async () => {
-        const response = await mockSupabase.auth.signOut();
-        if (response.error) throw response.error;
+        try {
+          const response = await mockSupabase.auth.signOut();
+          if (response.error) throw response.error;
+        } catch (error) {
+          console.error("ログアウトエラー:", error);
+          throw error;
+        }
       },
       verifyOtp: async (email: string, otp: string) => {
-        const response = await mockSupabase.auth.verifyOtp({
-          email,
-          type: "email",
-          token: otp,
-        });
-        if (response.error) throw response.error;
-        return response.data;
+        try {
+          const response = await mockSupabase.auth.verifyOtp({
+            email,
+            type: "email",
+            token: otp,
+          });
+          if (response.error) throw response.error;
+          return response.data;
+        } catch (error) {
+          console.error("OTP検証エラー:", error);
+          throw error;
+        }
       },
       getCurrentUser: async () => {
-        const response = await mockSupabase.auth.getUser();
-        if (response.error) throw response.error;
-        return response.data.user;
+        try {
+          const response = await mockSupabase.auth.getUser();
+          if (response.error) throw response.error;
+          return response.data.user;
+        } catch (error) {
+          console.error("ユーザー取得エラー:", error);
+          throw error;
+        }
       },
       deleteAccount: async () => {
-        const response = await mockSupabase.functions.invoke("delete-account", {
-          method: "POST",
-        });
-        if (response.error) throw response.error;
+        try {
+          const response = await mockSupabase.functions.invoke(
+            "delete-account",
+            {
+              method: "POST",
+            }
+          );
+          if (response.error) throw response.error;
+        } catch (error) {
+          console.error("アカウント削除エラー:", error);
+          throw error;
+        }
       },
     },
     supabase: mockSupabase,
