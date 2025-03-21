@@ -113,6 +113,18 @@
 │   ├── RakutenBookService.ts
 │   ├── auth.ts
 │   └── bookSearch.ts
+├── supabase
+│   ├── .temp
+│   │   ├── cli-latest
+│   │   ├── gotrue-version
+│   │   ├── pooler-url
+│   │   ├── postgres-version
+│   │   ├── project-ref
+│   │   └── rest-version
+│   └── functions
+│       └── delete-account
+│           ├── deno.json
+│           └── index.ts
 ├── tests
 │   ├── __mocks__
 │   │   └── @react-native-async-storage
@@ -162,4 +174,4 @@
 └── types
     └── env.d.ts
 
-37 directories, 126 files
+41 directories, 134 files
