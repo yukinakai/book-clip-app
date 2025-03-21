@@ -177,4 +177,30 @@ describe("AuthService", () => {
       );
     });
   });
+
+  describe("deleteAccount", () => {
+    it("成功時にアカウントが削除されること", async () => {
+      (supabase.functions.invoke as jest.Mock).mockResolvedValue({
+        error: null,
+      });
+
+      await expect(AuthService.deleteAccount()).resolves.not.toThrow();
+      expect(supabase.functions.invoke).toHaveBeenCalledWith("delete-account", {
+        method: "POST",
+      });
+    });
+
+    it("エラー発生時に例外をスローする", async () => {
+      const mockError = new Error("アカウント削除エラー");
+      (supabase.functions.invoke as jest.Mock).mockResolvedValue({
+        error: mockError,
+      });
+
+      await expect(AuthService.deleteAccount()).rejects.toThrow(mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        "アカウント削除エラー:",
+        mockError
+      );
+    });
+  });
 });

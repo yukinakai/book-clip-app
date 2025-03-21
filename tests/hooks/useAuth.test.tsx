@@ -22,6 +22,7 @@ jest.mock("../../services/auth", () => {
       signInWithEmail: jest.fn(),
       verifyOtp: jest.fn(),
       signOut: jest.fn(),
+      deleteAccount: jest.fn(),
     },
     supabase: mockSupabase,
   };
@@ -263,5 +264,44 @@ describe("useAuth", () => {
     // unsubscribeが呼ばれていることを確認
     const subscription = supabase.auth.onAuthStateChange().data.subscription;
     expect(subscription.unsubscribe).toHaveBeenCalled();
+  });
+
+  describe("deleteAccount", () => {
+    it("アカウント削除が成功した場合、ユーザー状態がリセットされること", async () => {
+      const { result } = renderHook(() => useAuth());
+
+      // 初期状態でユーザーをセット
+      act(() => {
+        result.current.user = {
+          id: "test-user",
+          email: "test@example.com",
+        } as any;
+      });
+
+      // アカウント削除を実行
+      await act(async () => {
+        await result.current.deleteAccount();
+      });
+
+      expect(AuthService.deleteAccount).toHaveBeenCalled();
+      expect(result.current.user).toBeNull();
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeNull();
+    });
+
+    it("アカウント削除でエラーが発生した場合、エラー状態が設定されること", async () => {
+      const mockError = new Error("アカウント削除エラー");
+      (AuthService.deleteAccount as jest.Mock).mockRejectedValue(mockError);
+
+      const { result } = renderHook(() => useAuth());
+
+      await act(async () => {
+        await result.current.deleteAccount();
+      });
+
+      expect(result.current.error).toBeTruthy();
+      expect(result.current.loading).toBe(false);
+      expect(result.current.user).not.toBeNull(); // ユーザー状態は変更されない
+    });
   });
 });
