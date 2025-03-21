@@ -286,21 +286,23 @@ describe("useAuth", () => {
 
     it("アカウント削除でエラーが発生した場合、エラー状態が設定されること", async () => {
       const mockError = new Error("アカウント削除エラー");
+      const mockUser = { id: "1", email: "user@example.com" };
+      (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (AuthService.deleteAccount as jest.Mock).mockRejectedValue(mockError);
 
       const { result } = renderHook(() => useAuth());
 
-      // 初期状態でユーザーをセット
-      await act(async () => {
-        result.current.user = {
-          id: "test-user",
-          email: "test@example.com",
-        } as any;
+      // 初期状態のユーザー設定を待つ
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.user).toEqual(mockUser);
+
+      // deleteAccountを実行
+      act(() => {
+        result.current.deleteAccount();
       });
 
-      await act(async () => {
-        await result.current.deleteAccount();
-      });
+      // 状態の更新を待つ
+      await waitFor(() => expect(result.current.loading).toBe(false));
 
       expect(result.current.error).toBeTruthy();
       expect(result.current.loading).toBe(false);

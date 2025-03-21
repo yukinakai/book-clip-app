@@ -40,8 +40,12 @@ afterAll(() => {
 
 // コンソールエラーのモック（テスト中のエラーログを抑制）
 const originalConsoleError = console.error;
-beforeAll(() => {
+beforeEach(() => {
   console.error = jest.fn();
+});
+
+afterEach(() => {
+  (console.error as jest.Mock).mockClear();
 });
 
 afterAll(() => {
