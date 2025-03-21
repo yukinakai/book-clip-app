@@ -68,6 +68,7 @@
 │   ├── ParallaxScrollView.tsx
 │   ├── ThemedText.tsx
 │   ├── ThemedView.tsx
+│   ├── WithdrawConfirmDialog.tsx
 │   ├── camera
 │   │   ├── BarcodeScanner.tsx
 │   │   ├── CameraModal.tsx
@@ -139,6 +140,7 @@
 │   │   ├── OCRResultView.test.tsx
 │   │   ├── ParallaxScrollView.test.tsx
 │   │   ├── ThemedText-test.tsx
+│   │   ├── WithdrawConfirmDialog.test.tsx
 │   │   ├── __snapshots__
 │   │   │   └── ThemedText-test.tsx.snap
 │   │   └── camera
@@ -160,4 +162,4 @@
 └── types
     └── env.d.ts
 
-37 directories, 124 files
+37 directories, 126 files
