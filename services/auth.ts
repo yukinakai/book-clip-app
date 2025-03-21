@@ -71,15 +71,40 @@ export class AuthService {
   // ユーザーアカウントの削除（退会処理）
   static async deleteAccount() {
     try {
+      // 現在のセッションを取得
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) throw new Error("認証セッションが見つかりません");
+
       // Edge Functionを呼び出してアカウントを削除
-      const { error: functionError } = await supabase.functions.invoke(
+      const { data, error: functionError } = await supabase.functions.invoke(
         "delete-account",
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         }
       );
 
-      if (functionError) throw functionError;
+      if (functionError) {
+        console.error("Edge Function error:", functionError);
+        throw new Error(
+          `アカウント削除に失敗しました: ${functionError.message}`
+        );
+      }
+
+      if (!data?.success) {
+        console.error("Account deletion failed:", data);
+        throw new Error(
+          "アカウント削除に失敗しました。管理者に連絡してください。"
+        );
+      }
+
+      return data;
     } catch (error) {
       console.error("アカウント削除エラー:", error);
       throw error;

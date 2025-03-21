@@ -35,7 +35,7 @@ export default function WithdrawConfirmDialog({
     >
       <View style={styles.centeredView}>
         <View
-          style={[styles.modalView, { backgroundColor: colors.cardBackground }]}
+          style={[styles.modalView, { backgroundColor: colors.background }]}
         >
           <Text style={[styles.title, { color: colors.text }]}>退会の確認</Text>
           <Text style={[styles.message, { color: colors.text }]}>
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   modalView: {
     margin: 20,
