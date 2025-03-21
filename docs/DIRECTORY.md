@@ -122,6 +122,7 @@
 │   │   ├── project-ref
 │   │   └── rest-version
 │   └── functions
+│       ├── README.md
 │       └── delete-account
 │           ├── deno.json
 │           └── index.ts
@@ -174,4 +175,4 @@
 └── types
     └── env.d.ts
 
-41 directories, 134 files
+41 directories, 135 files
