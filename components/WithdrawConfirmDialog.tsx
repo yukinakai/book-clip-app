@@ -35,7 +35,7 @@ export default function WithdrawConfirmDialog({
     >
       <View style={styles.centeredView}>
         <View
-          style={[styles.modalView, { backgroundColor: colors.cardBackground }]}
+          style={[styles.modalView, { backgroundColor: colors.background }]}
         >
           <Text style={[styles.title, { color: colors.text }]}>退会の確認</Text>
           <Text style={[styles.message, { color: colors.text }]}>
