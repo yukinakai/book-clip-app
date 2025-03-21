@@ -18,7 +18,9 @@ serve(async (req: Request) => {
     // リクエストの認証情報を取得
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      console.error("認証ヘッダーが見つかりません");
+      console.error("認証ヘッダーが見つかりません", {
+        headers: Object.fromEntries(req.headers.entries()),
+      });
       throw new Error("認証情報がありません");
     }
 
@@ -28,7 +30,11 @@ serve(async (req: Request) => {
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-      console.error("必要な環境変数が設定されていません");
+      console.error("必要な環境変数が設定されていません", {
+        hasUrl: !!supabaseUrl,
+        hasAnonKey: !!supabaseAnonKey,
+        hasServiceKey: !!supabaseServiceRoleKey,
+      });
       throw new Error("サーバー設定が不完全です");
     }
 
@@ -39,6 +45,10 @@ serve(async (req: Request) => {
           Authorization: authHeader,
         },
       },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
     });
 
     // 現在のユーザー情報を取得
@@ -48,7 +58,10 @@ serve(async (req: Request) => {
     } = await supabaseClient.auth.getUser();
 
     if (userError) {
-      console.error("ユーザー情報の取得に失敗:", userError);
+      console.error("ユーザー情報の取得に失敗:", {
+        error: userError,
+        authHeader: authHeader.substring(0, 20) + "...", // ヘッダーの一部のみをログ
+      });
       throw userError;
     }
 
@@ -60,7 +73,12 @@ serve(async (req: Request) => {
     console.log("削除するユーザーID:", user.id);
 
     // 管理者権限を持つクライアントを作成
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
     // ユーザーアカウントを削除
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
@@ -68,7 +86,10 @@ serve(async (req: Request) => {
     );
 
     if (deleteError) {
-      console.error("ユーザー削除に失敗:", deleteError);
+      console.error("ユーザー削除に失敗:", {
+        error: deleteError,
+        userId: user.id,
+      });
       throw deleteError;
     }
 
@@ -85,7 +106,11 @@ serve(async (req: Request) => {
       }
     );
   } catch (error) {
-    console.error("エラーが発生しました:", error);
+    console.error("エラーが発生しました:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return new Response(
       JSON.stringify({
         success: false,
