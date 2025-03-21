@@ -22,7 +22,7 @@ type MenuItem = {
 export default function OthersScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
-  const { user } = useAuthContext();
+  const { user, signOut } = useAuthContext();
 
   // メニュー項目の定義
   const menuItems: MenuItem[] = user
@@ -72,7 +72,8 @@ export default function OthersScreen() {
         router.push("/login?returnTo=/(tabs)/others");
         break;
       case "logout":
-        // ログアウト処理は別途実装
+        // ログアウト処理
+        signOut();
         break;
       case "withdraw":
         // 退会処理画面に遷移
