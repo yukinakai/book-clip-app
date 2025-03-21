@@ -107,6 +107,24 @@ export function useAuth() {
     }
   };
 
+  // アカウント削除（退会処理）
+  const deleteAccount = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // 現時点ではサーバーサイド実装が必要なため、実際の削除は行われません
+      // await AuthService.deleteAccount();
+      // ダミー処理として、ログアウトだけ行います
+      await AuthService.signOut();
+      setUser(null);
+      setVerificationSuccess(false);
+    } catch (error) {
+      setError(filterError(error as Error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     loading,
@@ -116,5 +134,6 @@ export function useAuth() {
     signInWithEmail,
     verifyOtp,
     signOut,
+    deleteAccount,
   };
 }

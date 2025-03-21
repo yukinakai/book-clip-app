@@ -67,4 +67,29 @@ export class AuthService {
       throw error;
     }
   }
+
+  // ユーザーアカウントの削除（退会処理）
+  static async deleteAccount() {
+    try {
+      // 現在のセッションを取得
+      const { error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      // ユーザーに関連するデータを削除する処理
+      // 注: 関連テーブルにRLSポリシーが適切に設定されていれば、
+      // ON DELETEのカスケード処理やRLSポリシーによって自動的に削除されます
+
+      // ユーザー自身を削除
+      const { error: deleteError } = await supabase.auth.admin
+        .deleteUser
+        // この実装方法はセキュリティ上の理由から実際には機能しません
+        // サーバーサイドのEdge Functionなどで実装する必要があります
+        // これはあくまでデモンストレーション用のコードです
+        ();
+      if (deleteError) throw deleteError;
+    } catch (error) {
+      console.error("アカウント削除エラー:", error);
+      throw error;
+    }
+  }
 }
