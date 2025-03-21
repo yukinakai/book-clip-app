@@ -47,6 +47,26 @@ cp .env.sample .env
 3. Email Template を必要に応じてカスタマイズ
 4. 本番環境では適切なリダイレクト URL を設定
 
+#### Edge Functions のデプロイ
+
+Edge Functions のデプロイ手順については、[デプロイガイド](supabase/functions/README.md)を参照してください。
+
+デプロイ用の npm スクリプトが用意されています：
+
+```bash
+# 全ての関数をデプロイ
+npm run supabase:deploy
+
+# 特定の関数をデプロイ（例：delete-account）
+npm run supabase:deploy:delete-account
+
+# 環境変数の設定
+npm run supabase:secrets:set
+
+# ログの確認
+npm run supabase:logs
+```
+
 ## 開発サーバーの起動
 
 ```bash
