@@ -112,10 +112,7 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
-      // 現時点ではサーバーサイド実装が必要なため、実際の削除は行われません
-      // await AuthService.deleteAccount();
-      // ダミー処理として、ログアウトだけ行います
-      await AuthService.signOut();
+      await AuthService.deleteAccount();
       setUser(null);
       setVerificationSuccess(false);
     } catch (error) {
