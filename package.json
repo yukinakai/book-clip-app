@@ -20,7 +20,12 @@
     "ts-prune": "ts-prune | grep -v '\\+not-found\\|_layout\\|default\\|IconSymbol'",
     "ts-prune-check": "OUTPUT=$(npm run ts-prune -s); if [ -n \"$OUTPUT\" ]; then echo \"以下の未使用エクスポートが見つかりました:\"; echo \"$OUTPUT\"; exit 1; fi",
     "depcheck": "depcheck --ignores=\"jest-expo,@babel/core,@types/jest,@types/react,@types/react-test-renderer,@testing-library/*,jest,react-test-renderer\" --ignore-dirs=\"node_modules,.expo,assets\" --json",
-    "depcheck-check": "OUTPUT=$(npm run depcheck -s); if [ \"$(echo $OUTPUT | jq -r '.dependencies | length')\" -gt 0 ] || [ \"$(echo $OUTPUT | jq -r '.devDependencies | length')\" -gt 0 ]; then echo \"以下の未使用パッケージが見つかりました:\"; echo $OUTPUT | jq '.dependencies, .devDependencies'; exit 1; fi"
+    "depcheck-check": "OUTPUT=$(npm run depcheck -s); if [ \"$(echo $OUTPUT | jq -r '.dependencies | length')\" -gt 0 ] || [ \"$(echo $OUTPUT | jq -r '.devDependencies | length')\" -gt 0 ]; then echo \"以下の未使用パッケージが見つかりました:\"; echo $OUTPUT | jq '.dependencies, .devDependencies'; exit 1; fi",
+    "supabase:deploy": "supabase functions deploy --project-ref $SUPABASE_PROJECT_REF",
+    "supabase:deploy:delete-account": "supabase functions deploy delete-account --project-ref $SUPABASE_PROJECT_REF",
+    "supabase:secrets:set": "supabase secrets set --project-ref $SUPABASE_PROJECT_REF",
+    "supabase:secrets:list": "supabase secrets list --project-ref $SUPABASE_PROJECT_REF",
+    "supabase:logs": "supabase functions logs --project-ref $SUPABASE_PROJECT_REF"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",

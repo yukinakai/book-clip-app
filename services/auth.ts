@@ -67,4 +67,22 @@ export class AuthService {
       throw error;
     }
   }
+
+  // ユーザーアカウントの削除（退会処理）
+  static async deleteAccount() {
+    try {
+      // Edge Functionを呼び出してアカウントを削除
+      const { error: functionError } = await supabase.functions.invoke(
+        "delete-account",
+        {
+          method: "POST",
+        }
+      );
+
+      if (functionError) throw functionError;
+    } catch (error) {
+      console.error("アカウント削除エラー:", error);
+      throw error;
+    }
+  }
 }

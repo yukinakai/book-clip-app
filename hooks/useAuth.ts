@@ -63,11 +63,11 @@ export function useAuth() {
   }, []);
 
   // OTPコードの検証
-  const verifyOtp = async (otp: string) => {
+  const verifyOtp = async (email: string, otp: string) => {
     try {
       setLoading(true);
       setError(null);
-      await AuthService.verifyOtp(otp);
+      await AuthService.verifyOtp(email, otp);
       setVerificationSuccess(true);
     } catch (error) {
       setError(filterError(error as Error));
@@ -107,6 +107,23 @@ export function useAuth() {
     }
   };
 
+  // アカウント削除（退会処理）
+  const deleteAccount = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await AuthService.deleteAccount();
+      // アカウント削除が成功した場合のみユーザー状態をクリア
+      setUser(null);
+      setVerificationSuccess(false);
+    } catch (error) {
+      setError(filterError(error as Error));
+      // エラー時はユーザー状態を維持
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     loading,
@@ -116,5 +133,6 @@ export function useAuth() {
     signInWithEmail,
     verifyOtp,
     signOut,
+    deleteAccount,
   };
 }

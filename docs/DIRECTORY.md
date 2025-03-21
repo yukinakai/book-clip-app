@@ -68,6 +68,7 @@
 │   ├── ParallaxScrollView.tsx
 │   ├── ThemedText.tsx
 │   ├── ThemedView.tsx
+│   ├── WithdrawConfirmDialog.tsx
 │   ├── camera
 │   │   ├── BarcodeScanner.tsx
 │   │   ├── CameraModal.tsx
@@ -112,6 +113,19 @@
 │   ├── RakutenBookService.ts
 │   ├── auth.ts
 │   └── bookSearch.ts
+├── supabase
+│   ├── .temp
+│   │   ├── cli-latest
+│   │   ├── gotrue-version
+│   │   ├── pooler-url
+│   │   ├── postgres-version
+│   │   ├── project-ref
+│   │   └── rest-version
+│   └── functions
+│       ├── README.md
+│       └── delete-account
+│           ├── deno.json
+│           └── index.ts
 ├── tests
 │   ├── __mocks__
 │   │   └── @react-native-async-storage
@@ -139,6 +153,7 @@
 │   │   ├── OCRResultView.test.tsx
 │   │   ├── ParallaxScrollView.test.tsx
 │   │   ├── ThemedText-test.tsx
+│   │   ├── WithdrawConfirmDialog.test.tsx
 │   │   ├── __snapshots__
 │   │   │   └── ThemedText-test.tsx.snap
 │   │   └── camera
@@ -160,4 +175,4 @@
 └── types
     └── env.d.ts
 
-37 directories, 124 files
+41 directories, 135 files

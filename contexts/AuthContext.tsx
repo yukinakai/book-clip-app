@@ -9,6 +9,7 @@ interface AuthContextType {
   emailSent: boolean;
   signInWithEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

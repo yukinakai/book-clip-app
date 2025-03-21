@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import { useColorScheme } from "../../hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuthContext } from "../../contexts/AuthContext";
+import WithdrawConfirmDialog from "../../components/WithdrawConfirmDialog";
 
 // メニュー項目の型定義
 type MenuItem = {
@@ -22,7 +23,9 @@ type MenuItem = {
 export default function OthersScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
-  const { user, signOut } = useAuthContext();
+  const { user, signOut, deleteAccount } = useAuthContext();
+  const [withdrawDialogVisible, setWithdrawDialogVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // メニュー項目の定義
   const menuItems: MenuItem[] = user
@@ -59,6 +62,20 @@ export default function OthersScreen() {
         },
       ];
 
+  const handleWithdraw = async () => {
+    setIsLoading(true);
+    try {
+      await deleteAccount();
+      setWithdrawDialogVisible(false);
+      // 退会後はホーム画面に戻る
+      router.replace("/(tabs)");
+    } catch (error) {
+      console.error("退会処理エラー:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleMenuPress = (id: string) => {
     console.log(`メニュー「${id}」が押されました`);
 
@@ -76,7 +93,8 @@ export default function OthersScreen() {
         signOut();
         break;
       case "withdraw":
-        // 退会処理画面に遷移
+        // 退会確認ダイアログを表示
+        setWithdrawDialogVisible(true);
         break;
       case "terms":
         // 利用規約画面に遷移
@@ -111,6 +129,7 @@ export default function OthersScreen() {
             key={item.id}
             style={styles.menuItem}
             onPress={() => handleMenuPress(item.id)}
+            testID={`menu-item-${item.id}`}
           >
             <View style={styles.menuIconContainer}>
               <Ionicons
@@ -133,6 +152,14 @@ export default function OthersScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* 退会確認ダイアログ */}
+      <WithdrawConfirmDialog
+        visible={withdrawDialogVisible}
+        onClose={() => setWithdrawDialogVisible(false)}
+        onConfirm={handleWithdraw}
+        loading={isLoading}
+      />
     </SafeAreaView>
   );
 }
