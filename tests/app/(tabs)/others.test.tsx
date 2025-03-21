@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import { render, screen, fireEvent, act } from "@testing-library/react-native";
 import OthersScreen from "../../../app/(tabs)/others";
 
 // useColorSchemeフックをモック
@@ -194,7 +194,11 @@ describe("OthersScreen", () => {
 
     // 退会確認ダイアログの「退会する」ボタンをタップ
     const confirmButton = screen.getByText("退会する");
-    fireEvent.press(confirmButton);
+    await act(async () => {
+      fireEvent.press(confirmButton);
+      // deleteAccountの完了を待つ
+      await mockDeleteAccount();
+    });
 
     // deleteAccountメソッドが呼ばれること
     expect(mockDeleteAccount).toHaveBeenCalled();
