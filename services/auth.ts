@@ -71,11 +71,22 @@ export class AuthService {
   // ユーザーアカウントの削除（退会処理）
   static async deleteAccount() {
     try {
+      // 現在のセッションを取得
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) throw new Error("認証セッションが見つかりません");
+
       // Edge Functionを呼び出してアカウントを削除
       const { data, error: functionError } = await supabase.functions.invoke(
         "delete-account",
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         }
       );
 
