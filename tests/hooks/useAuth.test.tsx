@@ -134,24 +134,19 @@ describe("useAuth", () => {
   });
 
   it("verifyOtp成功時、verificationSuccess=trueになる", async () => {
-    (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
-    (AuthService.verifyOtp as jest.Mock).mockResolvedValue(undefined);
-
     const { result } = renderHook(() => useAuth());
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    // verifyOtpを実行
-    act(() => {
-      result.current.verifyOtp("123456");
+    // OTP検証を実行
+    await act(async () => {
+      await result.current.verifyOtp("test@example.com", "123456");
     });
-
-    // 状態の更新を待つ
-    await waitFor(() => expect(result.current.loading).toBe(false));
 
     // verificationSuccessがtrueになっていることを確認
     expect(result.current.verificationSuccess).toBe(true);
-    expect(AuthService.verifyOtp).toHaveBeenCalledWith("123456");
+    expect(AuthService.verifyOtp).toHaveBeenCalledWith(
+      "test@example.com",
+      "123456"
+    );
   });
 
   it("verifyOtpエラー時、error状態がセットされる", async () => {
@@ -271,7 +266,7 @@ describe("useAuth", () => {
       const { result } = renderHook(() => useAuth());
 
       // 初期状態でユーザーをセット
-      act(() => {
+      await act(async () => {
         result.current.user = {
           id: "test-user",
           email: "test@example.com",
@@ -295,13 +290,21 @@ describe("useAuth", () => {
 
       const { result } = renderHook(() => useAuth());
 
+      // 初期状態でユーザーをセット
+      await act(async () => {
+        result.current.user = {
+          id: "test-user",
+          email: "test@example.com",
+        } as any;
+      });
+
       await act(async () => {
         await result.current.deleteAccount();
       });
 
       expect(result.current.error).toBeTruthy();
       expect(result.current.loading).toBe(false);
-      expect(result.current.user).not.toBeNull(); // ユーザー状態は変更されない
+      expect(result.current.user).toBeTruthy(); // ユーザー状態は変更されない
     });
   });
 });

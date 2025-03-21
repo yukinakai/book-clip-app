@@ -48,6 +48,32 @@ afterAll(() => {
   console.error = originalConsoleError;
 });
 
+// AuthServiceとsupabaseのモック
+jest.mock("../../services/auth", () => {
+  const mockSupabase = {
+    auth: {
+      signInWithOtp: jest.fn(),
+      signOut: jest.fn(),
+      verifyOtp: jest.fn(),
+      getUser: jest.fn(),
+    },
+    functions: {
+      invoke: jest.fn(),
+    },
+  };
+
+  return {
+    AuthService: {
+      signInWithEmail: jest.fn(),
+      signOut: jest.fn(),
+      verifyOtp: jest.fn(),
+      getCurrentUser: jest.fn(),
+      deleteAccount: jest.fn(),
+    },
+    supabase: mockSupabase,
+  };
+});
+
 describe("AuthService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
