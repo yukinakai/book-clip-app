@@ -33,6 +33,7 @@ export default function BookDetailScreen() {
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const dividerColor = useThemeColor({}, "divider");
 
   // 書籍データとクリップを読み込む
   const loadBookDetailsAndClips = useCallback(async () => {
@@ -198,7 +199,7 @@ export default function BookDetailScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: dividerColor }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
@@ -207,55 +208,51 @@ export default function BookDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
         <View style={styles.titleContainer}>
-          <Text style={[styles.headerTitle, { color: textColor }]}>書籍</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]}>
+            書籍の詳細
+          </Text>
         </View>
-        <TouchableOpacity
-          style={styles.optionsButton}
-          onPress={showOptions}
-          testID="options-button"
-        >
-          <Ionicons name="ellipsis-vertical" size={24} color={textColor} />
-        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.bookInfoContainer}>
-          {book.coverImage ? (
-            <Image
-              source={{ uri: book.coverImage }}
-              style={styles.coverImage}
-            />
-          ) : (
-            <View style={styles.coverImage}>
-              <NoImagePlaceholder width={100} height={150} />
+      <FlatList
+        data={clips}
+        renderItem={renderClipItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.clipsList}
+        ListHeaderComponent={() => (
+          <>
+            <View style={styles.bookInfoContainer}>
+              {book.coverImage ? (
+                <Image
+                  source={{ uri: book.coverImage }}
+                  style={styles.coverImage}
+                />
+              ) : (
+                <View style={styles.coverImage}>
+                  <NoImagePlaceholder width={100} height={150} />
+                </View>
+              )}
+              <View style={styles.bookInfo}>
+                <Text style={[styles.title, { color: textColor }]}>
+                  {book.title}
+                </Text>
+                <Text style={[styles.author, { color: textColor }]}>
+                  {book.author}
+                </Text>
+              </View>
             </View>
-          )}
-          <View style={styles.bookInfo}>
-            <Text style={[styles.title, { color: textColor }]}>
-              {book.title}
-            </Text>
-            <Text style={[styles.author, { color: textColor }]}>
-              {book.author}
-            </Text>
-          </View>
-        </View>
 
-        <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
-        <View style={styles.clipsSection}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            クリップ
-          </Text>
-          <FlatList
-            data={clips}
-            renderItem={renderClipItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.clipsList}
-            scrollEnabled={false}
-            ListEmptyComponent={renderEmptyClipsList}
-          />
-        </View>
-      </ScrollView>
+            <View style={styles.clipsSection}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>
+                クリップ
+              </Text>
+            </View>
+          </>
+        )}
+        ListEmptyComponent={renderEmptyClipsList}
+      />
 
       <TouchableOpacity
         style={[
@@ -291,7 +288,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
     position: "relative",
   },
   backButton: {
