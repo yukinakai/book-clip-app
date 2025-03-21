@@ -41,6 +41,7 @@ const mockUseAuthContext = (isLoggedIn = false) => {
   useAuthContext.mockReturnValue({
     user: isLoggedIn ? { id: "test-user-id", email: "test@example.com" } : null,
     isLoggedIn,
+    signOut: jest.fn(),
   });
 };
 
@@ -119,6 +120,14 @@ describe("OthersScreen", () => {
 
   it("ログイン済み時、メニュー項目をタップすると適切なハンドラ関数が呼び出されること", () => {
     mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    const mockSignOut = jest.fn();
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: mockSignOut,
+    });
+
     render(<OthersScreen />);
 
     const logoutButton = screen.getByText("ログアウト");
@@ -126,6 +135,7 @@ describe("OthersScreen", () => {
     expect(mockConsoleLog).toHaveBeenCalledWith(
       "メニュー「logout」が押されました"
     );
+    expect(mockSignOut).toHaveBeenCalled();
 
     const withdrawButton = screen.getByText("退会");
     fireEvent.press(withdrawButton);
