@@ -134,22 +134,31 @@ describe("useAuth", () => {
   });
 
   it("verifyOtp成功時、verificationSuccess=trueになる", async () => {
+    (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
+    (AuthService.verifyOtp as jest.Mock).mockResolvedValue(undefined);
+
     const { result } = renderHook(() => useAuth());
 
-    // OTP検証を実行
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // 初期状態を確認
+    expect(result.current.verificationSuccess).toBe(false);
+
+    // verifyOtpを実行
     await act(async () => {
       await result.current.verifyOtp("test@example.com", "123456");
     });
 
     // verificationSuccessがtrueになっていることを確認
     expect(result.current.verificationSuccess).toBe(true);
+    expect(result.current.loading).toBe(false);
     expect(AuthService.verifyOtp).toHaveBeenCalledWith(
       "test@example.com",
       "123456"
     );
   });
 
-  it("verifyOtpエラー時、error状態がセットされる", async () => {
+  it("verifyOtpエラー時、error状態がセットされverificationSuccessは変更されない", async () => {
     const mockError = new Error("OTP検証エラー");
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.verifyOtp as jest.Mock).mockRejectedValue(mockError);
@@ -158,16 +167,18 @@ describe("useAuth", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
+    // 初期状態を確認
+    expect(result.current.verificationSuccess).toBe(false);
+
     // verifyOtpを実行
-    act(() => {
-      result.current.verifyOtp("123456");
+    await act(async () => {
+      await result.current.verifyOtp("test@example.com", "123456");
     });
 
-    // 状態の更新を待つ
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    // エラーがセットされていることを確認
+    // エラー状態を確認
     expect(result.current.error).toEqual(mockError);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.verificationSuccess).toBe(false);
   });
 
   it("signOut成功時、ユーザー情報がクリアされる", async () => {
@@ -308,5 +319,54 @@ describe("useAuth", () => {
       expect(result.current.loading).toBe(false);
       expect(result.current.user).toBeTruthy(); // ユーザー状態は変更されない
     });
+  });
+
+  it("onAuthStateChangeでSIGNED_INイベントが発生した場合、verificationSuccessがtrueになる", async () => {
+    const mockUser = { id: "1", email: "user@example.com" };
+    (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
+
+    const { result } = renderHook(() => useAuth());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // 初期状態を確認
+    expect(result.current.verificationSuccess).toBe(false);
+
+    // onAuthStateChangeのコールバックを取得
+    const onAuthStateChange = supabase.auth.onAuthStateChange as jest.Mock;
+    const callback = onAuthStateChange.mock.calls[0][0];
+
+    // SIGNED_INイベントをシミュレート
+    act(() => {
+      callback("SIGNED_IN", { user: mockUser });
+    });
+
+    // 状態が更新されていることを確認
+    expect(result.current.verificationSuccess).toBe(true);
+    expect(result.current.user).toEqual(mockUser);
+  });
+
+  it("signOutが成功した場合、verificationSuccessがfalseになる", async () => {
+    const mockUser = { id: "1", email: "user@example.com" };
+    (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (AuthService.signOut as jest.Mock).mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useAuth());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // verificationSuccessをtrueに設定
+    act(() => {
+      result.current.verificationSuccess = true;
+    });
+
+    // signOutを実行
+    await act(async () => {
+      await result.current.signOut();
+    });
+
+    // 状態が更新されていることを確認
+    expect(result.current.verificationSuccess).toBe(false);
+    expect(result.current.user).toBeNull();
   });
 });
