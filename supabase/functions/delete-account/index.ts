@@ -18,21 +18,28 @@ serve(async (req: Request) => {
     // リクエストの認証情報を取得
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.error("認証ヘッダーが見つかりません");
       throw new Error("認証情報がありません");
     }
 
+    // 環境変数の確認
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+      console.error("必要な環境変数が設定されていません");
+      throw new Error("サーバー設定が不完全です");
+    }
+
     // ユーザーコンテキストを使用してSupabaseクライアントを作成
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: {
-            Authorization: authHeader,
-          },
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: authHeader,
         },
-      }
-    );
+      },
+    });
 
     // 現在のユーザー情報を取得
     const {
@@ -40,28 +47,32 @@ serve(async (req: Request) => {
       error: userError,
     } = await supabaseClient.auth.getUser();
 
-    if (userError || !user) {
-      throw userError || new Error("ユーザーが見つかりません");
+    if (userError) {
+      console.error("ユーザー情報の取得に失敗:", userError);
+      throw userError;
     }
 
-    // 管理者権限を持つクライアントを作成
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    if (!user) {
+      console.error("ユーザーが見つかりません");
+      throw new Error("ユーザーが見つかりません");
+    }
 
-    // 関連データがあれば削除（例：ユーザープロフィール画像など）
-    // const { error: storageError } = await supabaseAdmin
-    //   .storage
-    //   .from('avatars')
-    //   .remove([`${user.id}.jpg`])
+    console.log("削除するユーザーID:", user.id);
+
+    // 管理者権限を持つクライアントを作成
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // ユーザーアカウントを削除
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
       user.id
     );
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error("ユーザー削除に失敗:", deleteError);
+      throw deleteError;
+    }
+
+    console.log("ユーザーが正常に削除されました:", user.id);
 
     return new Response(
       JSON.stringify({
@@ -74,11 +85,13 @@ serve(async (req: Request) => {
       }
     );
   } catch (error) {
+    console.error("エラーが発生しました:", error);
     return new Response(
       JSON.stringify({
         success: false,
         error:
           error instanceof Error ? error.message : "Unknown error occurred",
+        details: error instanceof Error ? error.stack : undefined,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
