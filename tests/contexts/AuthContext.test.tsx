@@ -37,6 +37,7 @@ describe("AuthContext", () => {
       emailSent: false,
       signInWithEmail: jest.fn(),
       signOut: jest.fn(),
+      deleteAccount: jest.fn(),
     });
 
     // コンポーネントをレンダリング
@@ -61,6 +62,7 @@ describe("AuthContext", () => {
       emailSent: false,
       signInWithEmail: jest.fn(),
       signOut: jest.fn(),
+      deleteAccount: jest.fn(),
     });
 
     // コンポーネントをレンダリング
@@ -83,6 +85,7 @@ describe("AuthContext", () => {
       emailSent: false,
       signInWithEmail: jest.fn(),
       signOut: jest.fn(),
+      deleteAccount: jest.fn(),
     });
 
     // 再レンダリング
@@ -108,6 +111,7 @@ describe("AuthContext", () => {
       emailSent: false,
       signInWithEmail: jest.fn(),
       signOut: jest.fn(),
+      deleteAccount: jest.fn(),
     });
 
     // コンポーネントをレンダリング
