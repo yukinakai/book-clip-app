@@ -13,8 +13,8 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 // BookStorageServiceをモック
 jest.mock("../../services/BookStorageService", () => ({
   BookStorageService: {
-    getAllBooks: jest.fn().mockResolvedValue([]),
-    setLastClipBook: jest.fn().mockResolvedValue(undefined),
+    getAllBooks: jest.fn(),
+    setLastClipBook: jest.fn(),
   },
 }));
 
@@ -22,6 +22,9 @@ describe("ClipStorageService", () => {
   // 各テストの前にモックをリセット
   beforeEach(() => {
     jest.clearAllMocks();
+    // テスト実行ごとにモック関数をリセット
+    (BookStorageService.getAllBooks as jest.Mock).mockReset();
+    (BookStorageService.setLastClipBook as jest.Mock).mockReset();
   });
 
   // テスト用データ
@@ -63,8 +66,13 @@ describe("ClipStorageService", () => {
       // AsyncStorage.getItemが空の配列を返すようにモック
       AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
 
-      // BookStorageService.getAllBooksが書籍を返すようにモック
-      BookStorageService.getAllBooks = jest.fn().mockResolvedValue([mockBook]);
+      // BookStorageServiceのメソッドをモック
+      (BookStorageService.getAllBooks as jest.Mock).mockResolvedValue([
+        mockBook,
+      ]);
+      (BookStorageService.setLastClipBook as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
       await ClipStorageService.saveClip(mockClip);
 
@@ -94,8 +102,13 @@ describe("ClipStorageService", () => {
         .fn()
         .mockResolvedValue(JSON.stringify(existingClips));
 
-      // BookStorageService.getAllBooksが書籍を返すようにモック
-      BookStorageService.getAllBooks = jest.fn().mockResolvedValue([mockBook]);
+      // BookStorageServiceのメソッドをモック
+      (BookStorageService.getAllBooks as jest.Mock).mockResolvedValue([
+        mockBook,
+      ]);
+      (BookStorageService.setLastClipBook as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
       await ClipStorageService.saveClip(mockClip);
 
@@ -113,8 +126,11 @@ describe("ClipStorageService", () => {
       // AsyncStorage.getItemが空の配列を返すようにモック
       AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
 
-      // BookStorageService.getAllBooksが空の配列を返すようにモック
-      BookStorageService.getAllBooks = jest.fn().mockResolvedValue([]);
+      // BookStorageServiceのメソッドをモック
+      (BookStorageService.getAllBooks as jest.Mock).mockResolvedValue([]);
+      (BookStorageService.setLastClipBook as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
       await ClipStorageService.saveClip({
         ...mockClip,

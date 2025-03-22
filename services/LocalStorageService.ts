@@ -99,13 +99,6 @@ export class LocalStorageService implements StorageInterface {
         CLIPS_STORAGE_KEY,
         JSON.stringify(updatedClips)
       );
-
-      // 最後に使用した書籍の情報を更新
-      const books = await this.getAllBooks();
-      const book = books.find((b) => b.id === clip.bookId);
-      if (book) {
-        await this.setLastClipBook(book);
-      }
     } catch (error) {
       console.error("Error saving clip:", error);
       throw error;

@@ -1,6 +1,7 @@
 import { Clip } from "../constants/MockData";
 import { StorageService } from "./StorageInterface";
 import { LocalStorageService } from "./LocalStorageService";
+import { BookStorageService } from "./BookStorageService";
 
 /**
  * クリップストレージサービス
@@ -8,15 +9,22 @@ import { LocalStorageService } from "./LocalStorageService";
  */
 export class ClipStorageService extends StorageService {
   // 初期設定としてLocalStorageを使用
-  static {
-    this.storageBackend = new LocalStorageService();
-  }
+  protected static storageBackend = new LocalStorageService();
 
   /**
    * クリップを保存
    */
   static async saveClip(clip: Clip): Promise<void> {
-    return this.storageBackend.saveClip(clip);
+    const result = await this.storageBackend.saveClip(clip);
+
+    // 最後に使用した書籍の情報を更新
+    const books = await BookStorageService.getAllBooks();
+    const book = books.find((b) => b.id === clip.bookId);
+    if (book) {
+      await BookStorageService.setLastClipBook(book);
+    }
+
+    return result;
   }
 
   /**
