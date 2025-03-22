@@ -90,7 +90,7 @@ export class LocalStorageService implements StorageInterface {
       // 新しいクリップにIDを割り当て
       const newClip = {
         ...clip,
-        id: clip.id || Date.now().toString(),
+        id: clip.id || new Date().getTime().toString(),
         createdAt: clip.createdAt || new Date().toISOString(),
       };
 
