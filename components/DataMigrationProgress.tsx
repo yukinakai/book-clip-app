@@ -46,6 +46,7 @@ export function DataMigrationProgress({
       <View style={styles.centeredView}>
         <View
           style={[styles.modalView, { backgroundColor: colors.background }]}
+          testID="migration-modal"
         >
           <Text style={[styles.title, { color: colors.text }]}>データ移行</Text>
 
@@ -54,6 +55,7 @@ export function DataMigrationProgress({
               size="large"
               color={colors.primary}
               style={styles.spinner}
+              testID="migration-spinner"
             />
           )}
 
@@ -68,6 +70,7 @@ export function DataMigrationProgress({
                 { backgroundColor: colors.primary },
                 { width: `${percentage}%` },
               ]}
+              testID="migration-progress-bar"
             />
           </View>
 
