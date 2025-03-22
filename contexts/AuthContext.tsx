@@ -13,8 +13,8 @@ interface AuthContextType {
   showMigrationProgress: boolean;
   signInWithEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
-  migrateLocalDataToSupabase: () => Promise<void>;
+  deleteAccount: () => Promise<boolean>;
+  migrateLocalDataToSupabase: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
