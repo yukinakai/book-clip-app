@@ -1,15 +1,19 @@
 import React, { createContext, useContext } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { User } from "@supabase/supabase-js";
+import { MigrationProgress } from "../services/StorageMigrationService";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: Error | null;
   emailSent: boolean;
+  migrationProgress: MigrationProgress;
+  showMigrationProgress: boolean;
   signInWithEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<void>;
+  migrateLocalDataToSupabase: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
