@@ -2,7 +2,10 @@ import { renderHook, act } from "@testing-library/react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { AuthService, supabase } from "../../services/auth";
 import { User } from "@supabase/supabase-js";
-import { MigrationProgress } from "../../services/StorageMigrationService";
+import {
+  StorageMigrationService,
+  MigrationProgress,
+} from "../../services/StorageMigrationService";
 
 // テストのタイムアウト時間を長く設定
 jest.setTimeout(20000);
@@ -24,24 +27,6 @@ const createMockUser = (): User => ({
 
 // AuthServiceとsupabaseのモック
 jest.mock("../../services/auth", () => {
-  const _mockSubscription = {
-    unsubscribe: jest.fn(),
-  };
-
-  const mockSupabase = {
-    auth: {
-      signInWithOtp: jest.fn(),
-      signOut: jest.fn(),
-      getUser: jest.fn(),
-      onAuthStateChange: jest.fn().mockImplementation((callback) => {
-        authCallback = (_event: string, _session: unknown) => {
-          callback();
-        };
-        return { data: { subscription: { unsubscribe: jest.fn() } } };
-      }),
-    },
-  };
-
   return {
     AuthService: {
       getCurrentUser: jest.fn(),
@@ -50,7 +35,16 @@ jest.mock("../../services/auth", () => {
       signOut: jest.fn(),
       deleteAccount: jest.fn(),
     },
-    supabase: mockSupabase,
+    supabase: {
+      auth: {
+        signInWithOtp: jest.fn(),
+        signOut: jest.fn(),
+        getUser: jest.fn(),
+        onAuthStateChange: jest.fn().mockImplementation(() => {
+          return { data: { subscription: { unsubscribe: jest.fn() } } };
+        }),
+      },
+    },
   };
 });
 
@@ -88,24 +82,6 @@ jest.mock("../../services/StorageMigrationService", () => {
 });
 
 describe("useAuth", () => {
-  const _mockSubscription = { unsubscribe: jest.fn() };
-  // authCallbackを定義
-  let _authCallback: (event: string, session: unknown) => void;
-
-  const _mockSupabase = {
-    auth: {
-      signInWithOtp: jest.fn(),
-      signOut: jest.fn(),
-      getUser: jest.fn(),
-      onAuthStateChange: jest.fn().mockImplementation((callback) => {
-        _authCallback = (_event: string, _session: unknown) => {
-          callback(_event, _session);
-        };
-        return { data: { subscription: { unsubscribe: jest.fn() } } };
-      }),
-    },
-  };
-
   // テスト前にモックをリセット
   beforeEach(() => {
     jest.clearAllMocks();
@@ -118,29 +94,21 @@ describe("useAuth", () => {
       error: null,
     }));
 
-    (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
-      (callback) => {
-        _authCallback = (_event: string, _session: unknown) => {
-          callback(_event, _session);
-        };
-        return { data: { subscription: _mockSubscription } };
-      }
-    );
+    (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(() => {
+      return { data: { subscription: { unsubscribe: jest.fn() } } };
+    });
 
     (StorageMigrationService.initializeStorage as jest.Mock).mockImplementation(
-      (_userId: string) => {
+      () => {
         return Promise.resolve();
       }
     );
 
     (
       StorageMigrationService.migrateLocalToSupabase as jest.Mock
-    ).mockImplementation(
-      (_userId: string, progressCallback?: (progress: number) => void) => {
-        if (progressCallback) progressCallback(100);
-        return Promise.resolve({ processed: 5 });
-      }
-    );
+    ).mockImplementation(() => {
+      return Promise.resolve({ processed: 5 });
+    });
   });
 
   afterEach(() => {
@@ -262,8 +230,8 @@ describe("useAuth", () => {
     await act(async () => {
       try {
         await result.current.signInWithEmail("test@example.com");
-      } catch (_error) {
-        // エラーは無視 - テスト用にキャッチするだけ
+      } catch {
+        // エラーは無視
       }
 
       // 状態を手動で更新
@@ -320,8 +288,8 @@ describe("useAuth", () => {
     await act(async () => {
       try {
         await result.current.verifyOtp("test@example.com", "123456");
-      } catch (_error) {
-        // エラーは無視 - テスト用にキャッチするだけ
+      } catch {
+        // エラーは無視
       }
 
       // 状態を手動で更新
@@ -361,8 +329,8 @@ describe("useAuth", () => {
     await act(async () => {
       try {
         await result.current.signOut();
-      } catch (_error) {
-        // エラーは無視 - テスト用にキャッチするだけ
+      } catch {
+        // エラーは無視
       }
 
       // 状態を手動で更新
@@ -411,8 +379,8 @@ describe("useAuth", () => {
     await act(async () => {
       try {
         await result.current.signOut();
-      } catch (_error) {
-        // エラーは無視 - テスト用にキャッチするだけ
+      } catch {
+        // エラーは無視
       }
 
       // 状態を手動で更新
@@ -497,7 +465,7 @@ describe("useAuth", () => {
 
       // 明示的にモック関数の実装を設定
       migrateLocalToSupabase.mockImplementation(
-        (userId: string, callback?: (progress: MigrationProgress) => void) => {
+        (_userId: string, callback?: (progress: MigrationProgress) => void) => {
           if (callback) {
             callback({ total: 10, current: 5, status: "migrating" });
             callback({ total: 10, current: 10, status: "completed" });
@@ -524,8 +492,6 @@ describe("useAuth", () => {
         };
 
         // migrateLocalDataToSupabaseを直接モック
-        const _originalMigrateLocalDataToSupabase =
-          result.current.migrateLocalDataToSupabase;
         result.current.migrateLocalDataToSupabase = jest
           .fn()
           .mockImplementation(() => {
@@ -624,7 +590,6 @@ describe("useAuth", () => {
       // アカウント削除を実行
       await act(async () => {
         // deleteAccountをモックで上書き
-        const _originalDeleteAccount = result.current.deleteAccount;
         result.current.deleteAccount = jest.fn().mockImplementation(() => {
           AuthService.deleteAccount();
           // ユーザー状態をクリア
@@ -660,8 +625,8 @@ describe("useAuth", () => {
       await act(async () => {
         try {
           await result.current.deleteAccount();
-        } catch (_error) {
-          // エラーは無視 - テスト用にキャッチするだけ
+        } catch {
+          // エラーは無視
         }
 
         // 状態を手動で更新
