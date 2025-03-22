@@ -342,7 +342,7 @@ describe("LocalStorageService", () => {
           getTime: jest.fn().mockReturnValue(mockTimestamp),
           toISOString: jest.fn().mockReturnValue(mockDateString),
         };
-        jest
+        const dateSpy = jest
           .spyOn(global, "Date")
           .mockImplementation(() => mockDateInstance as unknown as Date);
 
@@ -367,7 +367,7 @@ describe("LocalStorageService", () => {
         );
 
         // モックをリストア
-        (global.Date as jest.Mock).mockRestore();
+        dateSpy.mockRestore();
       });
 
       it("既存のクリップがある場合、追加して保存されること", async () => {
