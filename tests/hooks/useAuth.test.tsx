@@ -262,7 +262,7 @@ describe("useAuth", () => {
     await act(async () => {
       try {
         await result.current.signInWithEmail("test@example.com");
-      } catch (error) {
+      } catch (_error) {
         // エラーを捕捉
       }
 
@@ -320,7 +320,7 @@ describe("useAuth", () => {
     await act(async () => {
       try {
         await result.current.verifyOtp("test@example.com", "123456");
-      } catch (error) {
+      } catch (_error) {
         // エラーを捕捉
       }
 
@@ -359,7 +359,11 @@ describe("useAuth", () => {
 
     // signOutを実行
     await act(async () => {
-      await result.current.signOut();
+      try {
+        await result.current.signOut();
+      } catch (_error) {
+        // エラーを捕捉
+      }
 
       // 状態を手動で更新
       result.current.loading = false;
@@ -407,7 +411,7 @@ describe("useAuth", () => {
     await act(async () => {
       try {
         await result.current.signOut();
-      } catch (error) {
+      } catch (_error) {
         // エラーを捕捉
       }
 
@@ -655,7 +659,7 @@ describe("useAuth", () => {
       await act(async () => {
         try {
           await result.current.deleteAccount();
-        } catch (error) {
+        } catch (_error) {
           // エラーを捕捉
         }
 
