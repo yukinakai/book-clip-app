@@ -157,6 +157,7 @@
 │   │   ├── AuthWrapper.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── CameraView.test.tsx
+│   │   ├── DataMigrationProgress.test.tsx
 │   │   ├── ImageSelectionView.test.tsx
 │   │   ├── OCRResultView.test.tsx
 │   │   ├── ParallaxScrollView.test.tsx
@@ -175,7 +176,11 @@
 │   ├── services
 │   │   ├── BookStorageService.test.ts
 │   │   ├── ClipStorageService.test.ts
+│   │   ├── LocalStorageService.test.ts
 │   │   ├── OCRService.test.ts
+│   │   ├── StorageInterface.test.ts
+│   │   ├── StorageMigrationService.test.ts
+│   │   ├── SupabaseStorageService.test.ts
 │   │   └── auth.test.ts
 │   ├── setup.js
 │   └── test-utils.tsx
@@ -183,4 +188,4 @@
 └── types
     └── env.d.ts
 
-42 directories, 142 files
+42 directories, 147 files
