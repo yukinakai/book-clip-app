@@ -8,8 +8,6 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
-  ActionSheetIOS,
-  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { Book, Clip } from "../../constants/MockData";
@@ -33,10 +31,6 @@ export default function BookDetailScreen() {
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const dividerColor = useThemeColor({}, "divider");
-
-  const [visible, setVisible] = useState(false);
-  const [selectedText, setSelectedText] = useState("");
-  const [selectedPage, setSelectedPage] = useState<number | null>(null);
 
   // 書籍データとクリップを読み込む
   const loadBookDetailsAndClips = useCallback(async () => {
@@ -78,50 +72,6 @@ export default function BookDetailScreen() {
           book.title
         )}`
       );
-    }
-  };
-
-  // 書籍編集画面に遷移
-  const handleEditBook = () => {
-    if (book) {
-      router.push(
-        `/book/edit?id=${id}&title=${encodeURIComponent(
-          book.title
-        )}&author=${encodeURIComponent(
-          book.author || ""
-        )}&coverImage=${encodeURIComponent(book.coverImage || "")}`
-      );
-    }
-  };
-
-  // 書籍削除の確認ダイアログを表示
-  const confirmDeleteBook = () => {
-    Alert.alert(
-      "書籍を削除しますか？",
-      "この書籍に関連するすべてのクリップも削除されます。この操作は元に戻せません。",
-      [
-        { text: "キャンセル", style: "cancel" },
-        { text: "削除", onPress: handleDeleteBook, style: "destructive" },
-      ]
-    );
-  };
-
-  // 書籍を削除
-  const handleDeleteBook = async () => {
-    try {
-      if (id) {
-        // 関連するクリップをすべて削除
-        await ClipStorageService.deleteClipsByBookId(id);
-
-        // 書籍を削除
-        await BookStorageService.deleteBook(id);
-
-        // ホーム画面に戻る
-        router.replace("/");
-      }
-    } catch (error) {
-      console.error("Error deleting book:", error);
-      Alert.alert("エラー", "書籍の削除中にエラーが発生しました。");
     }
   };
 
@@ -370,9 +320,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 8,
-  },
-  optionsButton: {
-    marginLeft: "auto",
-    marginRight: 10,
   },
 });

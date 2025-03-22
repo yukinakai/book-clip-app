@@ -191,7 +191,7 @@ export class StorageMigrationService {
    * @param _progressCallback 進捗を報告するコールバック関数
    */
   static async migrateLocalDataToSupabase(
-    userId: string,
+    _userId: string,
     _progressCallback?: (progress: number) => void
   ): Promise<boolean> {
     // ... existing code ...
