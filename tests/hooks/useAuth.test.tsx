@@ -442,16 +442,23 @@ describe("useAuth", () => {
   it("コンポーネントのアンマウント時にsubscriptionがアンサブスクライブされる", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
 
+    // モックの明示的な設定
+    const mockUnsubscribe = jest.fn();
+    (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+      data: {
+        subscription: {
+          unsubscribe: mockUnsubscribe,
+        },
+      },
+    });
+
     const { unmount } = renderHook(() => useAuth());
 
     // コンポーネントをアンマウント
     unmount();
 
     // unsubscribeが呼ばれていることを確認
-    const subscription = supabase.auth.onAuthStateChange(
-      (_event, _session) => {}
-    ).data.subscription;
-    expect(subscription.unsubscribe).toHaveBeenCalled();
+    expect(mockUnsubscribe).toHaveBeenCalled();
   });
 
   describe("migrateLocalDataToSupabase", () => {

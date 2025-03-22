@@ -85,7 +85,7 @@ export class StorageMigrationService {
    */
   static async migrateLocalToSupabase(
     userId: string,
-    _progressCallback?: (progress: number) => void
+    _progressCallback?: (progress: MigrationProgress) => void
   ): Promise<{
     total: number;
     processed: number;
@@ -107,7 +107,7 @@ export class StorageMigrationService {
         current: 0,
         status: "migrating",
       };
-      if (_progressCallback) _progressCallback(progress.current);
+      if (_progressCallback) _progressCallback(progress);
 
       // 処理結果のカウンター
       let processed = 0;
@@ -128,7 +128,7 @@ export class StorageMigrationService {
           ...progress,
           current: processed + failed,
         };
-        if (_progressCallback) _progressCallback(progress.current);
+        if (_progressCallback) _progressCallback(progress);
       }
 
       // クリップの移行
@@ -146,7 +146,7 @@ export class StorageMigrationService {
           ...progress,
           current: processed + failed,
         };
-        if (_progressCallback) _progressCallback(progress.current);
+        if (_progressCallback) _progressCallback(progress);
       }
 
       // 完了状態を通知
@@ -154,7 +154,7 @@ export class StorageMigrationService {
         ...progress,
         status: "completed",
       };
-      if (_progressCallback) _progressCallback(progress.current);
+      if (_progressCallback) _progressCallback(progress);
 
       return {
         total: totalItems,
@@ -171,7 +171,7 @@ export class StorageMigrationService {
         status: "failed",
         error: error instanceof Error ? error : new Error(String(error)),
       };
-      if (_progressCallback) _progressCallback(progress.current);
+      if (_progressCallback) _progressCallback(progress);
 
       throw error;
     }
@@ -192,7 +192,7 @@ export class StorageMigrationService {
    */
   static async migrateLocalDataToSupabase(
     _userId: string,
-    _progressCallback?: (progress: number) => void
+    _progressCallback?: (progress: MigrationProgress) => void
   ): Promise<boolean> {
     // 実装はダミー - 実際にはmigrateLocalToSupabase関数を呼び出す
     try {
