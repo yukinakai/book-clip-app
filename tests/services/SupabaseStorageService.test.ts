@@ -1,6 +1,5 @@
 import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 import { Book, Clip } from "../../constants/MockData";
-import { supabase } from "../../services/auth";
 
 // モックデータ
 const userId = "test-user-id";
