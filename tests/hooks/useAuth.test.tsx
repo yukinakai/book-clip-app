@@ -88,18 +88,18 @@ jest.mock("../../services/StorageMigrationService", () => {
 });
 
 describe("useAuth", () => {
-  const mockSubscription = { unsubscribe: jest.fn() };
+  const _mockSubscription = { unsubscribe: jest.fn() };
   // authCallbackを定義
-  let authCallback: (event: string, session: unknown) => void;
+  let _authCallback: (event: string, session: unknown) => void;
 
-  const mockSupabase = {
+  const _mockSupabase = {
     auth: {
       signInWithOtp: jest.fn(),
       signOut: jest.fn(),
       getUser: jest.fn(),
       onAuthStateChange: jest.fn().mockImplementation((callback) => {
-        authCallback = (_event: string, _session: unknown) => {
-          callback();
+        _authCallback = (_event: string, _session: unknown) => {
+          callback(_event, _session);
         };
         return { data: { subscription: { unsubscribe: jest.fn() } } };
       }),
@@ -120,10 +120,10 @@ describe("useAuth", () => {
 
     (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
       (callback) => {
-        authCallback = (_event: string, _session: unknown) => {
+        _authCallback = (_event: string, _session: unknown) => {
           callback(_event, _session);
         };
-        return { data: { subscription: mockSubscription } };
+        return { data: { subscription: _mockSubscription } };
       }
     );
 
@@ -480,8 +480,9 @@ describe("useAuth", () => {
     unmount();
 
     // unsubscribeが呼ばれていることを確認
-    const subscription = supabase.auth.onAuthStateChange((event, session) => {})
-      .data.subscription;
+    const subscription = supabase.auth.onAuthStateChange(
+      (_event, _session) => {}
+    ).data.subscription;
     expect(subscription.unsubscribe).toHaveBeenCalled();
   });
 
