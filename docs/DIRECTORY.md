@@ -61,6 +61,7 @@
 │   ├── AuthWrapper.tsx
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
+│   ├── DataMigrationProgress.tsx
 │   ├── HapticTab.tsx
 │   ├── ImageSelectionView.tsx
 │   ├── NoImagePlaceholder.tsx
@@ -89,7 +90,9 @@
 │   ├── DIRECTORY.md
 │   ├── PRD.md
 │   ├── PRODUCT_OVERVIEW.md
-│   └── PROGRESS.md
+│   ├── PROGRESS.md
+│   └── specifications
+│       └── AUTH_DATA_MIGRATION.md
 ├── eslint.config.js
 ├── expo-env.d.ts
 ├── hooks
@@ -109,8 +112,12 @@
 ├── services
 │   ├── BookStorageService.ts
 │   ├── ClipStorageService.ts
+│   ├── LocalStorageService.ts
 │   ├── OCRService.ts
 │   ├── RakutenBookService.ts
+│   ├── StorageInterface.ts
+│   ├── StorageMigrationService.ts
+│   ├── SupabaseStorageService.ts
 │   ├── auth.ts
 │   └── bookSearch.ts
 ├── supabase
@@ -125,6 +132,7 @@
 │       ├── README.md
 │       └── delete-account
 │           ├── deno.json
+│           ├── deno.lock
 │           └── index.ts
 ├── tests
 │   ├── __mocks__
@@ -175,4 +183,4 @@
 └── types
     └── env.d.ts
 
-41 directories, 135 files
+42 directories, 142 files
