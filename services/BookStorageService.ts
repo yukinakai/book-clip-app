@@ -8,9 +8,7 @@ import { LocalStorageService } from "./LocalStorageService";
  */
 export class BookStorageService extends StorageService {
   // 初期設定としてLocalStorageを使用
-  static {
-    this.storageBackend = new LocalStorageService();
-  }
+  protected static storageBackend = new LocalStorageService();
 
   /**
    * 書籍を保存
