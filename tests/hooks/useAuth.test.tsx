@@ -64,7 +64,7 @@ jest.mock("../../services/StorageMigrationService", () => {
       migrateLocalToSupabase: jest
         .fn()
         .mockImplementation(
-          (userId: string, progressCallback?: (progress: any) => void) => {
+          (_userId: string, progressCallback?: (progress: any) => void) => {
             // コールバックをシミュレート
             if (progressCallback) {
               progressCallback({
@@ -263,7 +263,7 @@ describe("useAuth", () => {
       try {
         await result.current.signInWithEmail("test@example.com");
       } catch (_error) {
-        // エラーを捕捉
+        // エラーは無視 - テスト用にキャッチするだけ
       }
 
       // 状態を手動で更新
@@ -321,7 +321,7 @@ describe("useAuth", () => {
       try {
         await result.current.verifyOtp("test@example.com", "123456");
       } catch (_error) {
-        // エラーを捕捉
+        // エラーは無視 - テスト用にキャッチするだけ
       }
 
       // 状態を手動で更新
@@ -362,7 +362,7 @@ describe("useAuth", () => {
       try {
         await result.current.signOut();
       } catch (_error) {
-        // エラーを捕捉
+        // エラーは無視 - テスト用にキャッチするだけ
       }
 
       // 状態を手動で更新
@@ -412,7 +412,7 @@ describe("useAuth", () => {
       try {
         await result.current.signOut();
       } catch (_error) {
-        // エラーを捕捉
+        // エラーは無視 - テスト用にキャッチするだけ
       }
 
       // 状態を手動で更新
@@ -661,7 +661,7 @@ describe("useAuth", () => {
         try {
           await result.current.deleteAccount();
         } catch (_error) {
-          // エラーを捕捉
+          // エラーは無視 - テスト用にキャッチするだけ
         }
 
         // 状態を手動で更新
