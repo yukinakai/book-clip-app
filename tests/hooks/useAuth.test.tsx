@@ -24,7 +24,7 @@ const createMockUser = (): User => ({
 
 // AuthServiceとsupabaseのモック
 jest.mock("../../services/auth", () => {
-  const mockSubscription = {
+  const _mockSubscription = {
     unsubscribe: jest.fn(),
   };
 
