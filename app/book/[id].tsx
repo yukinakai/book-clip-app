@@ -7,7 +7,6 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
   Alert,
   ActionSheetIOS,
   Platform,
@@ -34,6 +33,10 @@ export default function BookDetailScreen() {
   const textColor = useThemeColor({}, "text");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const dividerColor = useThemeColor({}, "divider");
+
+  const [visible, setVisible] = useState(false);
+  const [selectedText, setSelectedText] = useState("");
+  const [selectedPage, setSelectedPage] = useState<number | null>(null);
 
   // 書籍データとクリップを読み込む
   const loadBookDetailsAndClips = useCallback(async () => {
@@ -75,34 +78,6 @@ export default function BookDetailScreen() {
           book.title
         )}`
       );
-    }
-  };
-
-  // オプションメニューを表示
-  const showOptions = () => {
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["キャンセル", "編集", "削除"],
-          destructiveButtonIndex: 2,
-          cancelButtonIndex: 0,
-          userInterfaceStyle: colorScheme,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            handleEditBook();
-          } else if (buttonIndex === 2) {
-            confirmDeleteBook();
-          }
-        }
-      );
-    } else {
-      // Androidの場合はAlertでメニューを表示（実際はもっと適切なUIを使うべき）
-      Alert.alert("書籍オプション", "選択してください", [
-        { text: "キャンセル", style: "cancel" },
-        { text: "編集", onPress: handleEditBook },
-        { text: "削除", onPress: confirmDeleteBook, style: "destructive" },
-      ]);
     }
   };
 

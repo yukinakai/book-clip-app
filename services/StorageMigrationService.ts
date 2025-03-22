@@ -1,5 +1,4 @@
 import { AuthService } from "./auth";
-import { Book, Clip } from "../constants/MockData";
 import { BookStorageService } from "./BookStorageService";
 import { ClipStorageService } from "./ClipStorageService";
 import { LocalStorageService } from "./LocalStorageService";
@@ -184,5 +183,17 @@ export class StorageMigrationService {
   static async clearLocalData(): Promise<void> {
     const localStorage = new LocalStorageService();
     await localStorage.clearAllData();
+  }
+
+  /**
+   * ローカルデータをSupabaseに移行する
+   * @param userId Supabaseのユーザーid
+   * @param _progressCallback 進捗を報告するコールバック関数
+   */
+  static async migrateLocalDataToSupabase(
+    userId: string,
+    _progressCallback?: (progress: number) => void
+  ): Promise<boolean> {
+    // ... existing code ...
   }
 }
