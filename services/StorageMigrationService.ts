@@ -194,6 +194,13 @@ export class StorageMigrationService {
     _userId: string,
     _progressCallback?: (progress: number) => void
   ): Promise<boolean> {
-    // ... existing code ...
+    // 実装はダミー - 実際にはmigrateLocalToSupabase関数を呼び出す
+    try {
+      await this.migrateLocalToSupabase(_userId, _progressCallback);
+      return true;
+    } catch (error) {
+      console.error("データ移行に失敗しました:", error);
+      return false;
+    }
   }
 }
