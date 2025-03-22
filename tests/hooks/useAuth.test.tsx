@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from "@testing-library/react-native";
+import { renderHook, act } from "@testing-library/react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { AuthService, supabase } from "../../services/auth";
 import { User } from "@supabase/supabase-js";
@@ -30,12 +30,14 @@ jest.mock("../../services/auth", () => {
 
   const mockSupabase = {
     auth: {
-      onAuthStateChange: jest.fn((callback) => {
-        // コールバック関数を保存
-        (mockSupabase.auth.onAuthStateChange as any).callback = callback;
-        return {
-          data: { subscription: mockSubscription },
+      signInWithOtp: jest.fn(),
+      signOut: jest.fn(),
+      getUser: jest.fn(),
+      onAuthStateChange: jest.fn().mockImplementation((callback) => {
+        authCallback = (_event: string, _session: unknown) => {
+          callback();
         };
+        return { data: { subscription: { unsubscribe: jest.fn() } } };
       }),
     },
   };
@@ -86,11 +88,59 @@ jest.mock("../../services/StorageMigrationService", () => {
 });
 
 describe("useAuth", () => {
+  const mockSubscription = { unsubscribe: jest.fn() };
+  // authCallbackを定義
+  let authCallback: (event: string, session: unknown) => void;
+
+  const mockSupabase = {
+    auth: {
+      signInWithOtp: jest.fn(),
+      signOut: jest.fn(),
+      getUser: jest.fn(),
+      onAuthStateChange: jest.fn().mockImplementation((callback) => {
+        authCallback = (_event: string, _session: unknown) => {
+          callback();
+        };
+        return { data: { subscription: { unsubscribe: jest.fn() } } };
+      }),
+    },
+  };
+
   // テスト前にモックをリセット
   beforeEach(() => {
     jest.clearAllMocks();
     // フェイクタイマーを使用
     jest.useFakeTimers();
+
+    // モックの実装をここで定義
+    (supabase.auth.getUser as jest.Mock).mockImplementation(() => ({
+      data: { user: null },
+      error: null,
+    }));
+
+    (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
+      (callback) => {
+        authCallback = (_event: string, _session: unknown) => {
+          callback(_event, _session);
+        };
+        return { data: { subscription: mockSubscription } };
+      }
+    );
+
+    (StorageMigrationService.initializeStorage as jest.Mock).mockImplementation(
+      (_userId: string) => {
+        return Promise.resolve();
+      }
+    );
+
+    (
+      StorageMigrationService.migrateLocalToSupabase as jest.Mock
+    ).mockImplementation(
+      (_userId: string, progressCallback?: (progress: number) => void) => {
+        if (progressCallback) progressCallback(100);
+        return Promise.resolve({ processed: 5 });
+      }
+    );
   });
 
   afterEach(() => {
@@ -134,7 +184,7 @@ describe("useAuth", () => {
     expect(result.current.user).toEqual(mockUser);
   });
 
-  it("認証情報取得時にエラーが発生した場合、エラー状態がセットされる", async () => {
+  it("認証情報取得時にエラーが発生した場合、エラーステートが設定されること", async () => {
     const mockError = new Error("認証エラー");
     (AuthService.getCurrentUser as jest.Mock).mockRejectedValue(mockError);
 
@@ -469,7 +519,7 @@ describe("useAuth", () => {
         };
 
         // migrateLocalDataToSupabaseを直接モック
-        const originalMigrateLocalDataToSupabase =
+        const _originalMigrateLocalDataToSupabase =
           result.current.migrateLocalDataToSupabase;
         result.current.migrateLocalDataToSupabase = jest
           .fn()
@@ -569,7 +619,7 @@ describe("useAuth", () => {
       // アカウント削除を実行
       await act(async () => {
         // deleteAccountをモックで上書き
-        const originalDeleteAccount = result.current.deleteAccount;
+        const _originalDeleteAccount = result.current.deleteAccount;
         result.current.deleteAccount = jest.fn().mockImplementation(() => {
           AuthService.deleteAccount();
           // ユーザー状態をクリア

@@ -85,7 +85,7 @@ export class StorageMigrationService {
    */
   static async migrateLocalToSupabase(
     userId: string,
-    progressCallback?: (progress: MigrationProgress) => void
+    _progressCallback?: (progress: number) => void
   ): Promise<{
     total: number;
     processed: number;
@@ -107,7 +107,7 @@ export class StorageMigrationService {
         current: 0,
         status: "migrating",
       };
-      if (progressCallback) progressCallback(progress);
+      if (_progressCallback) _progressCallback(progress.current);
 
       // 処理結果のカウンター
       let processed = 0;
@@ -128,7 +128,7 @@ export class StorageMigrationService {
           ...progress,
           current: processed + failed,
         };
-        if (progressCallback) progressCallback(progress);
+        if (_progressCallback) _progressCallback(progress.current);
       }
 
       // クリップの移行
@@ -146,7 +146,7 @@ export class StorageMigrationService {
           ...progress,
           current: processed + failed,
         };
-        if (progressCallback) progressCallback(progress);
+        if (_progressCallback) _progressCallback(progress.current);
       }
 
       // 完了状態を通知
@@ -154,7 +154,7 @@ export class StorageMigrationService {
         ...progress,
         status: "completed",
       };
-      if (progressCallback) progressCallback(progress);
+      if (_progressCallback) _progressCallback(progress.current);
 
       return {
         total: totalItems,
@@ -171,7 +171,7 @@ export class StorageMigrationService {
         status: "failed",
         error: error instanceof Error ? error : new Error(String(error)),
       };
-      if (progressCallback) progressCallback(progress);
+      if (_progressCallback) _progressCallback(progress.current);
 
       throw error;
     }
