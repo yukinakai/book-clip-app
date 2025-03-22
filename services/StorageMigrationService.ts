@@ -58,7 +58,7 @@ export class StorageMigrationService {
    */
   static async switchToSupabaseStorage(
     userId: string,
-    progressCallback?: (progress: MigrationProgress) => void
+    _progressCallback?: (progress: MigrationProgress) => void
   ): Promise<void> {
     // Supabaseストレージを作成
     const supabaseStorage = new SupabaseStorageService(userId);
