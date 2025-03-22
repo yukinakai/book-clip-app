@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { AuthService, supabase } from "../services/auth";
 import { User } from "@supabase/supabase-js";
+import {
+  StorageMigrationService,
+  MigrationProgress,
+} from "../services/StorageMigrationService";
 
 // 無視するエラーメッセージのリスト
 const IGNORED_ERROR_MESSAGES = ["auth session missing", "session not found"];
@@ -11,6 +15,16 @@ export function useAuth() {
   const [error, setError] = useState<Error | null>(null);
   const [emailSent, setEmailSent] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
+
+  // データ移行の状態
+  const [migrationProgress, setMigrationProgress] = useState<MigrationProgress>(
+    {
+      total: 0,
+      current: 0,
+      status: "completed", // 初期状態では完了状態
+    }
+  );
+  const [showMigrationProgress, setShowMigrationProgress] = useState(false);
 
   // エラーをフィルタリングする関数
   const filterError = (error: Error | null): Error | null => {
@@ -31,6 +45,15 @@ export function useAuth() {
 
   // 認証状態の監視
   useEffect(() => {
+    // ストレージを初期化
+    StorageMigrationService.initializeStorage()
+      .then(() => {
+        console.log("Storage initialized");
+      })
+      .catch((error) => {
+        console.error("Failed to initialize storage:", error);
+      });
+
     // 初期状態の取得
     AuthService.getCurrentUser()
       .then((user) => {
@@ -47,7 +70,35 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
+      const newUser = session?.user ?? null;
+
+      // ユーザー状態の変更があった場合の処理
+      if (
+        (!user && newUser) ||
+        (user && !newUser) ||
+        user?.id !== newUser?.id
+      ) {
+        if (newUser) {
+          // ログイン時の処理
+          try {
+            await StorageMigrationService.switchToSupabaseStorage(newUser.id);
+          } catch (error) {
+            console.error("Failed to switch to Supabase storage:", error);
+          }
+        } else if (user) {
+          // ログアウト時の処理
+          try {
+            // ローカルデータをクリア
+            await StorageMigrationService.clearLocalData();
+            // ローカルストレージに切り替え
+            await StorageMigrationService.switchToLocalStorage();
+          } catch (error) {
+            console.error("Failed to switch to local storage:", error);
+          }
+        }
+      }
+
+      setUser(newUser);
 
       // セッションがあり、イベントがSIGNED_INの場合、認証成功とする
       if (session && event === "SIGNED_IN") {
@@ -60,7 +111,7 @@ export function useAuth() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [user]);
 
   // OTPコードの検証
   const verifyOtp = async (email: string, otp: string) => {
@@ -127,6 +178,36 @@ export function useAuth() {
     }
   };
 
+  // 会員登録時のデータ移行処理
+  const migrateLocalDataToSupabase = async () => {
+    if (!user) return false;
+
+    try {
+      setShowMigrationProgress(true);
+
+      const result = await StorageMigrationService.migrateLocalToSupabase(
+        user.id,
+        (progress) => {
+          setMigrationProgress(progress);
+        }
+      );
+
+      // 移行が完了したらローカルデータをクリア
+      if (result.processed > 0) {
+        await StorageMigrationService.clearLocalData();
+      }
+
+      setTimeout(() => {
+        setShowMigrationProgress(false);
+      }, 2000); // 完了メッセージを2秒間表示
+
+      return true;
+    } catch (error) {
+      console.error("Data migration error:", error);
+      return false;
+    }
+  };
+
   return {
     user,
     loading,
@@ -137,5 +218,8 @@ export function useAuth() {
     verifyOtp,
     signOut,
     deleteAccount,
+    migrationProgress,
+    showMigrationProgress,
+    migrateLocalDataToSupabase,
   };
 }
