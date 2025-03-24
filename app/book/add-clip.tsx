@@ -28,6 +28,7 @@ import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Book } from "../../constants/MockData";
 import NoImagePlaceholder from "../../components/NoImagePlaceholder";
+import { useLastClipBook } from "../../contexts/LastClipBookContext";
 
 export default function AddClipScreen() {
   const {
@@ -57,6 +58,7 @@ export default function AddClipScreen() {
   const [isLoadingBook, setIsLoadingBook] = useState(true);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
+  const { lastClipBook, setLastClipBook } = useLastClipBook();
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
@@ -178,6 +180,9 @@ export default function AddClipScreen() {
         createdAt: new Date().toISOString(),
       });
 
+      // 最後に使用した書籍を更新
+      setLastClipBook(selectedBook);
+
       // 保存成功したらホーム画面に戻る
       Alert.alert("成功", "クリップを保存しました", [
         {
@@ -240,6 +245,14 @@ export default function AddClipScreen() {
     setShowOCRResult(false);
     setShowImageSelection(true);
   };
+
+  // 書籍選択画面から戻ってきたときの処理
+  useEffect(() => {
+    if (params?.selectedBook) {
+      const book = JSON.parse(params.selectedBook) as Book;
+      setSelectedBook(book);
+    }
+  }, [params?.selectedBook]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
