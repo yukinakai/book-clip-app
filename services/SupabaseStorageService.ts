@@ -157,7 +157,17 @@ export class SupabaseStorageService implements StorageInterface {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // データベースのスネークケースからキャメルケースに変換
+      return (
+        data.map((clip) => ({
+          id: clip.id,
+          bookId: clip.book_id,
+          text: clip.text,
+          page: clip.page,
+          createdAt: clip.created_at,
+        })) || []
+      );
     } catch (error) {
       console.error("Error getting clips from Supabase:", error);
       return [];
@@ -176,7 +186,17 @@ export class SupabaseStorageService implements StorageInterface {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // データベースのスネークケースからキャメルケースに変換
+      return (
+        data.map((clip) => ({
+          id: clip.id,
+          bookId: clip.book_id,
+          text: clip.text,
+          page: clip.page,
+          createdAt: clip.created_at,
+        })) || []
+      );
     } catch (error) {
       console.error("Error getting clips by book ID from Supabase:", error);
       return [];
