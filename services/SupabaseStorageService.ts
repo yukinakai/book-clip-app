@@ -2,15 +2,13 @@ import { Book, Clip } from "../constants/MockData";
 import { StorageInterface } from "./StorageInterface";
 import { supabase } from "./auth";
 
-// テーブル名
-const BOOKS_TABLE = "books";
-const CLIPS_TABLE = "clips";
-
 /**
  * Supabaseを使用したストレージの実装
  */
 export class SupabaseStorageService implements StorageInterface {
-  private userId: string | null = null;
+  private readonly BOOKS_TABLE = "books";
+  private readonly CLIPS_TABLE = "clips";
+  private readonly userId: string;
 
   constructor(userId: string) {
     this.userId = userId;
@@ -25,7 +23,7 @@ export class SupabaseStorageService implements StorageInterface {
 
       // ISBNで既存の書籍を検索
       const { data: existingBooks, error: checkError } = await supabase
-        .from(BOOKS_TABLE)
+        .from(this.BOOKS_TABLE)
         .select("id, isbn")
         .eq("isbn", book.isbn)
         .eq("user_id", this.userId);
@@ -51,7 +49,7 @@ export class SupabaseStorageService implements StorageInterface {
         console.log("保存するデータ:", bookData);
 
         const { data, error } = await supabase
-          .from(BOOKS_TABLE)
+          .from(this.BOOKS_TABLE)
           .insert(bookData)
           .select()
           .single();
@@ -75,7 +73,7 @@ export class SupabaseStorageService implements StorageInterface {
       if (!this.userId) return [];
 
       const { data, error } = await supabase
-        .from(BOOKS_TABLE)
+        .from(this.BOOKS_TABLE)
         .select("*")
         .eq("user_id", this.userId)
         .order("created_at", { ascending: false });
@@ -93,7 +91,7 @@ export class SupabaseStorageService implements StorageInterface {
       if (!this.userId) throw new Error("認証されていません");
 
       const { error } = await supabase
-        .from(BOOKS_TABLE)
+        .from(this.BOOKS_TABLE)
         .delete()
         .eq("id", bookId)
         .eq("user_id", this.userId);
@@ -125,7 +123,7 @@ export class SupabaseStorageService implements StorageInterface {
       };
       console.log("Supabaseに保存するデータ:", clipData);
 
-      const { error } = await supabase.from(CLIPS_TABLE).insert(clipData);
+      const { error } = await supabase.from(this.CLIPS_TABLE).insert(clipData);
 
       if (error) {
         console.error("クリップの保存でエラー:", error);
@@ -143,7 +141,7 @@ export class SupabaseStorageService implements StorageInterface {
       if (!this.userId) return [];
 
       const { data, error } = await supabase
-        .from(CLIPS_TABLE)
+        .from(this.CLIPS_TABLE)
         .select("*")
         .eq("user_id", this.userId)
         .order("created_at", { ascending: false });
@@ -161,10 +159,10 @@ export class SupabaseStorageService implements StorageInterface {
       if (!this.userId) return [];
 
       const { data, error } = await supabase
-        .from(CLIPS_TABLE)
+        .from(this.CLIPS_TABLE)
         .select("*")
         .eq("user_id", this.userId)
-        .eq("bookId", bookId)
+        .eq("book_id", bookId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -180,7 +178,7 @@ export class SupabaseStorageService implements StorageInterface {
       if (!this.userId) throw new Error("認証されていません");
 
       const { error } = await supabase
-        .from(CLIPS_TABLE)
+        .from(this.CLIPS_TABLE)
         .delete()
         .eq("id", clipId)
         .eq("user_id", this.userId);
@@ -197,7 +195,7 @@ export class SupabaseStorageService implements StorageInterface {
       if (!this.userId) throw new Error("認証されていません");
 
       const { error } = await supabase
-        .from(CLIPS_TABLE)
+        .from(this.CLIPS_TABLE)
         .update({
           ...updatedClip,
           updated_at: new Date().toISOString(),
@@ -217,9 +215,9 @@ export class SupabaseStorageService implements StorageInterface {
       if (!this.userId) throw new Error("認証されていません");
 
       const { error } = await supabase
-        .from(CLIPS_TABLE)
+        .from(this.CLIPS_TABLE)
         .delete()
-        .eq("bookId", bookId)
+        .eq("book_id", bookId)
         .eq("user_id", this.userId);
 
       if (error) throw error;
