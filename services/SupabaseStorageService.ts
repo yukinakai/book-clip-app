@@ -22,26 +22,49 @@ export class SupabaseStorageService implements StorageInterface {
   async saveBook(book: Book): Promise<void> {
     try {
       if (!this.userId) throw new Error("認証されていません");
+      console.log("保存開始 - ユーザーID:", this.userId);
+      console.log("保存する書籍データ:", book);
 
-      // 書籍が既に存在するか確認
+      // ISBNで既存の書籍を検索
       const { data: existingBooks, error: checkError } = await supabase
         .from(BOOKS_TABLE)
-        .select("id")
-        .eq("id", book.id)
+        .select("id, isbn")
+        .eq("isbn", book.isbn)
         .eq("user_id", this.userId);
 
-      if (checkError) throw checkError;
+      if (checkError) {
+        console.error("書籍の存在確認でエラー:", checkError);
+        throw checkError;
+      }
+
+      console.log("既存の書籍:", existingBooks);
 
       // 書籍が存在しない場合のみ保存
       if (!existingBooks || existingBooks.length === 0) {
-        const { error } = await supabase.from(BOOKS_TABLE).insert({
-          ...book,
+        const bookData = {
           user_id: this.userId,
+          isbn: book.isbn,
+          title: book.title,
+          author: book.author,
+          cover_image: book.coverImage,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        });
+        };
+        console.log("保存するデータ:", bookData);
 
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from(BOOKS_TABLE)
+          .insert(bookData)
+          .select()
+          .single();
+
+        if (error) {
+          console.error("書籍の保存でエラー:", error);
+          throw error;
+        }
+        console.log("書籍の保存が完了しました:", data);
+      } else {
+        console.log("書籍は既に存在します");
       }
     } catch (error) {
       console.error("Error saving book to Supabase:", error);
@@ -158,28 +181,41 @@ export class SupabaseStorageService implements StorageInterface {
   async saveClip(clip: Clip): Promise<void> {
     try {
       if (!this.userId) throw new Error("認証されていません");
+      console.log("クリップ保存開始 - ユーザーID:", this.userId);
+      console.log("保存するクリップデータ:", clip);
 
-      // クリップにIDがない場合は割り当て
-      const newClip = {
-        ...clip,
-        id: clip.id || Date.now().toString(),
-        createdAt: clip.createdAt || new Date().toISOString(),
-      };
-
-      const { error } = await supabase.from(CLIPS_TABLE).insert({
-        ...newClip,
+      const clipData = {
         user_id: this.userId,
-        created_at: newClip.createdAt,
+        book_id: clip.bookId,
+        text: clip.text,
+        page: clip.page,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      });
+      };
+      console.log("Supabaseに保存するデータ:", clipData);
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from(CLIPS_TABLE)
+        .insert(clipData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("クリップの保存でエラー:", error);
+        throw error;
+      }
+      console.log("クリップの保存が完了しました:", data);
 
       // 最後に使用した書籍の情報を更新
+      console.log("最後に使用した書籍の情報を更新中...");
       const books = await this.getAllBooks();
       const book = books.find((b) => b.id === clip.bookId);
       if (book) {
+        console.log("最後に使用した書籍:", book);
         await this.setLastClipBook(book);
+        console.log("最後に使用した書籍の情報を更新しました");
+      } else {
+        console.log("関連する書籍が見つかりませんでした");
       }
     } catch (error) {
       console.error("Error saving clip to Supabase:", error);
