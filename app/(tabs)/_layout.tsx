@@ -112,6 +112,7 @@ export default function TabLayout({ user }: { user?: any }) {
               <IconSymbol size={28} name="person.fill" color={color} />
             ),
           }}
+          initialParams={{ user }}
         />
       </Tabs>
     </AuthWrapper>
