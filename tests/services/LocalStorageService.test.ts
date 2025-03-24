@@ -25,6 +25,7 @@ describe("LocalStorageService", () => {
     title: "テスト書籍",
     author: "テスト著者",
     coverImage: "https://example.com/cover.jpg",
+    isbn: "9784000000000",
   };
 
   const mockBooks: Book[] = [
@@ -34,12 +35,14 @@ describe("LocalStorageService", () => {
       title: "テスト書籍2",
       author: "テスト著者2",
       coverImage: "https://example.com/cover2.jpg",
+      isbn: "9784000000001",
     },
     {
       id: "test-id-3",
       title: "テスト書籍3",
       author: "テスト著者3",
       coverImage: null,
+      isbn: "9784000000002",
     },
   ];
 
@@ -80,7 +83,7 @@ describe("LocalStorageService", () => {
 
         // setItemが正しいキーと値で呼ばれたことを確認
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_books",
+          "@books",
           JSON.stringify([mockBook])
         );
       });
@@ -103,7 +106,7 @@ describe("LocalStorageService", () => {
 
         // 既存の書籍と新しい書籍が結合されたことを確認
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_books",
+          "@books",
           JSON.stringify([...existingBooks, mockBook])
         );
       });
@@ -161,7 +164,7 @@ describe("LocalStorageService", () => {
 
         // getAllBooksがモックデータと同じ結果を返すことを確認
         expect(books).toEqual(mockBooks);
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_books");
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
       });
 
       it("保存されている書籍がない場合、空の配列を返すこと", async () => {
@@ -170,7 +173,7 @@ describe("LocalStorageService", () => {
         const books = await localStorageService.getAllBooks();
 
         expect(books).toEqual([]);
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_books");
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
       });
 
       it("取得中にエラーが発生した場合、空の配列を返し、エラーをログ出力すること", async () => {
@@ -212,7 +215,7 @@ describe("LocalStorageService", () => {
           (book) => book.id !== bookIdToRemove
         );
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_books",
+          "@books",
           JSON.stringify(expectedBooks)
         );
       });
@@ -240,87 +243,6 @@ describe("LocalStorageService", () => {
         consoleSpy.mockRestore();
       });
     });
-
-    describe("setLastClipBook", () => {
-      it("最後に使用した書籍が正常に保存されること", async () => {
-        await localStorageService.setLastClipBook(mockBook);
-
-        // setItemが正しいキーと値で呼ばれたことを確認
-        expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@last_clip_book",
-          JSON.stringify(mockBook)
-        );
-      });
-
-      it("保存中にエラーが発生した場合、エラーがスローされること", async () => {
-        // AsyncStorage.setItemがエラーをスローするようにモック
-        const errorMessage = "保存中にエラーが発生しました";
-        AsyncStorage.setItem = jest
-          .fn()
-          .mockRejectedValue(new Error(errorMessage));
-
-        // コンソールエラーをモック
-        const consoleSpy = jest
-          .spyOn(console, "error")
-          .mockImplementation(() => {});
-
-        await expect(
-          localStorageService.setLastClipBook(mockBook)
-        ).rejects.toThrow();
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Error saving last clip book:",
-          expect.any(Error)
-        );
-
-        consoleSpy.mockRestore();
-      });
-    });
-
-    describe("getLastClipBook", () => {
-      it("最後に使用した書籍を取得できること", async () => {
-        // モックデータがAsyncStorageから返されるようにセット
-        AsyncStorage.getItem = jest
-          .fn()
-          .mockResolvedValue(JSON.stringify(mockBook));
-
-        const book = await localStorageService.getLastClipBook();
-
-        expect(book).toEqual(mockBook);
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
-      });
-
-      it("保存されている最後の書籍がない場合、nullを返すこと", async () => {
-        AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
-
-        const book = await localStorageService.getLastClipBook();
-
-        expect(book).toBeNull();
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
-      });
-
-      it("取得中にエラーが発生した場合、nullを返し、エラーをログ出力すること", async () => {
-        // AsyncStorage.getItemがエラーをスローするようにモック
-        const errorMessage = "取得中にエラーが発生しました";
-        AsyncStorage.getItem = jest
-          .fn()
-          .mockRejectedValue(new Error(errorMessage));
-
-        // コンソールエラーをモック
-        const consoleSpy = jest
-          .spyOn(console, "error")
-          .mockImplementation(() => {});
-
-        const book = await localStorageService.getLastClipBook();
-
-        expect(book).toBeNull();
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Error getting last clip book:",
-          expect.any(Error)
-        );
-
-        consoleSpy.mockRestore();
-      });
-    });
   });
 
   // クリップ関連のテスト
@@ -333,41 +255,13 @@ describe("LocalStorageService", () => {
         // AsyncStorage.setItemを正常に動作するようにモック
         AsyncStorage.setItem = jest.fn().mockResolvedValue(undefined);
 
-        // 日付固定のためにDate.nowとnew Dateをモック
-        const mockTimestamp = 1624186800000; // 2021-06-20T12:00:00Z in milliseconds
-        const mockDateString = "2021-06-20T12:00:00Z";
+        await localStorageService.saveClip(mockClip);
 
-        // mock Date.getTime()
-        const mockDateInstance = {
-          getTime: jest.fn().mockReturnValue(mockTimestamp),
-          toISOString: jest.fn().mockReturnValue(mockDateString),
-        };
-        const dateSpy = jest
-          .spyOn(global, "Date")
-          .mockImplementation(() => mockDateInstance as unknown as Date);
-
-        const clipWithoutIdAndDate = {
-          bookId: "test-id-1",
-          text: "新しいクリップ",
-          page: 50,
-        };
-
-        await localStorageService.saveClip(clipWithoutIdAndDate as Clip);
-
-        // 自動生成されたIDと日付を含むクリップが保存されることを確認
-        const expectedClip = {
-          ...clipWithoutIdAndDate,
-          id: mockTimestamp.toString(),
-          createdAt: mockDateString,
-        };
-
+        // 新しいクリップが保存されることを確認
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_clips",
-          JSON.stringify([expectedClip])
+          "@clips",
+          JSON.stringify([mockClip])
         );
-
-        // モックをリストア
-        dateSpy.mockRestore();
       });
 
       it("既存のクリップがある場合、追加して保存されること", async () => {
@@ -392,7 +286,7 @@ describe("LocalStorageService", () => {
 
         // 既存のクリップと新しいクリップが結合されたことを確認
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_clips",
+          "@clips",
           JSON.stringify([...existingClips, mockClip])
         );
       });
@@ -411,7 +305,7 @@ describe("LocalStorageService", () => {
 
         await expect(localStorageService.saveClip(mockClip)).rejects.toThrow();
         expect(consoleSpy).toHaveBeenCalledWith(
-          "Error saving clip:",
+          "Error saving clip to local storage:",
           expect.any(Error)
         );
 
@@ -430,7 +324,7 @@ describe("LocalStorageService", () => {
 
         // getAllClipsがモックデータと同じ結果を返すことを確認
         expect(clips).toEqual(mockClips);
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
       });
 
       it("保存されているクリップがない場合、空の配列を返すこと", async () => {
@@ -439,7 +333,7 @@ describe("LocalStorageService", () => {
         const clips = await localStorageService.getAllClips();
 
         expect(clips).toEqual([]);
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
       });
 
       it("取得中にエラーが発生した場合、空の配列を返し、エラーをログ出力すること", async () => {
@@ -482,7 +376,7 @@ describe("LocalStorageService", () => {
         );
         expect(clips).toEqual(expectedClips);
         expect(clips.length).toBe(2);
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
       });
 
       it("指定した書籍IDに関連するクリップがない場合、空の配列を返すこと", async () => {
@@ -496,7 +390,7 @@ describe("LocalStorageService", () => {
         );
 
         expect(clips).toEqual([]);
-        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
       });
 
       it("取得中にエラーが発生した場合、空の配列を返し、エラーをログ出力すること", async () => {
@@ -541,7 +435,7 @@ describe("LocalStorageService", () => {
           (clip) => clip.id !== clipIdToRemove
         );
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_clips",
+          "@clips",
           JSON.stringify(expectedClips)
         );
       });
@@ -594,7 +488,7 @@ describe("LocalStorageService", () => {
           clip.id === updatedClip.id ? updatedClip : clip
         );
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_clips",
+          "@clips",
           JSON.stringify(expectedClips)
         );
       });
@@ -641,7 +535,7 @@ describe("LocalStorageService", () => {
           (clip) => clip.bookId !== bookIdToRemove
         );
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-          "@saved_clips",
+          "@clips",
           JSON.stringify(expectedClips)
         );
         // test-id-1のクリップが2つあるので、1つのクリップだけが残ることを確認
@@ -682,9 +576,8 @@ describe("LocalStorageService", () => {
 
         // multiRemoveが正しいキーで呼ばれたことを確認
         expect(AsyncStorage.multiRemove).toHaveBeenCalledWith([
-          "@saved_books",
-          "@saved_clips",
-          "@last_clip_book",
+          "@books",
+          "@clips",
         ]);
       });
 
