@@ -9,15 +9,13 @@ export interface StorageInterface {
   saveBook(book: Book): Promise<void>;
   getAllBooks(): Promise<Book[]>;
   removeBook(bookId: string): Promise<void>;
-  setLastClipBook(book: Book): Promise<void>;
-  getLastClipBook(): Promise<Book | null>;
 
   // クリップ関連
   saveClip(clip: Clip): Promise<void>;
   getAllClips(): Promise<Clip[]>;
   getClipsByBookId(bookId: string): Promise<Clip[]>;
   removeClip(clipId: string): Promise<void>;
-  updateClip(updatedClip: Clip): Promise<void>;
+  updateClip(clip: Clip): Promise<void>;
   deleteClipsByBookId(bookId: string): Promise<void>;
 
   // ストレージ管理

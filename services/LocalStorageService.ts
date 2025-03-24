@@ -3,9 +3,8 @@ import { Book, Clip } from "../constants/MockData";
 import { StorageInterface } from "./StorageInterface";
 
 // ストレージキー
-const BOOKS_STORAGE_KEY = "@saved_books";
-const CLIPS_STORAGE_KEY = "@saved_clips";
-const LAST_CLIP_BOOK_KEY = "@last_clip_book";
+const BOOKS_STORAGE_KEY = "@books";
+const CLIPS_STORAGE_KEY = "@clips";
 
 /**
  * AsyncStorageを使用したローカルストレージの実装
@@ -60,47 +59,14 @@ export class LocalStorageService implements StorageInterface {
     }
   }
 
-  async setLastClipBook(book: Book): Promise<void> {
-    try {
-      await AsyncStorage.setItem(LAST_CLIP_BOOK_KEY, JSON.stringify(book));
-    } catch (error) {
-      console.error("Error saving last clip book:", error);
-      throw error;
-    }
-  }
-
-  async getLastClipBook(): Promise<Book | null> {
-    try {
-      const bookJson = await AsyncStorage.getItem(LAST_CLIP_BOOK_KEY);
-      return bookJson ? JSON.parse(bookJson) : null;
-    } catch (error) {
-      console.error("Error getting last clip book:", error);
-      return null;
-    }
-  }
-
   // クリップ関連の実装
   async saveClip(clip: Clip): Promise<void> {
     try {
-      const existingClipsJson = await AsyncStorage.getItem(CLIPS_STORAGE_KEY);
-      const existingClips: Clip[] = existingClipsJson
-        ? JSON.parse(existingClipsJson)
-        : [];
-
-      // 新しいクリップにIDを割り当て
-      const newClip = {
-        ...clip,
-        id: clip.id || new Date().getTime().toString(),
-        createdAt: clip.createdAt || new Date().toISOString(),
-      };
-
-      const updatedClips = [...existingClips, newClip];
-      await AsyncStorage.setItem(
-        CLIPS_STORAGE_KEY,
-        JSON.stringify(updatedClips)
-      );
+      const clips = await this.getAllClips();
+      clips.push(clip);
+      await AsyncStorage.setItem(CLIPS_STORAGE_KEY, JSON.stringify(clips));
     } catch (error) {
-      console.error("Error saving clip:", error);
+      console.error("Error saving clip to local storage:", error);
       throw error;
     }
   }
@@ -189,11 +155,7 @@ export class LocalStorageService implements StorageInterface {
   // ストレージ管理
   async clearAllData(): Promise<void> {
     try {
-      await AsyncStorage.multiRemove([
-        BOOKS_STORAGE_KEY,
-        CLIPS_STORAGE_KEY,
-        LAST_CLIP_BOOK_KEY,
-      ]);
+      await AsyncStorage.multiRemove([BOOKS_STORAGE_KEY, CLIPS_STORAGE_KEY]);
     } catch (error) {
       console.error("Error clearing all data:", error);
       throw error;

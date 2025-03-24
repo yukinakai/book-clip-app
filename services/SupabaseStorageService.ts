@@ -5,8 +5,6 @@ import { supabase } from "./auth";
 // テーブル名
 const BOOKS_TABLE = "books";
 const CLIPS_TABLE = "clips";
-const USER_SETTINGS_TABLE = "user_settings";
-const LAST_CLIP_BOOK_SETTING = "last_clip_book";
 
 /**
  * Supabaseを使用したストレージの実装
@@ -110,73 +108,6 @@ export class SupabaseStorageService implements StorageInterface {
     }
   }
 
-  async setLastClipBook(book: Book): Promise<void> {
-    try {
-      if (!this.userId) throw new Error("認証されていません");
-
-      // ユーザー設定を確認
-      const { data: existingSetting, error: checkError } = await supabase
-        .from(USER_SETTINGS_TABLE)
-        .select("*")
-        .eq("user_id", this.userId)
-        .eq("key", LAST_CLIP_BOOK_SETTING)
-        .single();
-
-      if (checkError && checkError.code !== "PGRST116") throw checkError;
-
-      // 設定が存在するかどうかで処理を分岐
-      if (existingSetting) {
-        // 更新
-        const { error } = await supabase
-          .from(USER_SETTINGS_TABLE)
-          .update({
-            value: JSON.stringify(book),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingSetting.id);
-
-        if (error) throw error;
-      } else {
-        // 新規作成
-        const { error } = await supabase.from(USER_SETTINGS_TABLE).insert({
-          user_id: this.userId,
-          key: LAST_CLIP_BOOK_SETTING,
-          value: JSON.stringify(book),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-
-        if (error) throw error;
-      }
-    } catch (error) {
-      console.error("Error saving last clip book to Supabase:", error);
-      throw error;
-    }
-  }
-
-  async getLastClipBook(): Promise<Book | null> {
-    try {
-      if (!this.userId) return null;
-
-      const { data, error } = await supabase
-        .from(USER_SETTINGS_TABLE)
-        .select("value")
-        .eq("user_id", this.userId)
-        .eq("key", LAST_CLIP_BOOK_SETTING)
-        .single();
-
-      if (error) {
-        if (error.code === "PGRST116") return null; // 404 エラー（データが見つからない）
-        throw error;
-      }
-
-      return data?.value ? JSON.parse(data.value) : null;
-    } catch (error) {
-      console.error("Error getting last clip book from Supabase:", error);
-      return null;
-    }
-  }
-
   // クリップ関連の実装
   async saveClip(clip: Clip): Promise<void> {
     try {
@@ -194,29 +125,13 @@ export class SupabaseStorageService implements StorageInterface {
       };
       console.log("Supabaseに保存するデータ:", clipData);
 
-      const { data, error } = await supabase
-        .from(CLIPS_TABLE)
-        .insert(clipData)
-        .select()
-        .single();
+      const { error } = await supabase.from(CLIPS_TABLE).insert(clipData);
 
       if (error) {
         console.error("クリップの保存でエラー:", error);
         throw error;
       }
-      console.log("クリップの保存が完了しました:", data);
-
-      // 最後に使用した書籍の情報を更新
-      console.log("最後に使用した書籍の情報を更新中...");
-      const books = await this.getAllBooks();
-      const book = books.find((b) => b.id === clip.bookId);
-      if (book) {
-        console.log("最後に使用した書籍:", book);
-        await this.setLastClipBook(book);
-        console.log("最後に使用した書籍の情報を更新しました");
-      } else {
-        console.log("関連する書籍が見つかりませんでした");
-      }
+      console.log("クリップの保存が完了しました");
     } catch (error) {
       console.error("Error saving clip to Supabase:", error);
       throw error;
