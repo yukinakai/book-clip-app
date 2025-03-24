@@ -1,9 +1,9 @@
 ## 次にやること
-- supabase対応
 - 書籍が0の時のクリップ追加挙動
 - 書籍はあるが、クリップ追加したことがない時のクリップ追加挙動
 - ダークモードの色修正
 - SMTP構築
+-  (NOBRIDGE) ERROR  ユーザー取得エラー: [AuthSessionMissingError: Auth session missing!]
 
 ## 全体進捗
 - [x] プロジェクトセットアップ(React Nativee+Expo)
@@ -41,9 +41,9 @@
   - [x] ログアウト
   - [x] 退会
   - [x] テストを実装
-- [ ] 書籍データの保存 Supabase
-  - [ ] 書籍データの保存 Supabase
-  - [ ] テストを実装
+- [x] 書籍データの保存 Supabase
+  - [x] 書籍データの保存 Supabase
+  - [x] テストを実装
 - [ ] その他
   - [ ] 利用規約
   - [ ] プラポリ
