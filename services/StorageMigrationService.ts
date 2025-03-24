@@ -34,6 +34,9 @@ export class StorageMigrationService {
         ClipStorageService.setStorageBackend(supabaseStorage);
         BookStorageService.switchToSupabase();
         ClipStorageService.switchToSupabase();
+        if (__DEV__) {
+          console.log("Storage initialized");
+        }
       } else {
         // 未認証の場合
         const localStorage = new LocalStorageService();
@@ -41,6 +44,9 @@ export class StorageMigrationService {
         ClipStorageService.setStorageBackend(localStorage);
         BookStorageService.switchToLocal();
         ClipStorageService.switchToLocal();
+        if (__DEV__) {
+          console.log("Storage initialized");
+        }
       }
     } catch (error) {
       console.error("Failed to initialize storage:", error);
@@ -50,6 +56,9 @@ export class StorageMigrationService {
       ClipStorageService.setStorageBackend(localStorage);
       BookStorageService.switchToLocal();
       ClipStorageService.switchToLocal();
+      if (__DEV__) {
+        console.log("Storage initialized (fallback to local)");
+      }
     }
   }
 
