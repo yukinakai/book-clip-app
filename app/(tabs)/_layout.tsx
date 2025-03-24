@@ -101,6 +101,7 @@ export default function TabLayout({ user }: { user?: any }) {
               e.preventDefault();
             },
           }}
+          initialParams={{ user }}
         />
 
         <Tabs.Screen
@@ -110,14 +111,6 @@ export default function TabLayout({ user }: { user?: any }) {
             tabBarIcon: ({ color }: { color: string }) => (
               <IconSymbol size={28} name="person.fill" color={color} />
             ),
-          }}
-        />
-
-        {/* 検索タブ（非表示） */}
-        <Tabs.Screen
-          name="search"
-          options={{
-            href: null, // このタブをナビゲーションから除外
           }}
         />
       </Tabs>
