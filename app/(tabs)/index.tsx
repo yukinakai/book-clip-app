@@ -113,10 +113,7 @@ export default function HomeScreen() {
       </View>
 
       {/* スクロール可能な領域 - メニューバーとブックシェルフを含む */}
-      <ScrollView
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.contentContainer}>
         {/* メニューバー - 件数表示と書籍追加ボタン */}
         <View style={styles.menuBar}>
           <View style={styles.bookCountContainer}>
@@ -151,7 +148,7 @@ export default function HomeScreen() {
             refreshTrigger={refreshTrigger}
           />
         </View>
-      </ScrollView>
+      </View>
 
       {/* 書籍追加用カメラモーダル */}
       <CameraModal
@@ -202,6 +199,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   scrollContainer: {
+    flex: 1,
+    width: "100%",
+  },
+  contentContainer: {
     flex: 1,
     width: "100%",
   },
