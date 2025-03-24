@@ -79,7 +79,17 @@ export class SupabaseStorageService implements StorageInterface {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // データベースのスネークケースからキャメルケースに変換
+      return (
+        data.map((book) => ({
+          id: book.id,
+          title: book.title,
+          author: book.author,
+          coverImage: book.cover_image,
+          isbn: book.isbn,
+        })) || []
+      );
     } catch (error) {
       console.error("Error getting books from Supabase:", error);
       return [];
