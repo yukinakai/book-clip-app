@@ -69,13 +69,6 @@ describe("ClipStorageService", () => {
     },
   ];
 
-  const mockBook = {
-    id: "book-1",
-    title: "テスト書籍",
-    author: "テスト著者",
-    coverImage: "https://example.com/cover.jpg",
-  };
-
   describe("saveClip", () => {
     it("クリップが正常に保存されること", async () => {
       // ストレージバックエンドのメソッドをスパイ

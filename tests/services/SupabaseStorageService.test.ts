@@ -3,7 +3,6 @@ import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 // モックデータ
 const userId = "test-user-id";
 const bookId = "test-book-id";
-const clipId = "test-clip-id";
 
 // モックのセットアップ
 jest.mock("../../services/auth", () => {
@@ -104,7 +103,6 @@ describe("SupabaseStorageService", () => {
   let mockUpdate: jest.Mock;
   let mockEq: jest.Mock;
   let mockOrder: jest.Mock;
-  let mockSingle: jest.Mock;
   let setMockResponse: (data?: any, error?: any) => void;
 
   // モックブックとクリップデータ
@@ -135,16 +133,6 @@ describe("SupabaseStorageService", () => {
     createdAt: "2023-01-01T00:00:00.000Z",
   };
 
-  // この形式はデータベースに保存される形式
-  const mockDbClip = {
-    id: "test-clip-id",
-    book_id: "test-book-id",
-    text: "テストクリップのテキスト",
-    page: 42,
-    created_at: "2023-01-01T00:00:00.000Z",
-    user_id: userId,
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -161,7 +149,6 @@ describe("SupabaseStorageService", () => {
     mockUpdate = authModule.mockUpdate;
     mockEq = authModule.mockEq;
     mockOrder = authModule.mockOrder;
-    mockSingle = authModule.mockSingle;
   });
 
   describe("saveBook", () => {

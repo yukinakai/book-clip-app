@@ -3,7 +3,6 @@ import { BookStorageService } from "../../services/BookStorageService";
 import { ClipStorageService } from "../../services/ClipStorageService";
 import { LocalStorageService } from "../../services/LocalStorageService";
 import { SupabaseStorageService } from "../../services/SupabaseStorageService";
-import { Book, Clip } from "../../constants/MockData";
 
 // Supabaseのモック
 jest.mock("@supabase/supabase-js", () => {
@@ -99,43 +98,6 @@ describe("StorageMigrationService", () => {
 
   // テスト用データ
   const mockUser = { id: "test-user-id", email: "test@example.com" };
-  const mockBooks: Book[] = [
-    {
-      id: "book1",
-      title: "Book 1",
-      author: "Author 1",
-      coverImage: "cover1.jpg",
-    },
-    {
-      id: "book2",
-      title: "Book 2",
-      author: "Author 2",
-      coverImage: "cover2.jpg",
-    },
-  ];
-  const mockClips: Clip[] = [
-    {
-      id: "clip1",
-      bookId: "book1",
-      text: "Clip 1",
-      page: 10,
-      createdAt: "2023-01-01T00:00:00Z",
-    },
-    {
-      id: "clip2",
-      bookId: "book1",
-      text: "Clip 2",
-      page: 20,
-      createdAt: "2023-01-02T00:00:00Z",
-    },
-    {
-      id: "clip3",
-      bookId: "book2",
-      text: "Clip 3",
-      page: 30,
-      createdAt: "2023-01-03T00:00:00Z",
-    },
-  ];
 
   describe("initializeStorage", () => {
     it("認証済みユーザーがいる場合、Supabaseストレージを使用するように初期化されること", async () => {
@@ -249,7 +211,7 @@ describe("StorageMigrationService", () => {
       // 実装の内部で使われるプライベートメソッドのモック
       jest
         .spyOn(StorageMigrationService as any, "saveBookToSupabase")
-        .mockImplementation((userId: string, book: any) =>
+        .mockImplementation((_userId: string, book: any) =>
           Promise.resolve(book.id)
         );
       jest
@@ -312,7 +274,7 @@ describe("StorageMigrationService", () => {
       // 2番目の書籍の保存に失敗するように設定
       jest
         .spyOn(StorageMigrationService as any, "saveBookToSupabase")
-        .mockImplementationOnce((userId: string, book: any) =>
+        .mockImplementationOnce((_userId: string, book: any) =>
           Promise.resolve(book.id)
         )
         .mockImplementationOnce(() => Promise.reject(new Error("保存エラー")));
@@ -387,6 +349,127 @@ describe("StorageMigrationService", () => {
 
       // clearAllDataが呼ばれることを確認
       expect(mockClearAllData).toHaveBeenCalled();
+    });
+  });
+
+  describe("getIsLocalDataExists", () => {
+    it("ローカルに書籍データが存在する場合、trueを返すこと", async () => {
+      // LocalStorageServiceのモック
+      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
+        getAllBooks: jest
+          .fn()
+          .mockResolvedValue([{ id: "book1", title: "Book 1" }]),
+      }));
+
+      const result = await StorageMigrationService.getIsLocalDataExists();
+
+      expect(result).toBe(true);
+    });
+
+    it("ローカルに書籍データが存在しない場合、falseを返すこと", async () => {
+      // LocalStorageServiceのモック
+      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
+        getAllBooks: jest.fn().mockResolvedValue([]),
+      }));
+
+      const result = await StorageMigrationService.getIsLocalDataExists();
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("migrateToSupabaseWithProgress", () => {
+    it("プログレスコールバック付きで正しくデータが移行されること", async () => {
+      // モックデータ
+      const mockBooks = [
+        { id: "book1", title: "Book 1" },
+        { id: "book2", title: "Book 2" },
+      ];
+      const mockClips = [
+        { id: "clip1", bookId: "book1", text: "Clip 1" },
+        { id: "clip2", bookId: "book1", text: "Clip 2" },
+        { id: "clip3", bookId: "book2", text: "Clip 3" },
+      ];
+
+      // LocalStorageServiceのモック
+      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
+        getAllBooks: jest.fn().mockResolvedValue(mockBooks),
+        getAllClips: jest.fn().mockResolvedValue(mockClips),
+      }));
+
+      const result =
+        await StorageMigrationService.migrateToSupabaseWithProgress(
+          "test-user-id",
+          jest.fn()
+        );
+
+      // 期待される結果の確認
+      expect(result).toEqual({
+        total: 5, // 2冊の書籍 + 3つのクリップ
+        processed: 5, // すべて正常に処理された
+        failed: 0, // 失敗なし
+      });
+    });
+  });
+
+  describe("migrateBookToSupabase", () => {
+    it("書籍データが正しくSupabaseに移行されること", async () => {
+      // モックデータ
+      const mockBook = { id: "book1", title: "Book 1" };
+
+      // LocalStorageServiceのモック
+      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
+        getAllBooks: jest.fn().mockResolvedValue([mockBook]),
+      }));
+
+      const result = await StorageMigrationService.migrateBookToSupabase(
+        "test-user-id"
+      );
+
+      // 期待される結果の確認
+      expect(result).toEqual(mockBook);
+    });
+  });
+
+  describe("migrateClipsForBookToSupabase", () => {
+    it("クリップデータが正しくSupabaseに移行されること", async () => {
+      // モックデータ
+      const mockClips = [
+        { id: "clip1", bookId: "book1", text: "Clip 1" },
+        { id: "clip2", bookId: "book1", text: "Clip 2" },
+        { id: "clip3", bookId: "book2", text: "Clip 3" },
+      ];
+
+      // LocalStorageServiceのモック
+      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
+        getAllClips: jest.fn().mockResolvedValue(mockClips),
+      }));
+
+      const result =
+        await StorageMigrationService.migrateClipsForBookToSupabase(
+          "test-user-id",
+          "book1"
+        );
+
+      // 期待される結果の確認
+      expect(result).toEqual(mockClips);
+    });
+  });
+
+  describe("clearLocalStorageIfMigrated", () => {
+    it("マイグレーション完了後にローカルストレージがクリアされること", async () => {
+      // LocalStorageServiceのモック
+      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
+        getAllBooks: jest.fn().mockResolvedValue([]),
+        getAllClips: jest.fn().mockResolvedValue([]),
+      }));
+
+      await StorageMigrationService.clearLocalStorageIfMigrated();
+
+      // clearAllDataが呼ばれることを確認
+      expect(
+        (LocalStorageService as jest.Mock).mock.instances[0].clearAllData
+      ).toHaveBeenCalled();
     });
   });
 });
