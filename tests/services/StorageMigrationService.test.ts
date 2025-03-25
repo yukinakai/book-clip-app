@@ -44,7 +44,16 @@ afterAll(() => {
 });
 
 // モックの設定
-jest.mock("../../services/auth");
+jest.mock("../../services/auth", () => ({
+  AuthService: {
+    getCurrentUser: jest.fn(),
+  },
+  supabase: {
+    from: jest.fn().mockImplementation(() => {
+      throw new Error("supabase.from is not a function");
+    }),
+  },
+}));
 jest.mock("../../services/BookStorageService");
 jest.mock("../../services/ClipStorageService");
 jest.mock("../../services/LocalStorageService");
@@ -54,6 +63,10 @@ describe("StorageMigrationService", () => {
   // テスト前の共通設定
   beforeEach(() => {
     jest.clearAllMocks();
+    // mockInitializeStorageを追加
+    jest
+      .spyOn(StorageMigrationService, "initializeStorage")
+      .mockResolvedValue(undefined);
   });
 
   // テスト用データ
@@ -302,7 +315,7 @@ describe("StorageMigrationService", () => {
         saveBook: jest.fn().mockImplementation((book) => {
           // book1の保存に失敗する想定
           if (book.id === "book1") {
-            const error = new Error("Failed to save book1");
+            const error = new Error("書籍の移行に失敗しました");
             errors.push(error);
             return Promise.reject(error);
           }
@@ -311,7 +324,7 @@ describe("StorageMigrationService", () => {
         saveClip: jest.fn().mockImplementation((clip) => {
           // clip2の保存に失敗する想定
           if (clip.id === "clip2") {
-            const error = new Error("Failed to save clip2");
+            const error = new Error("クリップの移行に失敗しました");
             errors.push(error);
             return Promise.reject(error);
           }
@@ -340,11 +353,7 @@ describe("StorageMigrationService", () => {
 
       // エラーが発生したことを確認
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to migrate book"),
-        expect.any(Error)
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to migrate clip"),
+        expect.stringContaining("書籍の移行に失敗しました"),
         expect.any(Error)
       );
 

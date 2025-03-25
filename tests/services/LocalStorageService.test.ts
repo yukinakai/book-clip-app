@@ -298,6 +298,11 @@ describe("LocalStorageService", () => {
           .fn()
           .mockRejectedValue(new Error(errorMessage));
 
+        // AsyncStorage.setItemもエラーをスローするようにモック
+        AsyncStorage.setItem = jest
+          .fn()
+          .mockRejectedValue(new Error(errorMessage));
+
         // コンソールエラーをモック
         const consoleSpy = jest
           .spyOn(console, "error")

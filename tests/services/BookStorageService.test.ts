@@ -254,7 +254,7 @@ describe("BookStorageService", () => {
         BookStorageService.setLastClipBook(mockBook)
       ).rejects.toThrow();
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Error saving last clip book:",
+        "Error setting last clip book:",
         expect.any(Error)
       );
 

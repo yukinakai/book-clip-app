@@ -134,8 +134,8 @@ describe("SupabaseStorageService", () => {
         mockEqFn,
       } = require("../../services/auth");
       expect(mockFromFn).toHaveBeenCalledWith("books");
-      expect(mockSelectFn).toHaveBeenCalledWith("id");
-      expect(mockEqFn).toHaveBeenCalledWith("id", bookId);
+      expect(mockSelectFn).toHaveBeenCalledWith("id, isbn");
+      expect(mockEqFn).toHaveBeenCalledWith("isbn", mockBook.isbn);
       expect(mockEqFn).toHaveBeenCalledWith("user_id", userId);
       expect(mockInsertFn).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -164,8 +164,8 @@ describe("SupabaseStorageService", () => {
         mockEqFn,
       } = require("../../services/auth");
       expect(mockFromFn).toHaveBeenCalledWith("books");
-      expect(mockSelectFn).toHaveBeenCalledWith("id");
-      expect(mockEqFn).toHaveBeenCalledWith("id", bookId);
+      expect(mockSelectFn).toHaveBeenCalledWith("id, isbn");
+      expect(mockEqFn).toHaveBeenCalledWith("isbn", mockBook.isbn);
       expect(mockEqFn).toHaveBeenCalledWith("user_id", userId);
       expect(mockInsertFn).not.toHaveBeenCalled();
     });
@@ -204,7 +204,14 @@ describe("SupabaseStorageService", () => {
       expect(mockOrderFn).toHaveBeenCalledWith("created_at", {
         ascending: false,
       });
-      expect(result).toEqual([mockBook]);
+      const expectedBook = {
+        id: mockBook.id,
+        title: mockBook.title,
+        author: mockBook.author,
+        coverImage: undefined,
+        isbn: undefined,
+      };
+      expect(result).toEqual([expectedBook]);
     });
 
     it("エラー発生時に空配列を返すこと", async () => {
@@ -274,9 +281,11 @@ describe("SupabaseStorageService", () => {
       expect(mockFromFn).toHaveBeenCalledWith("clips");
       expect(mockInsertFn).toHaveBeenCalledWith(
         expect.objectContaining({
-          ...mockClip,
           user_id: userId,
-          created_at: mockClip.createdAt,
+          book_id: mockClip.bookId,
+          text: mockClip.text,
+          page: mockClip.page,
+          created_at: expect.any(String),
           updated_at: expect.any(String),
         })
       );
@@ -313,7 +322,7 @@ describe("SupabaseStorageService", () => {
       expect(mockFromFn).toHaveBeenCalledWith("clips");
       expect(mockSelectFn).toHaveBeenCalledWith("*");
       expect(mockEqFn).toHaveBeenNthCalledWith(1, "user_id", userId);
-      expect(mockEqFn).toHaveBeenNthCalledWith(2, "bookId", bookId);
+      expect(mockEqFn).toHaveBeenNthCalledWith(2, "book_id", bookId);
       expect(mockOrderFn).toHaveBeenCalledWith("created_at", {
         ascending: false,
       });
@@ -352,7 +361,9 @@ describe("SupabaseStorageService", () => {
       expect(mockFromFn).toHaveBeenCalledWith("clips");
       expect(mockUpdateFn).toHaveBeenCalledWith(
         expect.objectContaining({
-          ...updatedClip,
+          book_id: updatedClip.bookId,
+          text: updatedClip.text,
+          page: updatedClip.page,
           updated_at: expect.any(String),
         })
       );
