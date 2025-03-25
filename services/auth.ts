@@ -91,56 +91,52 @@ export class AuthService {
       console.log("アクセストークンを取得しました");
 
       try {
-        // Edge Functionを呼び出してアカウントを削除
-        const { data, error: functionError } = await supabase.functions.invoke(
-          "delete-account",
+        // 直接fetchを使用してEdge Functionを呼び出す
+        const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error("環境変数が設定されていません");
+        }
+
+        console.log("Edge Function直接呼び出し開始");
+        const response = await fetch(
+          `${supabaseUrl}/functions/v1/delete-account`,
           {
             method: "POST",
             headers: {
               Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "application/json",
+              apikey: supabaseAnonKey,
             },
-            body: JSON.stringify({ userId: session.user.id }),
+            body: JSON.stringify({
+              userId: session.user.id,
+              action: "delete_account",
+            }),
           }
         );
 
-        if (functionError) {
-          console.error("Edge Function呼び出しエラー:", {
-            message: functionError.message,
-            details: functionError.context,
-            name: functionError.name,
-            stack: functionError.stack,
-          });
-          throw new Error(
-            `アカウント削除に失敗しました: ${functionError.message}`
-          );
-        }
+        console.log("Edge Function呼び出し完了", {
+          status: response.status,
+          statusText: response.statusText,
+        });
 
-        if (!data?.success) {
+        // レスポンスを解析
+        const data = await response.json();
+        console.log("レスポンスデータ:", data);
+
+        if (!response.ok) {
           console.error("アカウント削除失敗レスポンス:", data);
-          throw new Error(
-            data?.error ||
-              "アカウント削除に失敗しました。管理者に連絡してください。"
-          );
+          throw new Error(data?.error || "アカウント削除に失敗しました");
         }
 
         console.log("アカウント削除成功:", data);
         return data;
-      } catch (functionCallError: unknown) {
+      } catch (functionCallError) {
         console.error("Edge Function処理エラー:", functionCallError);
-        // FunctionInvocationErrorの場合はレスポンスのエラー内容も取得
-        if (
-          functionCallError instanceof Error &&
-          functionCallError.message.includes("returned a non-2xx status code")
-        ) {
-          try {
-            // エラーレスポンスのボディを解析（可能であれば）
-            console.error(
-              "サーバーエラーが発生しました。Edge Function処理に失敗しました。"
-            );
-          } catch (parseError) {
-            console.error("エラーレスポンスの解析に失敗:", parseError);
-          }
+        if (functionCallError instanceof Error) {
+          console.error("エラーメッセージ:", functionCallError.message);
+          console.error("エラースタック:", functionCallError.stack);
         }
         throw functionCallError;
       }
