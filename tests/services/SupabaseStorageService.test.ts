@@ -426,4 +426,287 @@ describe("SupabaseStorageService", () => {
       await expect(service.clearAllData()).resolves.toBeUndefined();
     });
   });
+
+  describe("getBookById", () => {
+    it("指定したIDの書籍を取得できること", async () => {
+      // 書籍データを返すレスポンス
+      setMockResponse({
+        id: "book-1",
+        title: "書籍1",
+        author: "著者1",
+        cover_image: "http://example.com/cover1.jpg",
+        isbn: "1234567890123",
+      });
+
+      const result = await service.getBookById("book-1");
+
+      // 正しいテーブルとクエリを検証
+      expect(mockFrom).toHaveBeenCalledWith("books");
+      expect(mockSelect).toHaveBeenCalledWith("*");
+      expect(mockEq).toHaveBeenCalledWith("id", "book-1");
+      expect(mockEq).toHaveBeenCalledWith("user_id", userId);
+
+      // データ変換を検証
+      expect(result).toEqual({
+        id: "book-1",
+        title: "書籍1",
+        author: "著者1",
+        coverImage: "http://example.com/cover1.jpg",
+        isbn: "1234567890123",
+      });
+    });
+
+    it("存在しない書籍IDの場合はnullを返すこと", async () => {
+      // データが存在しないレスポンス
+      setMockResponse(null);
+
+      const result = await service.getBookById("non-existent-id");
+      expect(result).toBeNull();
+    });
+
+    it("エラー発生時に例外がスローされること", async () => {
+      // エラーレスポンスを設定
+      setMockResponse(null, new Error("テストエラー"));
+
+      await expect(service.getBookById("book-1")).rejects.toThrow(
+        "テストエラー"
+      );
+    });
+
+    it("ユーザーIDがない場合はnullを返すこと", async () => {
+      const serviceWithNullUser = new SupabaseStorageService(null as any);
+      const result = await serviceWithNullUser.getBookById("book-1");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("updateBook", () => {
+    it("書籍が正常に更新されること", async () => {
+      // 更新成功レスポンスをセット
+      setMockResponse(null, null);
+
+      const updatedBook = {
+        ...mockBook,
+        title: "更新されたタイトル",
+        author: "更新された著者",
+      };
+
+      await service.updateBook(updatedBook);
+
+      // 正しいテーブルとクエリを検証
+      expect(mockFrom).toHaveBeenCalledWith("books");
+      expect(mockUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: updatedBook.title,
+          author: updatedBook.author,
+          cover_image: updatedBook.coverImage,
+          updated_at: expect.any(String),
+        })
+      );
+      expect(mockEq).toHaveBeenCalledWith("id", updatedBook.id);
+      expect(mockEq).toHaveBeenCalledWith("user_id", userId);
+    });
+
+    it("書籍IDがない場合に例外がスローされること", async () => {
+      const bookWithoutId = { ...mockBook, id: undefined };
+      await expect(service.updateBook(bookWithoutId as any)).rejects.toThrow(
+        "書籍IDが指定されていません"
+      );
+    });
+
+    it("エラー発生時に例外がスローされること", async () => {
+      // エラーレスポンスを設定
+      setMockResponse(null, new Error("テストエラー"));
+
+      await expect(service.updateBook(mockBook)).rejects.toThrow(
+        "テストエラー"
+      );
+    });
+
+    it("ユーザーIDがない場合に例外がスローされること", async () => {
+      const serviceWithNullUser = new SupabaseStorageService(null as any);
+      await expect(serviceWithNullUser.updateBook(mockBook)).rejects.toThrow(
+        "認証されていません"
+      );
+    });
+  });
+
+  describe("getAllClips", () => {
+    it("すべてのクリップを取得できること", async () => {
+      // クリップデータを返すレスポンス
+      setMockResponse([
+        {
+          id: "clip-1",
+          book_id: "book-1",
+          text: "クリップ1のテキスト",
+          page: 42,
+          created_at: "2023-01-01T00:00:00.000Z",
+        },
+        {
+          id: "clip-2",
+          book_id: "book-2",
+          text: "クリップ2のテキスト",
+          page: 100,
+          created_at: "2023-01-02T00:00:00.000Z",
+        },
+      ]);
+
+      const result = await service.getAllClips();
+
+      // 正しいテーブルとクエリを検証
+      expect(mockFrom).toHaveBeenCalledWith("clips");
+      expect(mockSelect).toHaveBeenCalledWith("*");
+      expect(mockEq).toHaveBeenCalledWith("user_id", userId);
+      expect(mockOrder).toHaveBeenCalledWith("created_at", {
+        ascending: false,
+      });
+
+      // データ変換を検証
+      expect(result).toEqual([
+        {
+          id: "clip-1",
+          bookId: "book-1",
+          text: "クリップ1のテキスト",
+          page: 42,
+          createdAt: "2023-01-01T00:00:00.000Z",
+        },
+        {
+          id: "clip-2",
+          bookId: "book-2",
+          text: "クリップ2のテキスト",
+          page: 100,
+          createdAt: "2023-01-02T00:00:00.000Z",
+        },
+      ]);
+    });
+
+    it("エラー発生時に空配列を返すこと", async () => {
+      // エラーレスポンスを設定
+      setMockResponse(null, new Error("テストエラー"));
+
+      const result = await service.getAllClips();
+      expect(result).toEqual([]);
+    });
+
+    it("ユーザーIDがない場合は空配列を返すこと", async () => {
+      const serviceWithNullUser = new SupabaseStorageService(null as any);
+      const result = await serviceWithNullUser.getAllClips();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("getClipById", () => {
+    it("指定したIDのクリップを取得できること", async () => {
+      // クリップデータを返すレスポンス
+      setMockResponse({
+        id: "clip-1",
+        book_id: "book-1",
+        text: "クリップ1のテキスト",
+        page: 42,
+        created_at: "2023-01-01T00:00:00.000Z",
+      });
+
+      const result = await service.getClipById("clip-1");
+
+      // 正しいテーブルとクエリを検証
+      expect(mockFrom).toHaveBeenCalledWith("clips");
+      expect(mockSelect).toHaveBeenCalledWith("*");
+      expect(mockEq).toHaveBeenCalledWith("id", "clip-1");
+      expect(mockEq).toHaveBeenCalledWith("user_id", userId);
+
+      // データ変換を検証
+      expect(result).toEqual({
+        id: "clip-1",
+        bookId: "book-1",
+        text: "クリップ1のテキスト",
+        page: 42,
+        createdAt: "2023-01-01T00:00:00.000Z",
+      });
+    });
+
+    it("存在しないクリップIDの場合はnullを返すこと", async () => {
+      // データが存在しないレスポンス
+      setMockResponse(null);
+
+      const result = await service.getClipById("non-existent-id");
+      expect(result).toBeNull();
+    });
+
+    it("エラー発生時に例外がスローされること", async () => {
+      // エラーレスポンスを設定
+      setMockResponse(null, new Error("テストエラー"));
+
+      await expect(service.getClipById("clip-1")).rejects.toThrow(
+        "テストエラー"
+      );
+    });
+
+    it("ユーザーIDがない場合はnullを返すこと", async () => {
+      const serviceWithNullUser = new SupabaseStorageService(null as any);
+      const result = await serviceWithNullUser.getClipById("clip-1");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("removeClip", () => {
+    it("指定したクリップを削除できること", async () => {
+      // 削除成功レスポンスをセット
+      setMockResponse(null, null);
+
+      await service.removeClip("clip-1");
+
+      // 正しいテーブルとクエリを検証
+      expect(mockFrom).toHaveBeenCalledWith("clips");
+      expect(mockDelete).toHaveBeenCalled();
+      expect(mockEq).toHaveBeenCalledWith("id", "clip-1");
+      expect(mockEq).toHaveBeenCalledWith("user_id", userId);
+    });
+
+    it("エラー発生時に例外がスローされること", async () => {
+      // エラーレスポンスを設定
+      setMockResponse(null, new Error("テストエラー"));
+
+      await expect(service.removeClip("clip-1")).rejects.toThrow(
+        "テストエラー"
+      );
+    });
+
+    it("ユーザーIDがない場合に例外がスローされること", async () => {
+      const serviceWithNullUser = new SupabaseStorageService(null as any);
+      await expect(serviceWithNullUser.removeClip("clip-1")).rejects.toThrow(
+        "認証されていません"
+      );
+    });
+  });
+
+  describe("deleteClipsByBookId", () => {
+    it("指定した書籍のクリップをすべて削除できること", async () => {
+      // 削除成功レスポンスをセット
+      setMockResponse(null, null);
+
+      await service.deleteClipsByBookId("book-1");
+
+      // 正しいテーブルとクエリを検証
+      expect(mockFrom).toHaveBeenCalledWith("clips");
+      expect(mockDelete).toHaveBeenCalled();
+      expect(mockEq).toHaveBeenCalledWith("book_id", "book-1");
+      expect(mockEq).toHaveBeenCalledWith("user_id", userId);
+    });
+
+    it("エラー発生時に例外がスローされること", async () => {
+      // エラーレスポンスを設定
+      setMockResponse(null, new Error("テストエラー"));
+
+      await expect(service.deleteClipsByBookId("book-1")).rejects.toThrow(
+        "テストエラー"
+      );
+    });
+
+    it("ユーザーIDがない場合に例外がスローされること", async () => {
+      const serviceWithNullUser = new SupabaseStorageService(null as any);
+      await expect(
+        serviceWithNullUser.deleteClipsByBookId("book-1")
+      ).rejects.toThrow("認証されていません");
+    });
+  });
 });
