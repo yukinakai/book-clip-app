@@ -245,18 +245,20 @@ describe("ClipStorageService", () => {
         .spyOn(ClipStorageService["storageBackend"], "updateClip")
         .mockRejectedValue(new Error(errorMessage));
 
-      // コンソールエラーをモック
-      const originalError = console.error;
+      // コンソールエラーをモック（グローバルconsole.errorをjest.fnに置き換え）
+      const originalConsoleError = console.error;
       console.error = jest.fn();
 
-      await expect(ClipStorageService.updateClip(mockClip)).rejects.toThrow();
-      expect(console.error).toHaveBeenCalledWith(
-        "Error updating clip:",
-        expect.any(Error)
-      );
-
-      // モックを復元
-      console.error = originalError;
+      try {
+        await expect(ClipStorageService.updateClip(mockClip)).rejects.toThrow();
+        expect(console.error).toHaveBeenCalledWith(
+          "Error updating clip:",
+          expect.any(Error)
+        );
+      } finally {
+        // テスト終了後に元に戻す
+        console.error = originalConsoleError;
+      }
     });
   });
 
@@ -280,20 +282,22 @@ describe("ClipStorageService", () => {
         .spyOn(ClipStorageService["storageBackend"], "deleteClipsByBookId")
         .mockRejectedValue(new Error(errorMessage));
 
-      // コンソールエラーをモック
-      const originalError = console.error;
+      // コンソールエラーをモック（グローバルconsole.errorをjest.fnに置き換え）
+      const originalConsoleError = console.error;
       console.error = jest.fn();
 
-      await expect(
-        ClipStorageService.deleteClipsByBookId("book-1")
-      ).rejects.toThrow();
-      expect(console.error).toHaveBeenCalledWith(
-        "Error deleting clips by book ID:",
-        expect.any(Error)
-      );
-
-      // モックを復元
-      console.error = originalError;
+      try {
+        await expect(
+          ClipStorageService.deleteClipsByBookId("book-1")
+        ).rejects.toThrow();
+        expect(console.error).toHaveBeenCalledWith(
+          "Error deleting clips by book ID:",
+          expect.any(Error)
+        );
+      } finally {
+        // テスト終了後に元に戻す
+        console.error = originalConsoleError;
+      }
     });
   });
 });
