@@ -6,12 +6,14 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuthContext } from "../../contexts/AuthContext";
-import WithdrawConfirmDialog from "../../components/WithdrawConfirmDialog";
+import { useAuthContext } from "@/contexts/AuthContext";
+import WithdrawConfirmDialog from "@/components/WithdrawConfirmDialog";
+import { DataMigrationProgress } from "../../components/DataMigrationProgress";
 
 // メニュー項目の型定義
 type MenuItem = {
@@ -23,7 +25,14 @@ type MenuItem = {
 export default function OthersScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
-  const { user, signOut, deleteAccount } = useAuthContext();
+  const {
+    user,
+    signOut,
+    deleteAccount,
+    migrateLocalDataToSupabase,
+    migrationProgress,
+    showMigrationProgress,
+  } = useAuthContext();
   const [withdrawDialogVisible, setWithdrawDialogVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,14 +74,50 @@ export default function OthersScreen() {
   const handleWithdraw = async () => {
     setIsLoading(true);
     try {
-      await deleteAccount();
+      console.log("退会処理を開始します");
+      const result = await deleteAccount();
+      console.log("退会処理の結果:", result);
+
       setWithdrawDialogVisible(false);
-      // 退会後はホーム画面に戻る
-      router.replace("/(tabs)");
+
+      // 退会成功の場合、ホーム画面に遷移
+      if (result) {
+        console.log("退会処理が成功しました、すぐにキャッシュをクリア");
+
+        // 認証情報をクリアしてエラーを防止
+        try {
+          // Supabaseのセッション情報を削除
+          await AsyncStorage.removeItem("supabase.auth.token");
+          await AsyncStorage.removeItem("supabase.auth.refreshToken");
+          console.log("認証キャッシュを削除しました");
+        } catch (storageError) {
+          console.error("認証キャッシュ削除エラー:", storageError);
+        }
+
+        // ホーム画面に遷移
+        router.replace("/(tabs)");
+      } else {
+        console.error(
+          "退会処理が失敗しました、ダイアログは閉じましたが退会は完了していません"
+        );
+        // ここでユーザーにエラーを表示する処理を追加することも検討
+      }
     } catch (error) {
       console.error("退会処理エラー:", error);
+      // エラー表示を追加することも検討
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // データ移行処理
+  const handleMigrateData = async () => {
+    if (!user) return;
+
+    try {
+      await migrateLocalDataToSupabase();
+    } catch (error) {
+      console.error("データ移行エラー:", error);
     }
   };
 
@@ -151,6 +196,27 @@ export default function OthersScreen() {
             />
           </TouchableOpacity>
         ))}
+
+        {/* ログイン済みかつデバッグモードの場合のみ表示（開発環境でのテスト用） */}
+        {user && __DEV__ && (
+          <TouchableOpacity
+            style={[styles.menuItem, styles.devMenuItem]}
+            onPress={handleMigrateData}
+          >
+            <View style={styles.menuIconContainer}>
+              <Ionicons
+                name="cloud-upload-outline"
+                size={24}
+                color={Colors[colorScheme].text}
+              />
+            </View>
+            <Text
+              style={[styles.menuText, { color: Colors[colorScheme].text }]}
+            >
+              ローカルデータを同期（開発用）
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* 退会確認ダイアログ */}
@@ -159,6 +225,12 @@ export default function OthersScreen() {
         onClose={() => setWithdrawDialogVisible(false)}
         onConfirm={handleWithdraw}
         loading={isLoading}
+      />
+
+      {/* データ移行進捗ダイアログ */}
+      <DataMigrationProgress
+        visible={showMigrationProgress}
+        progress={migrationProgress}
       />
     </SafeAreaView>
   );
@@ -193,6 +265,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#E8E0D1",
+  },
+  devMenuItem: {
+    marginTop: 30,
+    borderTopWidth: 1,
+    borderTopColor: "#E8E0D1",
+    opacity: 0.7,
   },
   menuIconContainer: {
     width: 40,

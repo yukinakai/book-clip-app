@@ -52,6 +52,7 @@ export default function EditBookScreen() {
 
     try {
       setLoading(true);
+      console.log("書籍更新開始 - ID:", params.id);
 
       // 既存の書籍データを取得
       const books = await BookStorageService.getAllBooks();
@@ -71,10 +72,12 @@ export default function EditBookScreen() {
         coverImage: coverImage.trim(),
       };
 
-      // 一度削除して再保存する (AsyncStorageには部分更新がないため)
-      await BookStorageService.removeBook(params.id);
-      await BookStorageService.saveBook(updatedBook);
+      console.log("更新する書籍データ:", updatedBook);
 
+      // 直接updateBookメソッドを使用
+      await BookStorageService.updateBook(updatedBook);
+
+      console.log("書籍更新完了");
       setLoading(false);
 
       // 成功メッセージ

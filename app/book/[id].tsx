@@ -7,10 +7,9 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
   Alert,
-  ActionSheetIOS,
   Platform,
+  ActionSheetIOS,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { Book, Clip } from "../../constants/MockData";
@@ -38,22 +37,29 @@ export default function BookDetailScreen() {
   // 書籍データとクリップを読み込む
   const loadBookDetailsAndClips = useCallback(async () => {
     try {
+      console.log("書籍詳細の読み込み開始 - ID:", id);
       setLoading(true);
 
-      // 書籍情報を取得
-      const books = await BookStorageService.getAllBooks();
-      const foundBook = books.find((b) => b.id === id);
+      // 単一の書籍データを直接取得
+      const foundBook = await BookStorageService.getBookById(id as string);
+      console.log("書籍取得結果:", foundBook);
 
       if (foundBook) {
         setBook(foundBook);
 
         // 書籍に関連するクリップを取得
-        const bookClips = await ClipStorageService.getClipsByBookId(id);
+        const bookClips = await ClipStorageService.getClipsByBookId(
+          id as string
+        );
+        console.log("関連するクリップ:", bookClips.length, "件");
         setClips(bookClips);
+      } else {
+        console.log("書籍が見つかりませんでした - ID:", id);
       }
     } catch (error) {
-      console.error("Error loading book details:", error);
+      console.error("書籍詳細の読み込み中にエラー:", error);
     } finally {
+      console.log("書籍詳細の読み込み完了");
       setLoading(false);
     }
   }, [id, setLoading, setBook, setClips]);
@@ -97,7 +103,7 @@ export default function BookDetailScreen() {
         }
       );
     } else {
-      // Androidの場合はAlertでメニューを表示（実際はもっと適切なUIを使うべき）
+      // Androidの場合はAlertでメニューを表示
       Alert.alert("書籍オプション", "選択してください", [
         { text: "キャンセル", style: "cancel" },
         { text: "編集", onPress: handleEditBook },
@@ -166,7 +172,9 @@ export default function BookDetailScreen() {
             P. {item.page}
           </Text>
           <Text style={[styles.dateInfo, { color: textColor }]}>
-            {new Date(item.createdAt).toLocaleDateString()}
+            {item.createdAt
+              ? new Date(item.createdAt).toLocaleDateString()
+              : ""}
           </Text>
         </View>
       </View>
@@ -212,12 +220,19 @@ export default function BookDetailScreen() {
             書籍の詳細
           </Text>
         </View>
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={showOptions}
+          testID="options-button"
+        >
+          <Ionicons name="ellipsis-horizontal" size={24} color={textColor} />
+        </TouchableOpacity>
       </View>
 
       <FlatList
         data={clips}
         renderItem={renderClipItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Clip) => item.id || `clip-${Date.now()}`}
         contentContainerStyle={styles.clipsList}
         ListHeaderComponent={() => (
           <>
@@ -396,8 +411,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 8,
   },
-  optionsButton: {
-    marginLeft: "auto",
-    marginRight: 10,
+  headerButton: {
+    marginLeft: 16,
+    position: "absolute",
+    right: 16,
   },
 });

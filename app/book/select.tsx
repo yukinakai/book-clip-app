@@ -49,21 +49,27 @@ export default function BookSelectScreen() {
   };
 
   const handleBookSelect = (book: Book) => {
+    console.log("選択した書籍:", book.title);
+
     if (fromClip === "true") {
-      const textParam = clipText
-        ? `&clipText=${encodeURIComponent(clipText)}`
-        : "";
-      router.push(
-        `/book/add-clip?bookId=${book.id}&bookTitle=${encodeURIComponent(
-          book.title
-        )}${textParam}`
-      );
+      // クリップ追加画面に戻る
+      router.push({
+        pathname: "/book/add-clip",
+        params: {
+          bookId: book.id,
+          bookTitle: book.title,
+          ...(clipText ? { clipText } : {}),
+        },
+      });
     } else {
-      router.push(
-        `/book/add-clip?bookId=${book.id}&bookTitle=${encodeURIComponent(
-          book.title
-        )}`
-      );
+      // 通常の書籍追加からの遷移
+      router.push({
+        pathname: "/book/add-clip",
+        params: {
+          bookId: book.id,
+          bookTitle: book.title,
+        },
+      });
     }
   };
 

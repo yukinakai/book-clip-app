@@ -31,15 +31,13 @@ const mockGetAllBooks = jest.fn().mockResolvedValue([
   },
 ]);
 
-const mockRemoveBook = jest.fn().mockResolvedValue(undefined);
-const mockSaveBook = jest.fn().mockResolvedValue(undefined);
+const mockUpdateBook = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("../../../services/BookStorageService", () => ({
   BookStorageService: {
     getAllBooks: () => mockGetAllBooks(),
-    removeBook: (id: string) => mockRemoveBook(id),
-    saveBook: (book: any) => mockSaveBook(book),
-    deleteBook: jest.fn(),
+    updateBook: (book: any) => mockUpdateBook(book),
+    // その他必要なメソッド
   },
 }));
 
@@ -116,8 +114,7 @@ describe("EditBookScreen", () => {
 
     // 更新関数が呼ばれたことを確認
     await waitFor(() => {
-      expect(mockRemoveBook).toHaveBeenCalledWith("1");
-      expect(mockSaveBook).toHaveBeenCalledWith(
+      expect(mockUpdateBook).toHaveBeenCalledWith(
         expect.objectContaining({
           id: "1",
           title: "更新されたタイトル",

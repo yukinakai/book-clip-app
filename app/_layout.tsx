@@ -13,8 +13,9 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PaperProvider } from "react-native-paper";
 import { AuthProvider } from "../contexts/AuthContext";
-
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useColorScheme } from "../hooks/useColorScheme";
+import { useThemeColor } from "../hooks/useThemeColor";
+import { LastClipBookProvider } from "../contexts/LastClipBookContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -24,6 +25,7 @@ const ONBOARDING_COMPLETE_KEY = "@bookclip:onboarding_complete";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const backgroundColor = useThemeColor({}, "background");
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(
     null
   );
@@ -61,38 +63,55 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <PaperProvider>
           <AuthProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: "transparent" },
-              }}
-              initialRouteName={onboardingComplete ? "(tabs)" : "onboarding"}
-            >
-              <Stack.Screen
-                name="onboarding"
-                options={{ headerShown: false, gestureEnabled: false }}
-              />
-              <Stack.Screen
-                name="(auth)"
-                options={{
+            <LastClipBookProvider>
+              <Stack
+                screenOptions={{
                   headerShown: false,
+                  contentStyle: { backgroundColor },
                 }}
-              />
-              <Stack.Screen
-                name="(tabs)"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen name="book/[id]" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="book/add-clip"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen name="clip/[id]" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <StatusBar style="auto" />
+                initialRouteName={onboardingComplete ? "(tabs)" : "onboarding"}
+              >
+                <Stack.Screen
+                  name="onboarding"
+                  options={{ headerShown: false, gestureEnabled: false }}
+                />
+                <Stack.Screen
+                  name="(auth)"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="(tabs)"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="book/[id]"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="book/add-clip"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="book/edit"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="book/select"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="camera" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="clip/[id]"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+              <StatusBar style="auto" />
+            </LastClipBookProvider>
           </AuthProvider>
         </PaperProvider>
       </ThemeProvider>

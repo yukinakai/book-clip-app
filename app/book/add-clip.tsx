@@ -28,20 +28,16 @@ import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Book } from "../../constants/MockData";
 import NoImagePlaceholder from "../../components/NoImagePlaceholder";
+import { useLastClipBook } from "../../contexts/LastClipBookContext";
 
 export default function AddClipScreen() {
-  const {
-    bookId,
-    bookTitle: _bookTitle,
-    imageUri,
-    isOcr,
-    clipText: urlClipText,
-  } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     bookId: string;
     bookTitle: string;
     imageUri: string;
     isOcr: string;
     clipText: string;
+    selectedBook: string;
   }>();
   const [clipText, setClipText] = useState("");
   const [pageNumber, setPageNumber] = useState("");
@@ -57,6 +53,7 @@ export default function AddClipScreen() {
   const [isLoadingBook, setIsLoadingBook] = useState(true);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
+  const { lastClipBook, setLastClipBook } = useLastClipBook();
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
@@ -65,39 +62,67 @@ export default function AddClipScreen() {
 
   // URLパラメータのクリップテキストを設定
   useEffect(() => {
-    if (urlClipText) {
-      setClipText(urlClipText);
+    if (params?.clipText) {
+      setClipText(params.clipText);
     }
-  }, [urlClipText]);
+  }, [params?.clipText]);
 
-  // 書籍情報をロード
+  // URLパラメータのbookIdが変更されたときに書籍情報を更新
   useEffect(() => {
-    async function loadBook() {
+    if (params?.bookId) {
+      console.log("書籍IDが変更されました:", params.bookId);
+
+      async function updateSelectedBook() {
+        try {
+          const books = await BookStorageService.getAllBooks();
+          const foundBook = books.find((b) => b.id === params.bookId);
+
+          if (foundBook) {
+            console.log("選択された書籍を更新:", foundBook.title);
+            setSelectedBook(foundBook);
+          }
+        } catch (error) {
+          console.error("書籍情報の更新に失敗:", error);
+        }
+      }
+
+      updateSelectedBook();
+    }
+  }, [params?.bookId]);
+
+  // 書籍情報をロード(初期ロードのみに使用)
+  useEffect(() => {
+    async function loadInitialBook() {
+      // 書籍がすでに選択されている場合は何もしない
+      if (selectedBook) return;
+
       try {
         setIsLoadingBook(true);
 
         // 書籍の読み込み優先順位:
         // 1. URL指定のbookId
-        // 2. 最後に使用した書籍
+        // 2. 最後に使用した書籍（コンテキストから）
         // 3. 最初に見つかった書籍（書籍がない場合はnull）
 
         let bookToSet: Book | null = null;
         const books = await BookStorageService.getAllBooks();
 
-        if (bookId) {
+        if (params?.bookId) {
           // URLで指定された書籍を探す
-          bookToSet = books.find((b) => b.id === bookId) || null;
+          bookToSet = books.find((b) => b.id === params.bookId) || null;
+          console.log("URLパラメータから書籍を設定:", bookToSet?.title);
         }
 
-        if (!bookToSet) {
-          // 最後に使用した書籍を取得
-          const lastBook = await BookStorageService.getLastClipBook();
-          bookToSet = lastBook;
+        if (!bookToSet && lastClipBook) {
+          // コンテキストから最後に使用した書籍を使用
+          bookToSet = lastClipBook;
+          console.log("最後に使用した書籍を設定:", lastClipBook.title);
         }
 
         if (!bookToSet && books.length > 0) {
           // どの書籍も見つからなかった場合は最初の書籍を使用
           bookToSet = books[0];
+          console.log("最初の書籍を設定:", books[0].title);
         }
 
         setSelectedBook(bookToSet);
@@ -108,19 +133,19 @@ export default function AddClipScreen() {
       }
     }
 
-    loadBook();
-  }, [bookId]);
+    loadInitialBook();
+  }, []);
 
   // 画像が渡された場合の処理
   useEffect(() => {
-    if (imageUri) {
-      setCapturedImageUri(imageUri);
-      if (isOcr === "true") {
+    if (params?.imageUri) {
+      setCapturedImageUri(params.imageUri);
+      if (params?.isOcr === "true") {
         // OCRカメラからの画像の場合、直接画像選択画面を表示
         setShowImageSelection(true);
       }
     }
-  }, [imageUri, isOcr]);
+  }, [params?.imageUri, params?.isOcr]);
 
   // キーボードの表示を監視
   useEffect(() => {
@@ -145,10 +170,14 @@ export default function AddClipScreen() {
 
   // 書籍選択画面に遷移
   const handleBookSelect = () => {
-    // OCRのテキストを保持するために、現在のテキストをクエリパラメータとして渡す
-    router.push(
-      `/book/select?fromClip=true&clipText=${encodeURIComponent(clipText)}`
-    );
+    // 現在のクリップテキストを保持
+    router.push({
+      pathname: "/book/select",
+      params: {
+        fromClip: "true",
+        clipText: clipText,
+      },
+    });
   };
 
   const handleSaveClip = async () => {
@@ -177,6 +206,9 @@ export default function AddClipScreen() {
         page,
         createdAt: new Date().toISOString(),
       });
+
+      // 最後に使用した書籍を更新
+      setLastClipBook(selectedBook);
 
       // 保存成功したらホーム画面に戻る
       Alert.alert("成功", "クリップを保存しました", [
@@ -240,6 +272,14 @@ export default function AddClipScreen() {
     setShowOCRResult(false);
     setShowImageSelection(true);
   };
+
+  // 書籍選択画面から戻ってきたときの処理
+  useEffect(() => {
+    if (params?.selectedBook) {
+      const book = JSON.parse(params.selectedBook) as Book;
+      setSelectedBook(book);
+    }
+  }, [params?.selectedBook]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>

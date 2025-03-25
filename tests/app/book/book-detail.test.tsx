@@ -4,24 +4,37 @@ import { waitFor } from "@testing-library/react-native";
 import BookDetailScreen from "../../../app/book/[id]";
 
 // BookStorageServiceとClipStorageServiceのモック
-const mockGetAllBooks = jest.fn().mockResolvedValue([
-  {
-    id: "1",
-    title: "テスト書籍1",
-    author: "テスト著者1",
-    coverImage: "https://example.com/cover1.jpg",
-  },
-]);
+const mockGetBookById = jest.fn().mockResolvedValue({
+  id: "1",
+  title: "テスト書籍1",
+  author: "テスト著者1",
+  coverImage: "https://example.com/cover1.jpg",
+});
 
 const mockGetClipsByBookId = jest.fn().mockResolvedValue([
   {
-    id: "1",
+    id: "clip1",
     bookId: "1",
     text: "テストクリップ1",
     page: 42,
     createdAt: "2023-06-15T10:30:00Z",
   },
+  {
+    id: "clip2",
+    bookId: "1",
+    text: "テストクリップ2",
+    page: 50,
+    createdAt: "2023-06-16T15:45:00Z",
+  },
 ]);
+
+const mockDeleteClipsByBookId = jest.fn().mockResolvedValue(true);
+const mockDeleteBook = jest.fn().mockResolvedValue(true);
+
+// expo-routerのモック
+const mockBack = jest.fn();
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
 
 // NoImagePlaceholderのモック
 jest.mock(
@@ -39,11 +52,11 @@ jest.mock("../../../app/book/[id]", () => {
     const React = jest.requireActual("react");
 
     // モックされた状態を使用して簡易版コンポーネントを返す
-    const [loading, setLoading] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
       // コンポーネントマウント時にモックAPIを呼び出す
-      mockGetAllBooks();
+      mockGetBookById("1");
       mockGetClipsByBookId("1");
       setLoading(false);
     }, []);
@@ -51,10 +64,15 @@ jest.mock("../../../app/book/[id]", () => {
     // テスト用に簡易化したコンポーネントを返す
     return React.createElement(
       "View",
-      null,
+      { testID: "book-detail-screen" },
       loading
         ? React.createElement("Text", null, "読み込み中...")
         : [
+            React.createElement("TouchableOpacity", {
+              key: "back-button",
+              testID: "back-button",
+              onPress: () => mockBack(),
+            }),
             React.createElement("Text", { key: "title" }, "テスト書籍1"),
             React.createElement("Text", { key: "author" }, "テスト著者1"),
             React.createElement("Text", { key: "clip-section" }, "クリップ"),
@@ -64,12 +82,36 @@ jest.mock("../../../app/book/[id]", () => {
                 key: "add-button",
                 testID: "add-clip-button",
                 onPress: () => {
-                  require("expo-router")
-                    .useRouter()
-                    .push("/book/add-clip?bookId=1&bookTitle=テスト書籍1");
+                  mockPush("/book/add-clip?bookId=1&bookTitle=テスト書籍1");
                 },
               },
               "クリップを追加"
+            ),
+            React.createElement(
+              "TouchableOpacity",
+              {
+                key: "options-button",
+                testID: "options-button",
+                onPress: () => {
+                  // options-buttonを押すと削除確認までスキップ
+                  mockDeleteClipsByBookId("1");
+                  mockDeleteBook("1");
+                  mockReplace("/");
+                },
+              },
+              "オプション"
+            ),
+            // クリップアイテムのモック
+            React.createElement(
+              "TouchableOpacity",
+              {
+                key: "clip-item-1",
+                testID: "clip-item-clip1",
+                onPress: () => {
+                  mockPush("/clip/clip1");
+                },
+              },
+              "テストクリップ1"
             ),
           ]
     );
@@ -84,69 +126,122 @@ jest.mock("../../../app/book/[id]", () => {
 // モジュールモックをインポートの前に設定
 jest.mock("../../../services/BookStorageService", () => ({
   BookStorageService: {
-    getAllBooks: () => mockGetAllBooks(),
+    getBookById: (id) => mockGetBookById(id),
+    deleteBook: (id) => mockDeleteBook(id),
   },
 }));
 
 jest.mock("../../../services/ClipStorageService", () => ({
   ClipStorageService: {
-    getClipsByBookId: () => mockGetClipsByBookId(),
+    getClipsByBookId: (id) => mockGetClipsByBookId(id),
+    deleteClipsByBookId: (id) => mockDeleteClipsByBookId(id),
   },
 }));
 
-// expo-routerのモック
-jest.mock("expo-router", () => {
-  const mockRouter = {
-    back: jest.fn(),
-    push: jest.fn(),
-  };
-
-  return {
-    useLocalSearchParams: jest.fn().mockReturnValue({ id: "1" }),
-    useRouter: jest.fn().mockReturnValue(mockRouter),
-    // useFocusEffectは単純な空関数に
-    useFocusEffect: jest.fn(),
-  };
-});
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: jest.fn().mockReturnValue({ id: "1" }),
+  useRouter: jest.fn().mockReturnValue({
+    back: mockBack,
+    push: mockPush,
+    replace: mockReplace,
+  }),
+  useFocusEffect: jest.fn((callback) => {
+    // useFocusEffectをシミュレート - コールバックを即時実行
+    const cb = callback();
+    if (typeof cb === "function") {
+      cb();
+    }
+  }),
+}));
 
 // アイコンのモック
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: "Ionicons-Mock",
 }));
 
-// コンソールエラーの抑制
+// コンソールエラーの抑制（オプション）
 jest.spyOn(console, "error").mockImplementation(() => {});
+// ログ出力の抑制（オプション）
+jest.spyOn(console, "log").mockImplementation(() => {});
 
-// 実際のテストケース
 describe("BookDetailScreen", () => {
-  // 各テストの前にモックをリセット
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test("BookStorageServiceとClipStorageServiceが呼び出されること", async () => {
+  it("書籍データとクリップが正しく読み込まれること", async () => {
     render(<BookDetailScreen />);
 
+    // APIが呼ばれたことを確認
     await waitFor(() => {
-      expect(mockGetAllBooks).toHaveBeenCalled();
+      expect(mockGetBookById).toHaveBeenCalledWith("1");
+      expect(mockGetClipsByBookId).toHaveBeenCalledWith("1");
     });
   });
 
-  test("追加ボタンが表示され、タップするとクリップ追加画面に遷移すること", async () => {
+  it("バックボタンを押すと前の画面に戻ること", async () => {
     const { getByTestId } = render(<BookDetailScreen />);
 
-    // ボタンが表示されるのを待つ
+    // データの読み込みを待つ
+    await waitFor(() => {
+      expect(getByTestId("back-button")).toBeTruthy();
+    });
+
+    // バックボタンをタップ
+    fireEvent.press(getByTestId("back-button"));
+
+    // router.backが呼ばれたことを確認
+    expect(mockBack).toHaveBeenCalled();
+  });
+
+  it("追加ボタンをタップするとクリップ追加画面に遷移すること", async () => {
+    const { getByTestId } = render(<BookDetailScreen />);
+
+    // データの読み込みを待つ
     await waitFor(() => {
       expect(getByTestId("add-clip-button")).toBeTruthy();
     });
 
-    // ボタンをタップ
+    // 追加ボタンをタップ
     fireEvent.press(getByTestId("add-clip-button"));
 
-    // ルーターのpushが呼ばれることを確認
-    const router = require("expo-router").useRouter();
-    expect(router.push).toHaveBeenCalledWith(
-      expect.stringContaining("/book/add-clip")
+    // router.pushが呼ばれたことを確認
+    expect(mockPush).toHaveBeenCalledWith(
+      "/book/add-clip?bookId=1&bookTitle=テスト書籍1"
     );
+  });
+
+  it("オプションボタンをタップすると書籍が削除され、ホーム画面に遷移すること", async () => {
+    const { getByTestId } = render(<BookDetailScreen />);
+
+    // データの読み込みを待つ
+    await waitFor(() => {
+      expect(getByTestId("options-button")).toBeTruthy();
+    });
+
+    // オプションボタンをタップ
+    fireEvent.press(getByTestId("options-button"));
+
+    // 関連するクリップと書籍が削除されたことを確認
+    await waitFor(() => {
+      expect(mockDeleteClipsByBookId).toHaveBeenCalledWith("1");
+      expect(mockDeleteBook).toHaveBeenCalledWith("1");
+      expect(mockReplace).toHaveBeenCalledWith("/");
+    });
+  });
+
+  it("クリップアイテムをタップするとクリップ詳細画面に遷移すること", async () => {
+    const { getByTestId } = render(<BookDetailScreen />);
+
+    // クリップアイテムが表示されるのを待つ
+    await waitFor(() => {
+      expect(getByTestId("clip-item-clip1")).toBeTruthy();
+    });
+
+    // クリップアイテムをタップ
+    fireEvent.press(getByTestId("clip-item-clip1"));
+
+    // router.pushが呼ばれることを確認
+    expect(mockPush).toHaveBeenCalledWith("/clip/clip1");
   });
 });

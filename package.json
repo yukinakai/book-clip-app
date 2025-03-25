@@ -11,7 +11,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "pretest": "npm run lint; cp .gitignore .cursorignore && tree -a -I 'node_modules|.expo|.git|.DS_Store' > docs/DIRECTORY.md",
+    "pretest": "npm run lint && cp .gitignore .cursorignore && tree -a -I 'node_modules|.expo|.git|.DS_Store' > docs/DIRECTORY.md && git add .cursorignore docs/DIRECTORY.md && git diff --cached --quiet || git commit -m 'autoupdate: .cursorignore and directory structure docs'",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch --config jest.config.cjs",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --config jest.config.cjs",
