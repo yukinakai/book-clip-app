@@ -73,12 +73,25 @@ export default function OthersScreen() {
   const handleWithdraw = async () => {
     setIsLoading(true);
     try {
-      await deleteAccount();
+      console.log("退会処理を開始します");
+      const result = await deleteAccount();
+      console.log("退会処理の結果:", result);
+
       setWithdrawDialogVisible(false);
-      // 退会後はホーム画面に戻る
-      router.replace("/(tabs)");
+
+      // 退会成功の場合、ホーム画面に遷移
+      if (result) {
+        console.log("退会処理が成功しました、ホーム画面に遷移します");
+        router.replace("/(tabs)");
+      } else {
+        console.error(
+          "退会処理が失敗しました、ダイアログは閉じましたが退会は完了していません"
+        );
+        // ここでユーザーにエラーを表示する処理を追加することも検討
+      }
     } catch (error) {
       console.error("退会処理エラー:", error);
+      // エラー表示を追加することも検討
     } finally {
       setIsLoading(false);
     }
