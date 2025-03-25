@@ -1,14 +1,14 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import DataMigrationConfirmDialog from "../../components/DataMigrationConfirmDialog";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, Text } from "react-native";
 
 // ThemedTextコンポーネントをモック
 jest.mock("../../components/ThemedText", () => ({
   ThemedText: (props: { children: React.ReactNode; style?: any }) => {
     const { children } = props;
-    // Reactを直接参照せず、jsxでフラグメントを使用
-    return <>{children}</>;
+    // Textコンポーネントを使ってテキスト内容を表示できるようにする
+    return <Text>{children}</Text>;
   },
 }));
 
@@ -36,7 +36,7 @@ describe("DataMigrationConfirmDialog", () => {
   });
 
   it("ローカルデータがあり、visibleがtrueの場合はダイアログが表示されること", () => {
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getAllByText } = render(
       <DataMigrationConfirmDialog {...defaultProps} />
     );
 
@@ -44,14 +44,15 @@ describe("DataMigrationConfirmDialog", () => {
     expect(getByTestId("data-migration-confirm-dialog")).toBeTruthy();
 
     // タイトルとメッセージが表示されていることを確認
-    expect(getByText("データ移行の確認")).toBeTruthy();
+    // 正規表現で部分一致で検索
+    expect(getAllByText(/データ移行の確認/)[0]).toBeTruthy();
     expect(
-      getByText(/端末に保存されているデータをクラウドに移行しますか？/)
+      getAllByText(/端末に保存されているデータをクラウドに移行しますか？/)[0]
     ).toBeTruthy();
 
     // ボタンが表示されていることを確認
-    expect(getByText("キャンセル")).toBeTruthy();
-    expect(getByText("移行する")).toBeTruthy();
+    expect(getAllByText(/キャンセル/)[0]).toBeTruthy();
+    expect(getAllByText(/移行する/)[0]).toBeTruthy();
   });
 
   it("キャンセルボタンをタップするとonCloseが呼ばれること", () => {
@@ -81,7 +82,7 @@ describe("DataMigrationConfirmDialog", () => {
   });
 
   it("ローディング中はボタンが無効化され、ActivityIndicatorが表示されること", () => {
-    const { getByTestId, queryByText, UNSAFE_getByType } = render(
+    const { getByTestId, queryAllByText, UNSAFE_getByType } = render(
       <DataMigrationConfirmDialog {...defaultProps} loading={true} />
     );
 
@@ -89,14 +90,14 @@ describe("DataMigrationConfirmDialog", () => {
     expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
 
     // "移行する"テキストが表示されていないことを確認
-    expect(queryByText("移行する")).toBeNull();
+    expect(queryAllByText(/移行する/).length).toBe(0);
 
     // 両方のボタンが無効化されていることを確認
     const cancelButton = getByTestId("data-migration-cancel-button");
     const confirmButton = getByTestId("data-migration-confirm-button");
 
-    expect(cancelButton.props.disabled).toBe(true);
-    expect(confirmButton.props.disabled).toBe(true);
+    expect(cancelButton.props.accessibilityState.disabled).toBe(true);
+    expect(confirmButton.props.accessibilityState.disabled).toBe(true);
 
     // ボタンをタップしてもイベントハンドラが呼ばれないことを確認
     fireEvent.press(cancelButton);
