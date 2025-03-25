@@ -5,6 +5,7 @@ import { StorageInterface } from "./StorageInterface";
 // ストレージキー
 const BOOKS_STORAGE_KEY = "@books";
 const CLIPS_STORAGE_KEY = "@clips";
+const LAST_CLIP_BOOK_KEY = "@last_clip_book";
 
 /**
  * AsyncStorageを使用したローカルストレージの実装
@@ -159,6 +160,25 @@ export class LocalStorageService implements StorageInterface {
     } catch (error) {
       console.error("Error clearing all data:", error);
       throw error;
+    }
+  }
+
+  async setLastClipBook(book: Book): Promise<void> {
+    try {
+      await AsyncStorage.setItem(LAST_CLIP_BOOK_KEY, JSON.stringify(book));
+    } catch (error) {
+      console.error("Error setting last clip book:", error);
+      throw error;
+    }
+  }
+
+  async getLastClipBook(): Promise<Book | null> {
+    try {
+      const bookJson = await AsyncStorage.getItem(LAST_CLIP_BOOK_KEY);
+      return bookJson ? JSON.parse(bookJson) : null;
+    } catch (error) {
+      console.error("Error getting last clip book:", error);
+      return null;
     }
   }
 }
