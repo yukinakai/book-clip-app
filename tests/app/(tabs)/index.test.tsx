@@ -127,6 +127,8 @@ const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: jest.fn().mockReturnValue({
     push: mockPush,
+    replace: jest.fn(),
+    back: jest.fn(),
   }),
 }));
 
