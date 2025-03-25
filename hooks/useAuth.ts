@@ -5,6 +5,7 @@ import {
   StorageMigrationService,
   MigrationProgress,
 } from "../services/StorageMigrationService";
+import { LocalStorageService } from "../services/LocalStorageService";
 
 // 無視するエラーメッセージのリスト
 const IGNORED_ERROR_MESSAGES = ["auth session missing", "session not found"];
@@ -15,6 +16,11 @@ export function useAuth() {
   const [error, setError] = useState<Error | null>(null);
   const [emailSent, setEmailSent] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
+
+  // 会員登録検出のための状態
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [hasLocalData, setHasLocalData] = useState(false);
+  const [showMigrationConfirm, setShowMigrationConfirm] = useState(false);
 
   // データ移行の状態
   const [migrationProgress, setMigrationProgress] = useState<MigrationProgress>(
@@ -41,6 +47,19 @@ export function useAuth() {
     }
 
     return error;
+  };
+
+  // ローカルデータの存在確認
+  const checkLocalData = async () => {
+    try {
+      const localStorage = new LocalStorageService();
+      const books = await localStorage.getAllBooks();
+      const clips = await localStorage.getAllClips();
+      return books.length > 0 || clips.length > 0;
+    } catch (error) {
+      console.error("Failed to check local data:", error);
+      return false;
+    }
   };
 
   // 認証状態の監視
@@ -71,6 +90,21 @@ export function useAuth() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       const newUser = session?.user ?? null;
+      const previousUser = user;
+
+      // 新規会員登録の検出（ユーザーが不在→存在に変わった場合）
+      if (!previousUser && newUser && event === "SIGNED_IN") {
+        setIsNewUser(true);
+
+        // ローカルデータがあるか確認
+        const hasData = await checkLocalData();
+        setHasLocalData(hasData);
+
+        if (hasData) {
+          // データ移行確認ダイアログを表示
+          setShowMigrationConfirm(true);
+        }
+      }
 
       // ユーザー状態の変更があった場合の処理
       if (
@@ -178,11 +212,17 @@ export function useAuth() {
     }
   };
 
+  // データ移行のキャンセル
+  const cancelMigration = () => {
+    setShowMigrationConfirm(false);
+  };
+
   // 会員登録時のデータ移行処理
   const migrateLocalDataToSupabase = async () => {
     if (!user) return false;
 
     try {
+      setShowMigrationConfirm(false);
       setShowMigrationProgress(true);
 
       const result = await StorageMigrationService.migrateLocalToSupabase(
@@ -221,5 +261,9 @@ export function useAuth() {
     migrationProgress,
     showMigrationProgress,
     migrateLocalDataToSupabase,
+    isNewUser,
+    hasLocalData,
+    showMigrationConfirm,
+    cancelMigration,
   };
 }
