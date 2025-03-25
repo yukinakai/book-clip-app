@@ -25,10 +25,25 @@ export class ClipStorageService extends StorageService {
   }
 
   /**
-   * 書籍IDに基づくクリップを取得
+   * 書籍IDに関連するクリップを取得
    */
   static async getClipsByBookId(bookId: string): Promise<Clip[]> {
     return this.storageBackend.getClipsByBookId(bookId);
+  }
+
+  /**
+   * クリップIDで単一のクリップを取得
+   * この方法はストレージバックエンドがサポートしている場合は効率的に動作
+   */
+  static async getClipById(clipId: string): Promise<Clip | null> {
+    // StorageInterfaceが対応していればそのメソッドを使用
+    if ("getClipById" in this.storageBackend) {
+      return (this.storageBackend as any).getClipById(clipId);
+    }
+
+    // 対応していない場合は全クリップから検索
+    const clips = await this.getAllClips();
+    return clips.find((clip) => clip.id === clipId) || null;
   }
 
   /**
@@ -41,12 +56,12 @@ export class ClipStorageService extends StorageService {
   /**
    * クリップを更新
    */
-  static async updateClip(updatedClip: Clip): Promise<void> {
-    return this.storageBackend.updateClip(updatedClip);
+  static async updateClip(clip: Clip): Promise<void> {
+    return this.storageBackend.updateClip(clip);
   }
 
   /**
-   * 書籍IDに基づくクリップをすべて削除
+   * 書籍IDに関連するすべてのクリップを削除
    */
   static async deleteClipsByBookId(bookId: string): Promise<void> {
     return this.storageBackend.deleteClipsByBookId(bookId);

@@ -16,6 +16,7 @@ export interface StorageInterface {
   saveClip(clip: Clip): Promise<void>;
   getAllClips(): Promise<Clip[]>;
   getClipsByBookId(bookId: string): Promise<Clip[]>;
+  getClipById(clipId: string): Promise<Clip | null>;
   removeClip(clipId: string): Promise<void>;
   updateClip(clip: Clip): Promise<void>;
   deleteClipsByBookId(bookId: string): Promise<void>;

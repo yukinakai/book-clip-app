@@ -147,6 +147,9 @@ export class LocalStorageService implements StorageInterface {
     }
   }
 
+  /**
+   * 書籍IDに基づくクリップを取得
+   */
   async getClipsByBookId(bookId: string): Promise<Clip[]> {
     try {
       const allClips = await this.getAllClips();
@@ -154,6 +157,34 @@ export class LocalStorageService implements StorageInterface {
     } catch (error) {
       console.error("Error getting clips by book ID:", error);
       return [];
+    }
+  }
+
+  /**
+   * クリップIDで単一のクリップを取得
+   */
+  async getClipById(clipId: string): Promise<Clip | null> {
+    try {
+      console.log("ローカルストレージからクリップを単一取得 - ID:", clipId);
+      const startTime = Date.now();
+
+      // ローカルストレージからすべてのクリップを取得
+      const clipsData = await AsyncStorage.getItem(CLIPS_STORAGE_KEY);
+      if (!clipsData) return null;
+
+      // JSONデータを解析
+      const clips: Clip[] = JSON.parse(clipsData);
+
+      // 指定されたIDのクリップを検索
+      const clip = clips.find((c) => c.id === clipId);
+
+      const endTime = Date.now();
+      console.log(`クリップ取得完了 (${endTime - startTime}ms)`);
+
+      return clip || null;
+    } catch (error) {
+      console.error("Error getting clip by ID from local storage:", error);
+      return null;
     }
   }
 

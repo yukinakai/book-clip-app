@@ -285,6 +285,48 @@ export class SupabaseStorageService implements StorageInterface {
     }
   }
 
+  /**
+   * クリップIDで単一のクリップを取得
+   * Supabaseは単一レコードの取得が効率的
+   */
+  async getClipById(clipId: string): Promise<Clip | null> {
+    try {
+      if (!this.userId) return null;
+
+      console.log("Supabaseからクリップを単一取得 - ID:", clipId);
+      const startTime = Date.now();
+
+      const { data, error } = await supabase
+        .from(this.CLIPS_TABLE)
+        .select("*")
+        .eq("id", clipId)
+        .eq("user_id", this.userId)
+        .single();
+
+      if (error) {
+        console.error("単一クリップ取得エラー:", error);
+        throw error;
+      }
+
+      const endTime = Date.now();
+      console.log(`クリップ取得完了 (${endTime - startTime}ms)`);
+
+      if (!data) return null;
+
+      // データベースのスネークケースからキャメルケースに変換
+      return {
+        id: data.id,
+        bookId: data.book_id,
+        text: data.text,
+        page: data.page,
+        createdAt: data.created_at,
+      };
+    } catch (error) {
+      console.error("Error getting clip by ID from Supabase:", error);
+      throw error;
+    }
+  }
+
   async removeClip(clipId: string): Promise<void> {
     try {
       if (!this.userId) throw new Error("認証されていません");
