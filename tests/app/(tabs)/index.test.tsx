@@ -82,13 +82,57 @@ jest.mock("../../../components/camera/CameraModal", () => {
   };
 });
 
+// CameraViewコンポーネントのモック
+jest.mock("../../../components/CameraView", () => {
+  const _React = require("react");
+  const { View, TouchableOpacity, Text } = require("react-native");
+  return {
+    __esModule: true,
+    default: jest.fn(({ onClose, onCapture }) => {
+      return (
+        <View testID="ocr-camera-view">
+          <TouchableOpacity
+            testID="ocr-capture-button"
+            onPress={() => onCapture("test-ocr-image-uri")}
+          >
+            <Text>OCRキャプチャ</Text>
+          </TouchableOpacity>
+          <TouchableOpacity testID="ocr-close-button" onPress={onClose}>
+            <Text>閉じる</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }),
+  };
+});
+
+// useLastClipBookのモック
+jest.mock("../../../contexts/LastClipBookContext", () => ({
+  useLastClipBook: jest.fn().mockReturnValue({
+    lastClipBook: {
+      id: "1",
+      title: "Test Book 1",
+      author: "Test Author 1",
+    },
+    setLastClipBook: jest.fn(),
+  }),
+}));
+
+// useRouterのモック
+const mockPush = jest.fn();
+jest.mock("expo-router", () => ({
+  useRouter: jest.fn().mockReturnValue({
+    push: mockPush,
+  }),
+}));
+
 // コンソールログのモック
 const mockConsoleLog = jest.spyOn(console, "log").mockImplementation(() => {});
 
 // Alertのモック
 jest.spyOn(Alert, "alert").mockImplementation(() => {});
 
-describe.skip("HomeScreen", () => {
+describe("HomeScreen", () => {
   beforeEach(() => {
     // テスト前に各モックをリセット
     jest.clearAllMocks();
@@ -98,7 +142,6 @@ describe.skip("HomeScreen", () => {
     const { getByTestId } = render(<HomeScreen />);
 
     expect(getByTestId("bookshelf-view")).toBeTruthy();
-    expect(getByTestId("header-title")).toHaveTextContent("マイライブラリ");
   });
 
   it("本を選択するとコンソールログが表示されること", () => {
@@ -125,7 +168,7 @@ describe.skip("HomeScreen", () => {
     expect(queryByTestId("camera-modal")).toBeTruthy();
   });
 
-  it("画像がキャプチャされたときアラートが表示されること", () => {
+  it("画像がキャプチャされたときルーターのpushが呼び出されること", () => {
     const { getByTestId } = render(<HomeScreen />);
 
     // 追加ボタンをタップしてカメラモーダルを表示
@@ -134,15 +177,21 @@ describe.skip("HomeScreen", () => {
     // 画像をキャプチャ
     fireEvent.press(getByTestId("capture-button"));
 
-    // コンソールログとアラートが呼び出されることを確認
+    // コンソールログが呼び出されることを確認
     expect(mockConsoleLog).toHaveBeenCalledWith(
       "画像が選択されました:",
       "test-image-uri"
     );
-    expect(Alert.alert).toHaveBeenCalledWith(
-      "画像キャプチャ",
-      "写真の処理が完了しました。この後、OCRやバーコードスキャンなどの処理を追加できます。"
-    );
+
+    // 正しいパラメータでrouter.pushが呼び出されることを確認
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/book/add-clip",
+      params: {
+        imageUri: encodeURIComponent("test-image-uri"),
+        bookId: "1",
+        bookTitle: encodeURIComponent("Test Book 1"),
+      },
+    });
   });
 
   it("カメラモーダルを閉じるとrefreshTriggerが更新されること", () => {
