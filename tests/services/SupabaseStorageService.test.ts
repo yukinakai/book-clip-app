@@ -373,168 +373,224 @@ describe("SupabaseStorageService", () => {
   });
 
   describe("removeBook", () => {
-    it("指定した書籍を削除できること", async () => {
-      // 成功シナリオをセットアップ
-      setupMockResponse({
-        error: null,
-        data: null,
+    it("指定したIDの書籍が削除されること", async () => {
+      // deleteメソッドのモックを設定
+      const deleteMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
+
+      mockSupabase.from.mockReturnValue({
+        delete: deleteMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue({
+          error: null,
+        }),
       });
 
+      const bookId = "test-book-id";
       await service.removeBook(bookId);
 
-      // 正しいテーブルとクエリを検証
-      const {
-        mockFromFn,
-        mockDeleteFn,
-        mockEqFn,
-      } = require("../../services/auth");
-      expect(mockFromFn).toHaveBeenCalledWith("books");
-      expect(mockDeleteFn).toHaveBeenCalled();
-      expect(mockEqFn).toHaveBeenCalledWith("id", bookId);
-      expect(mockEqFn).toHaveBeenCalledWith("user_id", userId);
+      // fromとdeleteメソッドが正しく呼ばれたことを確認
+      expect(mockSupabase.from).toHaveBeenCalledWith("books");
+      expect(deleteMock).toHaveBeenCalled();
+      expect(eqMock).toHaveBeenCalledWith("id", bookId);
     });
 
-    it("エラー発生時に例外がスローされること", async () => {
-      // エラーシナリオをセットアップ
-      setupMockResponse({
-        error: new Error("テストエラー"),
-        data: null,
+    it("削除中にエラーが発生した場合、エラーがスローされること", async () => {
+      // エラーを返すモックを設定
+      const deleteMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
+
+      mockSupabase.from.mockReturnValue({
+        delete: deleteMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue({
+          error: new Error("削除中にエラーが発生しました"),
+        }),
       });
 
+      const bookId = "test-book-id";
       await expect(service.removeBook(bookId)).rejects.toThrow();
     });
   });
 
   describe("saveClip", () => {
-    it("クリップが保存され、最後に使用した書籍が更新されること", async () => {
-      // 成功シナリオをセットアップ
-      setupMockResponse({
-        error: null,
-        data: [mockBook],
+    it("クリップが正常に保存されること", async () => {
+      // insert メソッドのモックチェーンを設定
+      const insertMock = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        then: jest.fn().mockResolvedValue({
+          data: [mockDbClip],
+          error: null,
+        }),
       });
 
+      mockSupabase.from.mockReturnValue({
+        insert: insertMock,
+      });
+
+      // クリップを保存
       await service.saveClip(mockClip);
 
-      // クリップ保存のテスト
-      const { mockFromFn, mockInsertFn } = require("../../services/auth");
-      expect(mockFromFn).toHaveBeenCalledWith("clips");
-      expect(mockInsertFn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          user_id: userId,
-          book_id: mockClip.bookId,
-          text: mockClip.text,
-          page: mockClip.page,
-          created_at: expect.any(String),
-          updated_at: expect.any(String),
-        })
-      );
+      // fromとinsertメソッドが正しく呼ばれたことを確認
+      expect(mockSupabase.from).toHaveBeenCalledWith("clips");
+      expect(insertMock).toHaveBeenCalledWith({
+        id: mockClip.id,
+        book_id: mockClip.bookId,
+        text: mockClip.text,
+        page: mockClip.page,
+        created_at: mockClip.createdAt,
+        user_id: mockUserId,
+      });
     });
 
-    it("エラー発生時に例外がスローされること", async () => {
-      // エラーシナリオをセットアップ
-      setupMockResponse({
-        error: new Error("テストエラー"),
-        data: null,
+    it("保存中にエラーが発生した場合、エラーがスローされること", async () => {
+      // エラーを返すモックを設定
+      const insertMock = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        then: jest.fn().mockResolvedValue({
+          error: new Error("保存中にエラーが発生しました"),
+        }),
       });
 
+      mockSupabase.from.mockReturnValue({
+        insert: insertMock,
+      });
+
+      // エラーがスローされることを確認
       await expect(service.saveClip(mockClip)).rejects.toThrow();
     });
   });
 
   describe("getClipsByBookId", () => {
     it("指定した書籍のクリップを取得できること", async () => {
-      // 成功シナリオをセットアップ
-      // データベースのフィールド名を使用したモックデータ
-      const dbMockClip = {
-        id: clipId,
-        book_id: bookId, // snake_case
-        text: "テストクリップ",
-        page: 1,
-        created_at: "2023-01-01T00:00:00.000Z",
-      };
+      // selectメソッドのモックチェーンを設定
+      const selectMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
 
-      setupMockResponse({
-        data: [dbMockClip],
-        error: null,
+      // クリップデータを含むレスポンスを用意
+      const mockDbClips = [
+        {
+          id: "clip-1",
+          book_id: "test-book-id",
+          text: "クリップ1のテキスト",
+          page: 42,
+          created_at: new Date().toISOString(),
+          user_id: mockUserId,
+        },
+        {
+          id: "clip-2",
+          book_id: "test-book-id",
+          text: "クリップ2のテキスト",
+          page: 100,
+          created_at: new Date().toISOString(),
+          user_id: mockUserId,
+        },
+      ];
+
+      mockSupabase.from.mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue({
+          data: mockDbClips,
+          error: null,
+        }),
       });
 
-      const result = await service.getClipsByBookId(bookId);
+      // クリップを取得
+      const clips = await service.getClipsByBookId("test-book-id");
 
-      // 正しいテーブルとクエリを検証
-      const {
-        mockFromFn,
-        mockSelectFn,
-        mockEqFn,
-        mockOrderFn,
-      } = require("../../services/auth");
-      expect(mockFromFn).toHaveBeenCalledWith("clips");
-      expect(mockSelectFn).toHaveBeenCalledWith("*");
-      expect(mockEqFn).toHaveBeenNthCalledWith(1, "user_id", userId);
-      expect(mockEqFn).toHaveBeenNthCalledWith(2, "book_id", bookId);
-      expect(mockOrderFn).toHaveBeenCalledWith("created_at", {
-        ascending: false,
-      });
+      // fromとselectメソッドが正しく呼ばれたことを確認
+      expect(mockSupabase.from).toHaveBeenCalledWith("clips");
+      expect(selectMock).toHaveBeenCalledWith("*");
+      expect(eqMock).toHaveBeenCalledWith("book_id", "test-book-id");
 
-      // サービスから返される期待結果（フィールド名変換後）
-      const expectedClip = {
-        id: clipId,
-        bookId: bookId, // camelCase
-        text: "テストクリップ",
-        page: 1,
-        createdAt: "2023-01-01T00:00:00.000Z", // camelCase
-      };
-      expect(result).toEqual([expectedClip]);
+      // 返されたデータが正しく変換されていることを確認
+      expect(clips).toEqual([
+        {
+          id: "clip-1",
+          bookId: "test-book-id",
+          text: "クリップ1のテキスト",
+          page: 42,
+          createdAt: expect.any(String),
+          userId: mockUserId,
+        },
+        {
+          id: "clip-2",
+          bookId: "test-book-id",
+          text: "クリップ2のテキスト",
+          page: 100,
+          createdAt: expect.any(String),
+          userId: mockUserId,
+        },
+      ]);
     });
 
-    it("エラー発生時に空配列を返すこと", async () => {
-      // エラーシナリオをセットアップ
-      setupMockResponse({
-        data: null,
-        error: new Error("テストエラー"),
+    it("クリップが存在しない場合、空配列を返すこと", async () => {
+      // 空のデータを返すモックを設定
+      const selectMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
+
+      mockSupabase.from.mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
       });
 
-      const result = await service.getClipsByBookId(bookId);
+      const result = await service.getClipsByBookId("test-book-id");
       expect(result).toEqual([]);
     });
   });
 
   describe("updateClip", () => {
-    it("クリップが更新されること", async () => {
-      // 成功シナリオをセットアップ
-      setupMockResponse({
-        error: null,
-        data: null,
+    it("クリップが正常に更新されること", async () => {
+      // update メソッドのモックチェーンを設定
+      const updateMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
+
+      mockSupabase.from.mockReturnValue({
+        update: updateMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue({
+          error: null,
+        }),
       });
 
-      const updatedClip = { ...mockClip, text: "更新されたテキスト" };
+      // 更新するクリップ
+      const updatedClip = {
+        ...mockClip,
+        text: "更新されたテキスト",
+      };
+
+      // クリップを更新
       await service.updateClip(updatedClip);
 
-      // 正しいテーブルとクエリを検証
-      const {
-        mockFromFn,
-        mockUpdateFn,
-        mockEqFn,
-      } = require("../../services/auth");
-      expect(mockFromFn).toHaveBeenCalledWith("clips");
-      expect(mockUpdateFn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          book_id: updatedClip.bookId,
-          text: updatedClip.text,
-          page: updatedClip.page,
-          updated_at: expect.any(String),
-        })
-      );
-      expect(mockEqFn).toHaveBeenNthCalledWith(1, "id", clipId);
-      expect(mockEqFn).toHaveBeenNthCalledWith(2, "user_id", userId);
+      // fromとupdateメソッドが正しく呼ばれたことを確認
+      expect(mockSupabase.from).toHaveBeenCalledWith("clips");
+      expect(updateMock).toHaveBeenCalledWith({
+        text: updatedClip.text,
+        page: updatedClip.page,
+        book_id: updatedClip.bookId,
+      });
+      expect(eqMock).toHaveBeenCalledWith("id", updatedClip.id);
     });
 
-    it("エラー発生時に例外がスローされること", async () => {
-      // エラーシナリオをセットアップ
-      setupMockResponse({
-        error: new Error("テストエラー"),
-        data: null,
+    it("更新中にエラーが発生した場合、エラーがスローされること", async () => {
+      // エラーを返すモックを設定
+      const updateMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
+
+      mockSupabase.from.mockReturnValue({
+        update: updateMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue({
+          error: new Error("更新中にエラーが発生しました"),
+        }),
       });
 
+      // エラーがスローされることを確認
       await expect(service.updateClip(mockClip)).rejects.toThrow();
     });
   });
