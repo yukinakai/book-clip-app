@@ -71,40 +71,75 @@ export class AuthService {
   // ユーザーアカウントの削除（退会処理）
   static async deleteAccount() {
     try {
+      console.log("アカウント削除開始");
       // 現在のセッションを取得
       const {
         data: { session },
         error: sessionError,
       } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-      if (!session) throw new Error("認証セッションが見つかりません");
 
-      // Edge Functionを呼び出してアカウントを削除
-      const { data, error: functionError } = await supabase.functions.invoke(
-        "delete-account",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
+      if (sessionError) {
+        console.error("セッション取得エラー:", sessionError);
+        throw sessionError;
+      }
+
+      if (!session) {
+        console.error("セッションが見つかりません");
+        throw new Error("認証セッションが見つかりません");
+      }
+
+      console.log("アクセストークンを取得しました");
+
+      try {
+        // 直接fetchを使用してEdge Functionを呼び出す
+        const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error("環境変数が設定されていません");
         }
-      );
 
-      if (functionError) {
-        console.error("Edge Function error:", functionError);
-        throw new Error(
-          `アカウント削除に失敗しました: ${functionError.message}`
+        console.log("Edge Function直接呼び出し開始");
+        const response = await fetch(
+          `${supabaseUrl}/functions/v1/delete-account`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              "Content-Type": "application/json",
+              apikey: supabaseAnonKey,
+            },
+            body: JSON.stringify({
+              userId: session.user.id,
+              action: "delete_account",
+            }),
+          }
         );
-      }
 
-      if (!data?.success) {
-        console.error("Account deletion failed:", data);
-        throw new Error(
-          "アカウント削除に失敗しました。管理者に連絡してください。"
-        );
-      }
+        console.log("Edge Function呼び出し完了", {
+          status: response.status,
+          statusText: response.statusText,
+        });
 
-      return data;
+        // レスポンスを解析
+        const data = await response.json();
+        console.log("レスポンスデータ:", data);
+
+        if (!response.ok) {
+          console.error("アカウント削除失敗レスポンス:", data);
+          throw new Error(data?.error || "アカウント削除に失敗しました");
+        }
+
+        console.log("アカウント削除成功:", data);
+        return data;
+      } catch (functionCallError) {
+        console.error("Edge Function処理エラー:", functionCallError);
+        if (functionCallError instanceof Error) {
+          console.error("エラーメッセージ:", functionCallError.message);
+          console.error("エラースタック:", functionCallError.stack);
+        }
+        throw functionCallError;
+      }
     } catch (error) {
       console.error("アカウント削除エラー:", error);
       throw error;

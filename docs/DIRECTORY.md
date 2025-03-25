@@ -16,6 +16,7 @@
 ├── README.md
 ├── app
 │   ├── (auth)
+│   │   ├── _layout.tsx
 │   │   └── login.tsx
 │   ├── (tabs)
 │   │   ├── _layout.tsx
@@ -61,6 +62,8 @@
 │   ├── AuthWrapper.tsx
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
+│   ├── DataMigrationConfirmDialog.tsx
+│   ├── DataMigrationProgress.tsx
 │   ├── HapticTab.tsx
 │   ├── ImageSelectionView.tsx
 │   ├── NoImagePlaceholder.tsx
@@ -83,13 +86,18 @@
 │   ├── Colors.ts
 │   └── MockData.ts
 ├── contexts
-│   └── AuthContext.tsx
+│   ├── AuthContext.tsx
+│   └── LastClipBookContext.tsx
 ├── docs
 │   ├── ARCHITECTURE.md
 │   ├── DIRECTORY.md
 │   ├── PRD.md
 │   ├── PRODUCT_OVERVIEW.md
-│   └── PROGRESS.md
+│   ├── PROGRESS.md
+│   ├── specifications
+│   │   └── AUTH_DATA_MIGRATION.md
+│   └── tests
+│       └── AUTH_DATA_MIGRATION_E2E.md
 ├── eslint.config.js
 ├── expo-env.d.ts
 ├── hooks
@@ -109,8 +117,12 @@
 ├── services
 │   ├── BookStorageService.ts
 │   ├── ClipStorageService.ts
+│   ├── LocalStorageService.ts
 │   ├── OCRService.ts
 │   ├── RakutenBookService.ts
+│   ├── StorageInterface.ts
+│   ├── StorageMigrationService.ts
+│   ├── SupabaseStorageService.ts
 │   ├── auth.ts
 │   └── bookSearch.ts
 ├── supabase
@@ -121,11 +133,17 @@
 │   │   ├── postgres-version
 │   │   ├── project-ref
 │   │   └── rest-version
-│   └── functions
-│       ├── README.md
-│       └── delete-account
-│           ├── deno.json
-│           └── index.ts
+│   ├── functions
+│   │   ├── README.md
+│   │   └── delete-account
+│   │       ├── deno.json
+│   │       ├── deno.lock
+│   │       └── index.ts
+│   └── supabase
+│       ├── .temp
+│       └── supabase
+│           ├── .temp
+│           └── functions
 ├── tests
 │   ├── __mocks__
 │   │   └── @react-native-async-storage
@@ -149,6 +167,8 @@
 │   │   ├── AuthWrapper.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── CameraView.test.tsx
+│   │   ├── DataMigrationConfirmDialog.test.tsx
+│   │   ├── DataMigrationProgress.test.tsx
 │   │   ├── ImageSelectionView.test.tsx
 │   │   ├── OCRResultView.test.tsx
 │   │   ├── ParallaxScrollView.test.tsx
@@ -160,14 +180,20 @@
 │   │       ├── BarcodeScanner.test.tsx
 │   │       └── CameraModal.test.tsx
 │   ├── contexts
-│   │   └── AuthContext.test.tsx
+│   │   ├── AuthContext.test.tsx
+│   │   └── LastClipBookContext.test.tsx
 │   ├── hooks
 │   │   ├── useAuth.test.tsx
 │   │   └── useBookScanner.test.tsx
 │   ├── services
 │   │   ├── BookStorageService.test.ts
 │   │   ├── ClipStorageService.test.ts
+│   │   ├── LocalStorageService.test.ts
 │   │   ├── OCRService.test.ts
+│   │   ├── RakutenBookService.test.ts
+│   │   ├── StorageInterface.test.ts
+│   │   ├── StorageMigrationService.test.ts
+│   │   ├── SupabaseStorageService.test.ts
 │   │   └── auth.test.ts
 │   ├── setup.js
 │   └── test-utils.tsx
@@ -175,4 +201,4 @@
 └── types
     └── env.d.ts
 
-41 directories, 135 files
+48 directories, 154 files

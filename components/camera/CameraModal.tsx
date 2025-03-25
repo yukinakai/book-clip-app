@@ -11,6 +11,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
@@ -147,8 +148,9 @@ const CameraModal: React.FC<CameraModalProps> = ({
 
   const {
     handleBarcodeScanned,
+    isLoading,
     resetScanner,
-    // 手動入力関連の機能を取得
+    // 手動入力関連の値
     showManualEntryForm,
     showManualForm,
     hideManualForm,
@@ -302,6 +304,14 @@ const CameraModal: React.FC<CameraModalProps> = ({
         )}
 
         {renderContent()}
+
+        {/* ローディングオーバーレイを追加 */}
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#00FF00" />
+            <Text style={styles.loadingText}>書籍を保存中...</Text>
+          </View>
+        )}
       </SafeAreaView>
     </Modal>
   );
@@ -425,6 +435,24 @@ const styles = StyleSheet.create({
     elevation: 5,
     minWidth: 140,
     minHeight: 44,
+  },
+  // ローディングオーバーレイ用スタイル
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  loadingText: {
+    color: "white",
+    fontSize: 16,
+    marginTop: 16,
+    fontWeight: "bold",
   },
 });
 

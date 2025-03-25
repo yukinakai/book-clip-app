@@ -42,6 +42,7 @@ export const Colors = {
     alert: classicRed,
     error: classicRed,
     success: insightGreen,
+    divider: "#DDDDDD",
   },
   dark: {
     text: darkTextColor,
@@ -59,5 +60,6 @@ export const Colors = {
     alert: classicRed,
     error: classicRed,
     success: insightGreen,
+    divider: "#444444",
   },
 };

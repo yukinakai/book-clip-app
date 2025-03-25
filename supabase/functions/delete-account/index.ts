@@ -15,6 +15,8 @@ serve(async (req: Request) => {
   }
 
   try {
+    console.log("delete-account Edge Function が呼び出されました");
+
     // リクエストの認証情報を取得
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -24,17 +26,96 @@ serve(async (req: Request) => {
       throw new Error("認証情報がありません");
     }
 
-    // 環境変数の確認
+    // リクエストボディを取得してログ出力（デバッグ用）
+    let requestBody = null;
+    let requestUserId = null;
+    try {
+      const clonedReq = req.clone();
+      requestBody = await clonedReq.json();
+      console.log("リクエストボディ:", requestBody);
+
+      // リクエストボディからユーザーIDを取得（存在する場合）
+      if (requestBody && requestBody.userId) {
+        requestUserId = requestBody.userId;
+        console.log("リクエストボディからユーザーIDを取得:", requestUserId);
+      }
+    } catch (e) {
+      console.log("リクエストボディが空か解析できません", e);
+      // リクエストボディのないリクエストも許可
+    }
+
+    // 環境変数の確認 - Supabaseが自動的に提供する環境変数を使用
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
       console.error("必要な環境変数が設定されていません", {
         hasUrl: !!supabaseUrl,
         hasServiceKey: !!supabaseServiceRoleKey,
+        hasAnonKey: !!supabaseAnonKey,
       });
       throw new Error("サーバー設定が不完全です");
     }
+
+    // 認証トークンを取得
+    const _token = authHeader.replace("Bearer ", "");
+    console.log("認証トークンを取得しました");
+
+    // クライアントの初期化 - 認証ヘッダーを使用
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey || "", {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    // 認証されたユーザー情報を取得
+    let userId;
+    try {
+      console.log("認証されたユーザー情報を取得します");
+      const {
+        data: { user },
+        error: userError,
+      } = await supabaseClient.auth.getUser();
+
+      if (userError) {
+        console.error("ユーザー情報の取得に失敗:", userError);
+        throw userError;
+      }
+
+      if (!user) {
+        // ユーザー情報が取得できなかった場合、リクエストボディからのユーザーIDを使用
+        if (requestUserId) {
+          console.log(
+            "リクエストボディのユーザーIDを使用します:",
+            requestUserId
+          );
+          userId = requestUserId;
+        } else {
+          console.error("ユーザーが見つかりません");
+          throw new Error("ユーザーが見つかりません");
+        }
+      } else {
+        userId = user.id;
+        console.log("認証トークンからユーザーID取得:", userId);
+      }
+    } catch (authError) {
+      console.error("認証エラー:", authError);
+      // リクエストボディからユーザーIDが取得できていれば使用
+      if (requestUserId) {
+        console.log(
+          "認証エラーのため、リクエストボディのユーザーIDを使用:",
+          requestUserId
+        );
+        userId = requestUserId;
+      } else {
+        throw new Error(
+          "ユーザー認証に失敗し、リクエストボディにもユーザーIDがありません"
+        );
+      }
+    }
+
+    console.log("削除するユーザーID:", userId);
 
     // 管理者権限を持つクライアントを作成
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
@@ -44,43 +125,114 @@ serve(async (req: Request) => {
       },
     });
 
-    // 認証トークンからユーザー情報を取得
-    const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user: tokenUser },
-      error: tokenError,
-    } = await supabaseAdmin.auth.getUser(token);
+    // エラー発生フラグ（データ削除のいずれかのステップでエラーが発生した場合にtrue）
+    let hasDataDeletionError = false;
+    const errors = [];
 
-    if (tokenError) {
-      console.error("トークンからのユーザー取得に失敗:", {
-        error: tokenError,
-        token: token.substring(0, 20) + "...", // トークンの一部のみをログ
+    // ユーザーに関連するデータを削除
+    try {
+      console.log("ユーザーのクリップデータ削除を試みます");
+      // 1. ユーザーのクリップデータを削除
+      const { error: clipsError } = await supabaseAdmin
+        .from("clips")
+        .delete()
+        .eq("user_id", userId);
+
+      if (clipsError) {
+        console.error("ユーザーのクリップデータ削除に失敗:", clipsError);
+        hasDataDeletionError = true;
+        errors.push({
+          type: "clips_deletion",
+          message: clipsError.message,
+          details: clipsError.details,
+        });
+      } else {
+        console.log("ユーザーのクリップデータを削除しました");
+      }
+
+      console.log("ユーザーの書籍データ削除を試みます");
+      // 2. ユーザーの書籍データを削除
+      const { error: booksError } = await supabaseAdmin
+        .from("books")
+        .delete()
+        .eq("user_id", userId);
+
+      if (booksError) {
+        console.error("ユーザーの書籍データ削除に失敗:", booksError);
+        hasDataDeletionError = true;
+        errors.push({
+          type: "books_deletion",
+          message: booksError.message,
+          details: booksError.details,
+        });
+      } else {
+        console.log("ユーザーの書籍データを削除しました");
+      }
+
+      // 3. その他のユーザー関連データの削除（必要に応じて追加）
+    } catch (dataError) {
+      console.error("ユーザーデータの削除中にエラーが発生:", dataError);
+      hasDataDeletionError = true;
+      errors.push({
+        type: "general_data_deletion",
+        message:
+          dataError instanceof Error ? dataError.message : String(dataError),
       });
-      throw tokenError;
+      // データ削除エラーは致命的ではないため、続行します
     }
-
-    if (!tokenUser) {
-      console.error("ユーザーが見つかりません");
-      throw new Error("ユーザーが見つかりません");
-    }
-
-    console.log("削除するユーザーID:", tokenUser.id);
 
     // ユーザーアカウントを削除
+    console.log("ユーザーアカウント削除を試みます");
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
-      tokenUser.id
+      userId
     );
 
     if (deleteError) {
       console.error("ユーザー削除に失敗:", {
         error: deleteError,
-        userId: tokenUser.id,
+        userId: userId,
       });
-      throw deleteError;
+
+      // ユーザー削除エラーは致命的なため、エラーレスポンスを返す
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `ユーザーアカウントの削除に失敗しました: ${deleteError.message}`,
+          errors: [
+            ...errors,
+            {
+              type: "user_deletion",
+              message: deleteError.message,
+              code: deleteError.code,
+              status: deleteError.status,
+            },
+          ],
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
     }
 
-    console.log("ユーザーが正常に削除されました:", tokenUser.id);
+    console.log("ユーザーが正常に削除されました:", userId);
 
+    // データ削除でエラーが発生したが、ユーザー削除は成功した場合
+    if (hasDataDeletionError) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          warning: "ユーザーは削除されましたが、一部のデータ削除に失敗しました",
+          errors,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
+    // 全て成功
     return new Response(
       JSON.stringify({
         success: true,

@@ -1,106 +1,81 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Clip } from "../constants/MockData";
-import { BookStorageService } from "./BookStorageService";
+import { StorageService } from "./StorageInterface";
+import { LocalStorageService } from "./LocalStorageService";
 
-const STORAGE_KEY = "@saved_clips";
+/**
+ * クリップストレージサービス
+ * データの保存先を自動的に切り替える
+ */
+export class ClipStorageService extends StorageService {
+  // 初期設定としてLocalStorageを使用
+  protected static storageBackend = new LocalStorageService();
 
-export class ClipStorageService {
+  /**
+   * クリップを保存
+   */
   static async saveClip(clip: Clip): Promise<void> {
     try {
-      const existingClipsJson = await AsyncStorage.getItem(STORAGE_KEY);
-      const existingClips: Clip[] = existingClipsJson
-        ? JSON.parse(existingClipsJson)
-        : [];
-
-      // 新しいクリップにIDを割り当て
-      const newClip = {
-        ...clip,
-        id: clip.id || Date.now().toString(),
-        createdAt: clip.createdAt || new Date().toISOString(),
-      };
-
-      const updatedClips = [...existingClips, newClip];
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClips));
-
-      // 最後に使用した書籍の情報を更新
-      const books = await BookStorageService.getAllBooks();
-      const book = books.find((b) => b.id === clip.bookId);
-      if (book) {
-        await BookStorageService.setLastClipBook(book);
-      }
+      return await this.storageBackend.saveClip(clip);
     } catch (error) {
       console.error("Error saving clip:", error);
       throw error;
     }
   }
 
+  /**
+   * すべてのクリップを取得
+   */
   static async getAllClips(): Promise<Clip[]> {
-    try {
-      const clipsJson = await AsyncStorage.getItem(STORAGE_KEY);
-      return clipsJson ? JSON.parse(clipsJson) : [];
-    } catch (error) {
-      console.error("Error getting clips:", error);
-      return [];
-    }
+    return this.storageBackend.getAllClips();
   }
 
+  /**
+   * 書籍IDに関連するクリップを取得
+   */
   static async getClipsByBookId(bookId: string): Promise<Clip[]> {
-    try {
-      const allClips = await this.getAllClips();
-      return allClips.filter((clip) => clip.bookId === bookId);
-    } catch (error) {
-      console.error("Error getting clips by book ID:", error);
-      return [];
-    }
+    return this.storageBackend.getClipsByBookId(bookId);
   }
 
+  /**
+   * クリップIDで単一のクリップを取得
+   * この方法はストレージバックエンドがサポートしている場合は効率的に動作
+   */
+  static async getClipById(clipId: string): Promise<Clip | null> {
+    // StorageInterfaceが対応していればそのメソッドを使用
+    if ("getClipById" in this.storageBackend) {
+      return (this.storageBackend as any).getClipById(clipId);
+    }
+
+    // 対応していない場合は全クリップから検索
+    const clips = await this.getAllClips();
+    return clips.find((clip) => clip.id === clipId) || null;
+  }
+
+  /**
+   * クリップを削除
+   */
   static async removeClip(clipId: string): Promise<void> {
-    try {
-      const existingClipsJson = await AsyncStorage.getItem(STORAGE_KEY);
-      const existingClips: Clip[] = existingClipsJson
-        ? JSON.parse(existingClipsJson)
-        : [];
-      const updatedClips = existingClips.filter((clip) => clip.id !== clipId);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClips));
-    } catch (error) {
-      console.error("Error removing clip:", error);
-      throw error;
-    }
+    return this.storageBackend.removeClip(clipId);
   }
 
-  static async updateClip(updatedClip: Clip): Promise<void> {
+  /**
+   * クリップを更新
+   */
+  static async updateClip(clip: Clip): Promise<void> {
     try {
-      const existingClipsJson = await AsyncStorage.getItem(STORAGE_KEY);
-      const existingClips: Clip[] = existingClipsJson
-        ? JSON.parse(existingClipsJson)
-        : [];
-
-      // 更新対象のクリップを置き換え
-      const updatedClips = existingClips.map((clip) =>
-        clip.id === updatedClip.id ? updatedClip : clip
-      );
-
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClips));
+      return await this.storageBackend.updateClip(clip);
     } catch (error) {
       console.error("Error updating clip:", error);
       throw error;
     }
   }
 
-  // 特定の書籍に関連するすべてのクリップを削除
+  /**
+   * 書籍IDに関連するすべてのクリップを削除
+   */
   static async deleteClipsByBookId(bookId: string): Promise<void> {
     try {
-      const existingClipsJson = await AsyncStorage.getItem(STORAGE_KEY);
-      const existingClips: Clip[] = existingClipsJson
-        ? JSON.parse(existingClipsJson)
-        : [];
-
-      // 指定された書籍ID以外のクリップを残す
-      const updatedClips = existingClips.filter(
-        (clip) => clip.bookId !== bookId
-      );
-
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClips));
+      return await this.storageBackend.deleteClipsByBookId(bookId);
     } catch (error) {
       console.error("Error deleting clips by book ID:", error);
       throw error;
