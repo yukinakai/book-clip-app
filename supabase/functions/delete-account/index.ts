@@ -26,6 +26,17 @@ serve(async (req: Request) => {
       throw new Error("認証情報がありません");
     }
 
+    // リクエストボディを取得してログ出力（デバッグ用）
+    let requestBody = null;
+    try {
+      const clonedReq = req.clone();
+      requestBody = await clonedReq.json();
+      console.log("リクエストボディ:", requestBody);
+    } catch (e) {
+      console.log("リクエストボディが空か解析できません", e);
+      // リクエストボディのないリクエストも許可
+    }
+
     // 環境変数の確認 - Supabaseが自動的に提供する環境変数を使用
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

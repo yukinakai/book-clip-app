@@ -100,6 +100,7 @@ export class AuthService {
               Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "application/json",
             },
+            body: JSON.stringify({ userId: session.user.id }),
           }
         );
 
