@@ -206,7 +206,7 @@ describe("OthersScreen", () => {
   it("退会確認ダイアログで「退会する」をタップすると退会処理が実行されること", async () => {
     mockUseAuthContext(true);
     const { useAuthContext } = require("../../../contexts/AuthContext");
-    const mockDeleteAccount = jest.fn().mockResolvedValue(undefined);
+    const mockDeleteAccount = jest.fn().mockResolvedValue(true);
     useAuthContext.mockReturnValue({
       user: { id: "test-user-id", email: "test@example.com" },
       isLoggedIn: true,
