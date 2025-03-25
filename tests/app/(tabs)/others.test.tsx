@@ -2,6 +2,11 @@ import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react-native";
 import OthersScreen from "../../../app/(tabs)/others";
 
+// AsyncStorageをモック
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  removeItem: jest.fn().mockResolvedValue(null),
+}));
+
 // useColorSchemeフックをモック
 jest.mock("../../../hooks/useColorScheme", () => ({
   useColorScheme: () => "light",
@@ -235,6 +240,89 @@ describe("OthersScreen", () => {
     expect(mockDeleteAccount).toHaveBeenCalled();
     // ホーム画面に遷移すること
     expect(mockReplace).toHaveBeenCalledWith("/(tabs)");
+  });
+
+  it("退会成功時にAsyncStorageから認証情報が削除されること", async () => {
+    const AsyncStorage = require("@react-native-async-storage/async-storage");
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    const mockDeleteAccount = jest.fn().mockResolvedValue(true);
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+    });
+
+    render(<OthersScreen />);
+
+    // 退会ボタンをタップして退会確認ダイアログを表示
+    const withdrawButton = screen.getByText("退会");
+    fireEvent.press(withdrawButton);
+
+    // 退会確認ダイアログの「退会する」ボタンをタップ
+    const confirmButton = screen.getByText("退会する");
+    await act(async () => {
+      fireEvent.press(confirmButton);
+      // deleteAccountの完了を待つ
+      await mockDeleteAccount();
+    });
+
+    // AsyncStorageのremoveItemが正しく呼ばれたことを確認
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith("supabase.auth.token");
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(
+      "supabase.auth.refreshToken"
+    );
+    expect(mockReplace).toHaveBeenCalledWith("/(tabs)");
+  });
+
+  it("退会処理が失敗した場合(falseが返却)、ホーム画面に遷移しないこと", async () => {
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    const mockDeleteAccount = jest.fn().mockResolvedValue(false);
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+    });
+
+    const mockConsoleError = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    render(<OthersScreen />);
+
+    // 退会ボタンをタップして退会確認ダイアログを表示
+    const withdrawButton = screen.getByText("退会");
+    fireEvent.press(withdrawButton);
+
+    // 退会確認ダイアログの「退会する」ボタンをタップ
+    const confirmButton = screen.getByText("退会する");
+
+    await act(async () => {
+      fireEvent.press(confirmButton);
+      // deleteAccountの完了を待つ
+      await mockDeleteAccount();
+    });
+
+    // エラーがログに出力されること
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      "退会処理が失敗しました、ダイアログは閉じましたが退会は完了していません",
+      expect.anything()
+    );
+
+    // AsyncStorageからの認証情報削除が呼び出されないこと
+    const AsyncStorage = require("@react-native-async-storage/async-storage");
+    expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
+
+    mockConsoleError.mockRestore();
   });
 
   it("退会処理中はローディング状態が表示されること", async () => {
