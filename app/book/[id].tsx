@@ -40,22 +40,9 @@ export default function BookDetailScreen() {
       console.log("書籍詳細の読み込み開始 - ID:", id);
       setLoading(true);
 
-      // 最適化: 全書籍を取得するのではなく、IDで書籍を直接取得
-      let foundBook: Book | null = null;
-
-      try {
-        // 単一の書籍データを取得する高速パスを試みる
-        foundBook = await BookStorageService.getBookById(id as string);
-        console.log("書籍取得結果:", foundBook);
-      } catch (err) {
-        console.warn("高速パスでの書籍取得に失敗、全書籍から検索します:", err);
-        // 古い方法: 全書籍を取得してフィルタリング
-        const books = await BookStorageService.getAllBooks();
-        console.log("取得した全書籍:", books.length, "件");
-        foundBook = books.find((b) => b.id === id) || null;
-      }
-
-      console.log("検索された書籍:", foundBook);
+      // 単一の書籍データを直接取得
+      const foundBook = await BookStorageService.getBookById(id as string);
+      console.log("書籍取得結果:", foundBook);
 
       if (foundBook) {
         setBook(foundBook);
@@ -70,7 +57,7 @@ export default function BookDetailScreen() {
         console.log("書籍が見つかりませんでした - ID:", id);
       }
     } catch (error) {
-      console.error("Error loading book details:", error);
+      console.error("書籍詳細の読み込み中にエラー:", error);
     } finally {
       console.log("書籍詳細の読み込み完了");
       setLoading(false);
