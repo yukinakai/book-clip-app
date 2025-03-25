@@ -7,6 +7,9 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
+  Platform,
+  ActionSheetIOS,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { Book, Clip } from "../../constants/MockData";
@@ -74,6 +77,78 @@ export default function BookDetailScreen() {
     }
   };
 
+  // オプションメニューを表示
+  const showOptions = () => {
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["キャンセル", "編集", "削除"],
+          destructiveButtonIndex: 2,
+          cancelButtonIndex: 0,
+          userInterfaceStyle: colorScheme,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            handleEditBook();
+          } else if (buttonIndex === 2) {
+            confirmDeleteBook();
+          }
+        }
+      );
+    } else {
+      // Androidの場合はAlertでメニューを表示
+      Alert.alert("書籍オプション", "選択してください", [
+        { text: "キャンセル", style: "cancel" },
+        { text: "編集", onPress: handleEditBook },
+        { text: "削除", onPress: confirmDeleteBook, style: "destructive" },
+      ]);
+    }
+  };
+
+  // 書籍編集画面に遷移
+  const handleEditBook = () => {
+    if (book) {
+      router.push(
+        `/book/edit?id=${id}&title=${encodeURIComponent(
+          book.title
+        )}&author=${encodeURIComponent(
+          book.author || ""
+        )}&coverImage=${encodeURIComponent(book.coverImage || "")}`
+      );
+    }
+  };
+
+  // 書籍削除の確認ダイアログを表示
+  const confirmDeleteBook = () => {
+    Alert.alert(
+      "書籍を削除しますか？",
+      "この書籍に関連するすべてのクリップも削除されます。この操作は元に戻せません。",
+      [
+        { text: "キャンセル", style: "cancel" },
+        { text: "削除", onPress: handleDeleteBook, style: "destructive" },
+      ]
+    );
+  };
+
+  // 書籍を削除
+  const handleDeleteBook = async () => {
+    try {
+      if (id) {
+        // 関連するクリップをすべて削除
+        await ClipStorageService.deleteClipsByBookId(id);
+
+        // 書籍を削除
+        await BookStorageService.deleteBook(id);
+
+        // ホーム画面に戻る
+        router.replace("/");
+      }
+    } catch (error) {
+      console.error("Error deleting book:", error);
+      Alert.alert("エラー", "書籍の削除中にエラーが発生しました。");
+    }
+  };
+
   const renderClipItem = ({ item }: { item: Clip }) => (
     <TouchableOpacity
       style={[styles.clipItem, { backgroundColor: secondaryBackgroundColor }]}
@@ -90,7 +165,9 @@ export default function BookDetailScreen() {
             P. {item.page}
           </Text>
           <Text style={[styles.dateInfo, { color: textColor }]}>
-            {new Date(item.createdAt).toLocaleDateString()}
+            {item.createdAt
+              ? new Date(item.createdAt).toLocaleDateString()
+              : ""}
           </Text>
         </View>
       </View>
@@ -136,12 +213,19 @@ export default function BookDetailScreen() {
             書籍の詳細
           </Text>
         </View>
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={showOptions}
+          testID="options-button"
+        >
+          <Ionicons name="ellipsis-horizontal" size={24} color={textColor} />
+        </TouchableOpacity>
       </View>
 
       <FlatList
         data={clips}
         renderItem={renderClipItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Clip) => item.id || `clip-${Date.now()}`}
         contentContainerStyle={styles.clipsList}
         ListHeaderComponent={() => (
           <>
@@ -319,5 +403,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 8,
+  },
+  headerButton: {
+    marginLeft: 16,
+    position: "absolute",
+    right: 16,
   },
 });
