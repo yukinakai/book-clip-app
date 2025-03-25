@@ -2,7 +2,6 @@ import React from "react";
 import {
   render,
   renderHook,
-  act,
   waitFor,
 } from "@testing-library/react-native";
 import { Text } from "react-native";

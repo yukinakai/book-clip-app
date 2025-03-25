@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   Modal,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import { Book } from "../../constants/MockData";
 import { Colors } from "../../constants/Colors";
