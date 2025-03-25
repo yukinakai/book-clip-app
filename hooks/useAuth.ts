@@ -217,10 +217,15 @@ export function useAuth() {
   const deleteAccount = async () => {
     setLoading(true);
     try {
-      await AuthService.deleteAccount();
+      console.log("アカウント削除処理を開始");
+      const result = await AuthService.deleteAccount();
+      console.log("アカウント削除の結果:", result);
+
       // アカウント削除が成功した場合、ユーザー状態をクリア
       setUser(null);
       setLoading(false);
+
+      // 明示的に成功を返す
       return true;
     } catch (error) {
       console.error("Account deletion error:", error);
