@@ -24,6 +24,7 @@ export class RakutenBookService {
       if (data.Items && data.Items.length > 0) {
         const bookItem = data.Items[0] as RakutenBookItem;
         const book: Book = {
+          id: `book_${Date.now()}`,
           isbn: bookItem.Item.isbn,
           title: bookItem.Item.title,
           author: bookItem.Item.author,
