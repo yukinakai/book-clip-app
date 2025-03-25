@@ -138,6 +138,46 @@ export class SupabaseStorageService implements StorageInterface {
     }
   }
 
+  /**
+   * 書籍データを更新する
+   * Supabaseはupdateメソッドを提供しているので、それを使用する
+   */
+  async updateBook(book: Book): Promise<void> {
+    try {
+      if (!this.userId) throw new Error("認証されていません");
+      if (!book.id) throw new Error("書籍IDが指定されていません");
+
+      console.log("Supabaseで書籍を更新 - ID:", book.id);
+      const startTime = Date.now();
+
+      // Supabaseのデータ形式に変換
+      const bookData = {
+        title: book.title,
+        author: book.author,
+        cover_image: book.coverImage,
+        updated_at: new Date().toISOString(),
+      };
+
+      // 書籍データを更新
+      const { error } = await supabase
+        .from(this.BOOKS_TABLE)
+        .update(bookData)
+        .eq("id", book.id)
+        .eq("user_id", this.userId);
+
+      if (error) {
+        console.error("書籍の更新でエラー:", error);
+        throw error;
+      }
+
+      const endTime = Date.now();
+      console.log(`書籍更新完了 (${endTime - startTime}ms)`);
+    } catch (error) {
+      console.error("Error updating book in Supabase:", error);
+      throw error;
+    }
+  }
+
   async removeBook(bookId: string): Promise<void> {
     try {
       if (!this.userId) throw new Error("認証されていません");

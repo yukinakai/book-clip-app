@@ -71,6 +71,43 @@ export class LocalStorageService implements StorageInterface {
     }
   }
 
+  /**
+   * 書籍データを更新する
+   * ローカルストレージでは全データを取得して対象の書籍を更新し、再保存する
+   */
+  async updateBook(book: Book): Promise<void> {
+    try {
+      if (!book.id) throw new Error("書籍IDが指定されていません");
+
+      console.log("ローカルストレージで書籍を更新 - ID:", book.id);
+      const startTime = Date.now();
+
+      // すべての書籍を取得
+      const booksData = await AsyncStorage.getItem(BOOKS_STORAGE_KEY);
+      if (!booksData) throw new Error("書籍データが見つかりません");
+
+      // JSONからパース
+      const books: Book[] = JSON.parse(booksData);
+
+      // 更新対象の書籍のインデックスを検索
+      const bookIndex = books.findIndex((b) => b.id === book.id);
+      if (bookIndex === -1)
+        throw new Error("指定されたIDの書籍が見つかりません");
+
+      // 書籍を更新
+      books[bookIndex] = book;
+
+      // 更新されたデータを保存
+      await AsyncStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(books));
+
+      const endTime = Date.now();
+      console.log(`書籍更新完了 (${endTime - startTime}ms)`);
+    } catch (error) {
+      console.error("Error updating book in local storage:", error);
+      throw error;
+    }
+  }
+
   async removeBook(bookId: string): Promise<void> {
     try {
       const existingBooksJson = await AsyncStorage.getItem(BOOKS_STORAGE_KEY);

@@ -40,6 +40,26 @@ export class BookStorageService extends StorageService {
   }
 
   /**
+   * 書籍を更新
+   * この方法はストレージバックエンドがupdateBookメソッドをサポートしている場合は直接そのメソッドを使用
+   * サポートしていない場合は、削除して再保存する処理を内部で行う
+   */
+  static async updateBook(book: Book): Promise<void> {
+    // StorageInterfaceがupdateBookに対応していればそのメソッドを使用
+    if ("updateBook" in this.storageBackend) {
+      return (this.storageBackend as any).updateBook(book);
+    }
+
+    // 対応していない場合は削除して再保存する
+    if (!book.id) {
+      throw new Error("書籍IDが指定されていません");
+    }
+
+    await this.removeBook(book.id);
+    return this.saveBook(book);
+  }
+
+  /**
    * 書籍を削除
    */
   static async removeBook(bookId: string): Promise<void> {

@@ -9,6 +9,7 @@ export interface StorageInterface {
   saveBook(book: Book): Promise<void>;
   getAllBooks(): Promise<Book[]>;
   getBookById(bookId: string): Promise<Book | null>;
+  updateBook?(book: Book): Promise<void>;
   removeBook(bookId: string): Promise<void>;
 
   // クリップ関連
