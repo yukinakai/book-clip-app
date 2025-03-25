@@ -30,12 +30,11 @@ jest.mock("../../../services/BookStorageService", () => ({
 
 // BookshelfViewコンポーネントのモック
 jest.mock("../../../components/BookshelfView", () => {
-  const _React = require("react");
   const { View, Text, TouchableOpacity } = require("react-native");
 
   return {
     __esModule: true,
-    default: jest.fn(({ onSelectBook, headerTitle, _refreshTrigger }) => {
+    default: jest.fn(({ onSelectBook, headerTitle }) => {
       return (
         <View testID="bookshelf-view">
           <Text testID="header-title">{headerTitle}</Text>
@@ -60,7 +59,6 @@ jest.mock("../../../components/BookshelfView", () => {
 
 // CameraModalコンポーネントをモック
 jest.mock("../../../components/camera/CameraModal", () => {
-  const _React = require("react");
   const { View, TouchableOpacity, Text } = require("react-native");
   return {
     __esModule: true,
@@ -85,7 +83,6 @@ jest.mock("../../../components/camera/CameraModal", () => {
 
 // CameraViewコンポーネントのモック
 jest.mock("../../../components/CameraView", () => {
-  const _React = require("react");
   const { View, TouchableOpacity, Text } = require("react-native");
   return {
     __esModule: true,
