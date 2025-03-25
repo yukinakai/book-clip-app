@@ -150,7 +150,7 @@ describe("CameraModal", () => {
   });
 
   it("モーダルが表示されること", () => {
-    const { getByTestId } = render(
+    const { getByTestId, UNSAFE_getByProps } = render(
       <CameraModal
         isVisible={true}
         onClose={jest.fn()}
@@ -158,9 +158,12 @@ describe("CameraModal", () => {
       />
     );
 
-    // モーダルのヘッダーが表示されていることを確認
-    const headerTitle = getByTestId("icon-close").parentNode;
-    expect(headerTitle).toBeTruthy();
+    // モーダルが表示されていることを確認
+    expect(getByTestId("icon-close")).toBeTruthy();
+
+    // モーダルのvisibleプロパティを確認
+    const modal = UNSAFE_getByProps({ animationType: "slide" });
+    expect(modal.props.visible).toBe(true);
   });
 
   it("モーダルが非表示のときも適切なPropsでレンダリングされること", () => {
