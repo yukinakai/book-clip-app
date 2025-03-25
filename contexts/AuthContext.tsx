@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { User } from "@supabase/supabase-js";
 import {
@@ -28,9 +28,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
 
-  // useAuthフックで認証状態の変更を監視し、ストレージを初期化
-  // useAuthフック内で既にStorageMigrationService.initializeStorageが呼ばれているため、
-  // ここでの初期化は不要
+  // AuthProvider内でも明示的にinitializeStorageを呼び出し
+  useEffect(() => {
+    StorageMigrationService.initializeStorage().catch((error) => {
+      console.error("Failed to initialize storage in AuthContext:", error);
+    });
+  }, []);
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }
