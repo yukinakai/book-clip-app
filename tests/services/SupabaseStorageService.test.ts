@@ -26,7 +26,7 @@ const mockClip: Clip = {
 jest.mock("../../services/auth", () => {
   // モックの作成
   const mockSelectFn = jest.fn().mockReturnThis();
-  const mockInsertFn = jest.fn().mockReturnThis();
+  const mockInsertFn = jest.fn();
   const mockDeleteFn = jest.fn().mockReturnThis();
   const mockUpdateFn = jest.fn().mockReturnThis();
   const mockEqFn = jest.fn().mockReturnThis();
@@ -46,9 +46,13 @@ jest.mock("../../services/auth", () => {
     single: mockSingleFn,
   }));
 
-  mockInsertFn.mockImplementation(() => ({
-    select: mockSelectFn,
-  }));
+  // insertの戻り値にselectメソッドを追加
+  const mockInsertReturn = {
+    select: jest.fn().mockReturnValue({
+      single: jest.fn().mockReturnValue({ data: null, error: null }),
+    }),
+  };
+  mockInsertFn.mockReturnValue(mockInsertReturn);
 
   mockEqFn.mockImplementation(() => ({
     eq: mockEqFn,
@@ -210,7 +214,7 @@ describe("SupabaseStorageService", () => {
         title: mockBook.title,
         author: mockBook.author,
         isbn: mockBook.isbn,
-        thumbnail: mockBook.thumbnail,
+        coverImage: mockBook.thumbnail,
       };
       expect(result).toEqual([expectedBook]);
     });
@@ -306,8 +310,17 @@ describe("SupabaseStorageService", () => {
   describe("getClipsByBookId", () => {
     it("指定した書籍のクリップを取得できること", async () => {
       // 成功シナリオをセットアップ
+      // データベースのフィールド名を使用したモックデータ
+      const dbMockClip = {
+        id: clipId,
+        book_id: bookId, // snake_case
+        text: "テストクリップ",
+        page: 1,
+        created_at: "2023-01-01T00:00:00.000Z",
+      };
+
       setupMockResponse({
-        data: [mockClip],
+        data: [dbMockClip],
         error: null,
       });
 
@@ -327,7 +340,16 @@ describe("SupabaseStorageService", () => {
       expect(mockOrderFn).toHaveBeenCalledWith("created_at", {
         ascending: false,
       });
-      expect(result).toEqual([mockClip]);
+
+      // サービスから返される期待結果（フィールド名変換後）
+      const expectedClip = {
+        id: clipId,
+        bookId: bookId, // camelCase
+        text: "テストクリップ",
+        page: 1,
+        createdAt: "2023-01-01T00:00:00.000Z", // camelCase
+      };
+      expect(result).toEqual([expectedClip]);
     });
 
     it("エラー発生時に空配列を返すこと", async () => {
