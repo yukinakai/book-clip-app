@@ -3,7 +3,11 @@
 - 書籍はあるが、クリップ追加したことがない時のクリップ追加挙動
 - ダークモードの色修正
 - SMTP構築
--  (NOBRIDGE) ERROR  ユーザー取得エラー: [AuthSessionMissingError: Auth session missing!]
+- クリップを追加した際に、書籍詳細に遷移する
+- 書籍のソート順
+- クリップのソート順
+- アノニマスログイン
+- カメラ系の画面の色味が変
 
 ## 全体進捗
 - [x] プロジェクトセットアップ(React Nativee+Expo)
