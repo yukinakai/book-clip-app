@@ -40,18 +40,31 @@ export default function BookDetailScreen() {
       console.log("書籍詳細の読み込み開始 - ID:", id);
       setLoading(true);
 
-      // 書籍情報を取得
-      const books = await BookStorageService.getAllBooks();
-      console.log("取得した全書籍:", books);
-      const foundBook = books.find((b) => b.id === id);
+      // 最適化: 全書籍を取得するのではなく、IDで書籍を直接取得
+      let foundBook: Book | null = null;
+
+      try {
+        // 単一の書籍データを取得する高速パスを試みる
+        foundBook = await BookStorageService.getBookById(id as string);
+        console.log("書籍取得結果:", foundBook);
+      } catch (err) {
+        console.warn("高速パスでの書籍取得に失敗、全書籍から検索します:", err);
+        // 古い方法: 全書籍を取得してフィルタリング
+        const books = await BookStorageService.getAllBooks();
+        console.log("取得した全書籍:", books.length, "件");
+        foundBook = books.find((b) => b.id === id) || null;
+      }
+
       console.log("検索された書籍:", foundBook);
 
       if (foundBook) {
         setBook(foundBook);
 
         // 書籍に関連するクリップを取得
-        const bookClips = await ClipStorageService.getClipsByBookId(id);
-        console.log("関連するクリップ:", bookClips);
+        const bookClips = await ClipStorageService.getClipsByBookId(
+          id as string
+        );
+        console.log("関連するクリップ:", bookClips.length, "件");
         setClips(bookClips);
       } else {
         console.log("書籍が見つかりませんでした - ID:", id);

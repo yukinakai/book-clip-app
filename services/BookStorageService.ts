@@ -25,6 +25,21 @@ export class BookStorageService extends StorageService {
   }
 
   /**
+   * 書籍IDで単一の書籍を取得
+   * この方法はストレージバックエンドがサポートしている場合は効率的に動作
+   */
+  static async getBookById(bookId: string): Promise<Book | null> {
+    // StorageInterfaceが対応していればそのメソッドを使用
+    if ("getBookById" in this.storageBackend) {
+      return (this.storageBackend as any).getBookById(bookId);
+    }
+
+    // 対応していない場合は全書籍から検索
+    const books = await this.getAllBooks();
+    return books.find((book) => book.id === bookId) || null;
+  }
+
+  /**
    * 書籍を削除
    */
   static async removeBook(bookId: string): Promise<void> {

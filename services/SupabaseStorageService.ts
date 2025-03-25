@@ -96,6 +96,48 @@ export class SupabaseStorageService implements StorageInterface {
     }
   }
 
+  /**
+   * 書籍IDで単一の書籍を取得
+   * Supabaseは単一レコードの取得が効率的
+   */
+  async getBookById(bookId: string): Promise<Book | null> {
+    try {
+      if (!this.userId) return null;
+
+      console.log("Supabaseから書籍を単一取得 - ID:", bookId);
+      const startTime = Date.now();
+
+      const { data, error } = await supabase
+        .from(this.BOOKS_TABLE)
+        .select("*")
+        .eq("id", bookId)
+        .eq("user_id", this.userId)
+        .single();
+
+      if (error) {
+        console.error("単一書籍取得エラー:", error);
+        throw error;
+      }
+
+      const endTime = Date.now();
+      console.log(`書籍取得完了 (${endTime - startTime}ms)`);
+
+      if (!data) return null;
+
+      // データベースのスネークケースからキャメルケースに変換
+      return {
+        id: data.id,
+        title: data.title,
+        author: data.author,
+        coverImage: data.cover_image,
+        isbn: data.isbn,
+      };
+    } catch (error) {
+      console.error("Error getting book by ID from Supabase:", error);
+      throw error;
+    }
+  }
+
   async removeBook(bookId: string): Promise<void> {
     try {
       if (!this.userId) throw new Error("認証されていません");

@@ -43,6 +43,34 @@ export class LocalStorageService implements StorageInterface {
     }
   }
 
+  /**
+   * 書籍IDで単一の書籍を取得
+   */
+  async getBookById(bookId: string): Promise<Book | null> {
+    try {
+      console.log("ローカルストレージから書籍を単一取得 - ID:", bookId);
+      const startTime = Date.now();
+
+      // ローカルストレージからすべての書籍を取得
+      const booksData = await AsyncStorage.getItem(BOOKS_STORAGE_KEY);
+      if (!booksData) return null;
+
+      // JSONデータを解析
+      const books: Book[] = JSON.parse(booksData);
+
+      // 指定されたIDの書籍を検索
+      const book = books.find((b) => b.id === bookId);
+
+      const endTime = Date.now();
+      console.log(`書籍取得完了 (${endTime - startTime}ms)`);
+
+      return book || null;
+    } catch (error) {
+      console.error("Error getting book by ID from local storage:", error);
+      return null;
+    }
+  }
+
   async removeBook(bookId: string): Promise<void> {
     try {
       const existingBooksJson = await AsyncStorage.getItem(BOOKS_STORAGE_KEY);

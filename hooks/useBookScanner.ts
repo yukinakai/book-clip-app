@@ -50,10 +50,11 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
 
       // onCloseを呼び出してカメラモーダルを閉じる
       onClose();
-      // 少し遅延させて詳細画面に遷移
+      // 遅延時間を100msに短縮
       setTimeout(() => {
+        console.log("書籍詳細画面に遷移 - ID:", bookId);
         router.push(`/book/${bookId}`);
-      }, 300);
+      }, 100);
     },
     [onClose]
   );

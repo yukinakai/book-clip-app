@@ -8,6 +8,7 @@ export interface StorageInterface {
   // 書籍関連
   saveBook(book: Book): Promise<void>;
   getAllBooks(): Promise<Book[]>;
+  getBookById(bookId: string): Promise<Book | null>;
   removeBook(bookId: string): Promise<void>;
 
   // クリップ関連
