@@ -250,7 +250,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                               ]
                             );
                           }
-                        } catch (_error) {
+                        } catch {
                           // エラーが発生した場合はローディングを非表示に
                           setIsLoading(false);
                           // エラー詳細は不要なため、ユーザーへの通知のみを行う
@@ -272,7 +272,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                     },
                   ]
                 );
-              } catch (_error) {
+              } catch {
                 // エラーが発生した場合はローディングを非表示に
                 setIsLoading(false);
                 // エラー詳細は不要なため、ユーザーへの通知のみを行う
