@@ -78,7 +78,7 @@ describe("ClipStorageService", () => {
 
       // setItemが正しいキーと値で呼ばれたことを確認
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_clips",
+        "@clips",
         JSON.stringify([mockClip])
       );
 
@@ -114,7 +114,7 @@ describe("ClipStorageService", () => {
 
       // 既存のクリップと新しいクリップが結合されたことを確認
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_clips",
+        "@clips",
         JSON.stringify([...existingClips, mockClip])
       );
 
@@ -178,7 +178,7 @@ describe("ClipStorageService", () => {
 
       // getAllClipsがモックデータと同じ結果を返すことを確認
       expect(clips).toEqual(mockClips);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
     });
 
     it("保存されているクリップがない場合、空の配列を返すこと", async () => {
@@ -187,7 +187,7 @@ describe("ClipStorageService", () => {
       const clips = await ClipStorageService.getAllClips();
 
       expect(clips).toEqual([]);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
     });
   });
 
@@ -205,7 +205,7 @@ describe("ClipStorageService", () => {
       const expectedClips = mockClips.filter((clip) => clip.bookId === bookId);
       expect(clips).toEqual(expectedClips);
       expect(clips.length).toBe(2);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
     });
 
     it("指定した書籍IDに関連するクリップがない場合、空の配列を返すこと", async () => {
@@ -219,7 +219,7 @@ describe("ClipStorageService", () => {
       );
 
       expect(clips).toEqual([]);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_clips");
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
     });
   });
 
@@ -238,7 +238,7 @@ describe("ClipStorageService", () => {
         (clip) => clip.id !== clipIdToRemove
       );
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_clips",
+        "@clips",
         JSON.stringify(expectedClips)
       );
     });
@@ -265,7 +265,7 @@ describe("ClipStorageService", () => {
         clip.id === updatedClip.id ? updatedClip : clip
       );
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_clips",
+        "@clips",
         JSON.stringify(expectedClips)
       );
     });
@@ -307,7 +307,7 @@ describe("ClipStorageService", () => {
         (clip) => clip.bookId !== bookIdToRemove
       );
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_clips",
+        "@clips",
         JSON.stringify(expectedClips)
       );
       // book-1のクリップが2つあるので、1つのクリップだけが残ることを確認
@@ -326,7 +326,7 @@ describe("ClipStorageService", () => {
 
       // 元のクリップリストと同じ内容が保存されることを確認
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_clips",
+        "@clips",
         JSON.stringify(mockClips)
       );
     });

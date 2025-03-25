@@ -39,6 +39,12 @@ describe("AuthWrapper", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       user: null,
       loading: true,
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+      showMigrationConfirm: false,
+      hasLocalData: false,
+      cancelMigration: jest.fn(),
+      migrateLocalDataToSupabase: jest.fn(),
     });
 
     const { getByTestId, queryByTestId } = render(
@@ -59,6 +65,12 @@ describe("AuthWrapper", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       user: null,
       loading: false,
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+      showMigrationConfirm: false,
+      hasLocalData: false,
+      cancelMigration: jest.fn(),
+      migrateLocalDataToSupabase: jest.fn(),
     });
 
     const { getByTestId, queryByTestId } = render(
@@ -76,6 +88,12 @@ describe("AuthWrapper", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       user: mockUser,
       loading: false,
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+      showMigrationConfirm: false,
+      hasLocalData: false,
+      cancelMigration: jest.fn(),
+      migrateLocalDataToSupabase: jest.fn(),
     });
 
     const { getByTestId } = render(
@@ -92,6 +110,12 @@ describe("AuthWrapper", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       user: mockUser,
       loading: false,
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+      showMigrationConfirm: false,
+      hasLocalData: false,
+      cancelMigration: jest.fn(),
+      migrateLocalDataToSupabase: jest.fn(),
     });
 
     const { getByTestId } = render(
@@ -120,6 +144,12 @@ describe("AuthWrapper", () => {
     (useAuthContext as jest.Mock).mockReturnValue({
       user: null,
       loading: false,
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+      showMigrationConfirm: false,
+      hasLocalData: false,
+      cancelMigration: jest.fn(),
+      migrateLocalDataToSupabase: jest.fn(),
     });
 
     const { queryByText, getByTestId } = render(

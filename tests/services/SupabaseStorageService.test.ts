@@ -38,6 +38,23 @@ jest.mock("../../services/auth", () => {
     update: mockUpdateFn,
   });
 
+  // モックの連鎖を設定
+  mockSelectFn.mockImplementation(() => ({
+    eq: mockEqFn,
+    order: mockOrderFn,
+    single: mockSingleFn,
+  }));
+
+  mockInsertFn.mockImplementation(() => ({
+    select: mockSelectFn,
+  }));
+
+  mockEqFn.mockImplementation(() => ({
+    eq: mockEqFn,
+    order: mockOrderFn,
+    single: mockSingleFn,
+  }));
+
   return {
     supabase: {
       from: mockFromFn,

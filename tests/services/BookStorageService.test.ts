@@ -48,7 +48,7 @@ describe("BookStorageService", () => {
 
       // setItemが正しいキーと値で呼ばれたことを確認
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_books",
+        "@books",
         JSON.stringify([mockBook])
       );
     });
@@ -71,7 +71,7 @@ describe("BookStorageService", () => {
 
       // 既存の書籍と新しい書籍が結合されたことを確認
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_books",
+        "@books",
         JSON.stringify([...existingBooks, mockBook])
       );
     });
@@ -129,7 +129,7 @@ describe("BookStorageService", () => {
 
       // getAllBooksがモックデータと同じ結果を返すことを確認
       expect(books).toEqual(mockBooks);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_books");
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
     });
 
     it("保存されている書籍がない場合、空の配列を返すこと", async () => {
@@ -138,7 +138,7 @@ describe("BookStorageService", () => {
       const books = await BookStorageService.getAllBooks();
 
       expect(books).toEqual([]);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@saved_books");
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
     });
 
     it("取得中にエラーが発生した場合、空の配列を返し、エラーをログ出力すること", async () => {
@@ -180,7 +180,7 @@ describe("BookStorageService", () => {
         (book) => book.id !== bookIdToRemove
       );
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@saved_books",
+        "@books",
         JSON.stringify(expectedBooks)
       );
     });

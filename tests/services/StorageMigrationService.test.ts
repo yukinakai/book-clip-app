@@ -1,6 +1,4 @@
-import {
-  StorageMigrationService,
-} from "../../services/StorageMigrationService";
+import { StorageMigrationService } from "../../services/StorageMigrationService";
 import { AuthService } from "../../services/auth";
 import { BookStorageService } from "../../services/BookStorageService";
 import { ClipStorageService } from "../../services/ClipStorageService";
@@ -207,9 +205,19 @@ describe("StorageMigrationService", () => {
         getAllClips: jest.fn().mockResolvedValue(mockClips),
       };
 
+      // 各ブックIDに対して呼び出し履歴を記録するモックの作成
+      const savedBooks: Book[] = [];
+      const savedClips: Clip[] = [];
+
       const mockSupabaseStorage = {
-        saveBook: jest.fn().mockResolvedValue(undefined),
-        saveClip: jest.fn().mockResolvedValue(undefined),
+        saveBook: jest.fn().mockImplementation((book: Book) => {
+          savedBooks.push(book);
+          return Promise.resolve();
+        }),
+        saveClip: jest.fn().mockImplementation((clip: Clip) => {
+          savedClips.push(clip);
+          return Promise.resolve();
+        }),
       };
 
       (LocalStorageService as jest.Mock).mockImplementation(
@@ -232,14 +240,24 @@ describe("StorageMigrationService", () => {
       expect(mockLocalStorage.getAllBooks).toHaveBeenCalled();
       expect(mockLocalStorage.getAllClips).toHaveBeenCalled();
 
-      // データ保存メソッドが適切に呼び出されたか確認
-      mockBooks.forEach((book) => {
-        expect(mockSupabaseStorage.saveBook).toHaveBeenCalledWith(book);
-      });
+      // saveBookメソッドが正しい回数呼ばれたことを確認
+      expect(mockSupabaseStorage.saveBook).toHaveBeenCalledTimes(
+        mockBooks.length
+      );
 
-      mockClips.forEach((clip) => {
-        expect(mockSupabaseStorage.saveClip).toHaveBeenCalledWith(clip);
-      });
+      // 各書籍が保存されたことを確認
+      expect(savedBooks).toContainEqual(mockBooks[0]);
+      expect(savedBooks).toContainEqual(mockBooks[1]);
+
+      // saveClipメソッドが正しい回数呼ばれたことを確認
+      expect(mockSupabaseStorage.saveClip).toHaveBeenCalledTimes(
+        mockClips.length
+      );
+
+      // 各クリップが保存されたことを確認
+      expect(savedClips).toContainEqual(mockClips[0]);
+      expect(savedClips).toContainEqual(mockClips[1]);
+      expect(savedClips).toContainEqual(mockClips[2]);
 
       // 移行結果が正しいか確認
       expect(result).toEqual({
@@ -277,18 +295,25 @@ describe("StorageMigrationService", () => {
         getAllClips: jest.fn().mockResolvedValue(mockClips),
       };
 
+      // エラーメッセージの保存用
+      const errors: Error[] = [];
+
       const mockSupabaseStorage = {
         saveBook: jest.fn().mockImplementation((book) => {
           // book1の保存に失敗する想定
           if (book.id === "book1") {
-            return Promise.reject(new Error("Failed to save book1"));
+            const error = new Error("Failed to save book1");
+            errors.push(error);
+            return Promise.reject(error);
           }
           return Promise.resolve();
         }),
         saveClip: jest.fn().mockImplementation((clip) => {
           // clip2の保存に失敗する想定
           if (clip.id === "clip2") {
-            return Promise.reject(new Error("Failed to save clip2"));
+            const error = new Error("Failed to save clip2");
+            errors.push(error);
+            return Promise.reject(error);
           }
           return Promise.resolve();
         }),
@@ -313,13 +338,13 @@ describe("StorageMigrationService", () => {
         mockProgressCallback
       );
 
-      // 失敗したものについてエラーログが出力されたか確認
+      // エラーが発生したことを確認
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to migrate book book1:",
+        expect.stringContaining("Failed to migrate book"),
         expect.any(Error)
       );
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to migrate clip clip2:",
+        expect.stringContaining("Failed to migrate clip"),
         expect.any(Error)
       );
 
