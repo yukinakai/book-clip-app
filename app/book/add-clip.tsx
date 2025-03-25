@@ -67,9 +67,35 @@ export default function AddClipScreen() {
     }
   }, [params?.clipText]);
 
-  // 書籍情報をロード
+  // URLパラメータのbookIdが変更されたときに書籍情報を更新
   useEffect(() => {
-    async function loadBook() {
+    if (params?.bookId) {
+      console.log("書籍IDが変更されました:", params.bookId);
+
+      async function updateSelectedBook() {
+        try {
+          const books = await BookStorageService.getAllBooks();
+          const foundBook = books.find((b) => b.id === params.bookId);
+
+          if (foundBook) {
+            console.log("選択された書籍を更新:", foundBook.title);
+            setSelectedBook(foundBook);
+          }
+        } catch (error) {
+          console.error("書籍情報の更新に失敗:", error);
+        }
+      }
+
+      updateSelectedBook();
+    }
+  }, [params?.bookId]);
+
+  // 書籍情報をロード(初期ロードのみに使用)
+  useEffect(() => {
+    async function loadInitialBook() {
+      // 書籍がすでに選択されている場合は何もしない
+      if (selectedBook) return;
+
       try {
         setIsLoadingBook(true);
 
@@ -84,16 +110,19 @@ export default function AddClipScreen() {
         if (params?.bookId) {
           // URLで指定された書籍を探す
           bookToSet = books.find((b) => b.id === params.bookId) || null;
+          console.log("URLパラメータから書籍を設定:", bookToSet?.title);
         }
 
         if (!bookToSet && lastClipBook) {
           // コンテキストから最後に使用した書籍を使用
           bookToSet = lastClipBook;
+          console.log("最後に使用した書籍を設定:", lastClipBook.title);
         }
 
         if (!bookToSet && books.length > 0) {
           // どの書籍も見つからなかった場合は最初の書籍を使用
           bookToSet = books[0];
+          console.log("最初の書籍を設定:", books[0].title);
         }
 
         setSelectedBook(bookToSet);
@@ -104,8 +133,8 @@ export default function AddClipScreen() {
       }
     }
 
-    loadBook();
-  }, [params?.bookId, lastClipBook]);
+    loadInitialBook();
+  }, []);
 
   // 画像が渡された場合の処理
   useEffect(() => {
@@ -141,10 +170,14 @@ export default function AddClipScreen() {
 
   // 書籍選択画面に遷移
   const handleBookSelect = () => {
-    // OCRのテキストを保持するために、現在のテキストをクエリパラメータとして渡す
-    router.push(
-      `/book/select?fromClip=true&clipText=${encodeURIComponent(clipText)}`
-    );
+    // 現在のクリップテキストを保持
+    router.push({
+      pathname: "/book/select",
+      params: {
+        fromClip: "true",
+        clipText: clipText,
+      },
+    });
   };
 
   const handleSaveClip = async () => {
