@@ -16,6 +16,7 @@
 ├── README.md
 ├── app
 │   ├── (auth)
+│   │   ├── _layout.tsx
 │   │   └── login.tsx
 │   ├── (tabs)
 │   │   ├── _layout.tsx
@@ -61,6 +62,7 @@
 │   ├── AuthWrapper.tsx
 │   ├── BookshelfView.tsx
 │   ├── CameraView.tsx
+│   ├── DataMigrationConfirmDialog.tsx
 │   ├── DataMigrationProgress.tsx
 │   ├── HapticTab.tsx
 │   ├── ImageSelectionView.tsx
@@ -84,15 +86,18 @@
 │   ├── Colors.ts
 │   └── MockData.ts
 ├── contexts
-│   └── AuthContext.tsx
+│   ├── AuthContext.tsx
+│   └── LastClipBookContext.tsx
 ├── docs
 │   ├── ARCHITECTURE.md
 │   ├── DIRECTORY.md
 │   ├── PRD.md
 │   ├── PRODUCT_OVERVIEW.md
 │   ├── PROGRESS.md
-│   └── specifications
-│       └── AUTH_DATA_MIGRATION.md
+│   ├── specifications
+│   │   └── AUTH_DATA_MIGRATION.md
+│   └── tests
+│       └── AUTH_DATA_MIGRATION_E2E.md
 ├── eslint.config.js
 ├── expo-env.d.ts
 ├── hooks
@@ -128,12 +133,17 @@
 │   │   ├── postgres-version
 │   │   ├── project-ref
 │   │   └── rest-version
-│   └── functions
-│       ├── README.md
-│       └── delete-account
-│           ├── deno.json
-│           ├── deno.lock
-│           └── index.ts
+│   ├── functions
+│   │   ├── README.md
+│   │   └── delete-account
+│   │       ├── deno.json
+│   │       ├── deno.lock
+│   │       └── index.ts
+│   └── supabase
+│       ├── .temp
+│       └── supabase
+│           ├── .temp
+│           └── functions
 ├── tests
 │   ├── __mocks__
 │   │   └── @react-native-async-storage
@@ -169,7 +179,8 @@
 │   │       ├── BarcodeScanner.test.tsx
 │   │       └── CameraModal.test.tsx
 │   ├── contexts
-│   │   └── AuthContext.test.tsx
+│   │   ├── AuthContext.test.tsx
+│   │   └── LastClipBookContext.test.tsx
 │   ├── hooks
 │   │   ├── useAuth.test.tsx
 │   │   └── useBookScanner.test.tsx
@@ -188,4 +199,4 @@
 └── types
     └── env.d.ts
 
-42 directories, 147 files
+48 directories, 152 files
