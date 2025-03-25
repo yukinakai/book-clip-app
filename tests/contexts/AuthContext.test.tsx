@@ -37,14 +37,8 @@ describe("AuthContext", () => {
   // テスト前にモックをリセット
   beforeEach(() => {
     jest.clearAllMocks();
-  });
 
-  it("初期化時にStorageMigrationService.initializeStorageが呼ばれること", () => {
-    const mockInitializeStorage =
-      require("../../services/StorageMigrationService").StorageMigrationService
-        .initializeStorage;
-
-    // useAuthフックのモック値を設定
+    // デフォルトのuseAuthモック値を設定
     const mockUseAuth = require("../../hooks/useAuth").useAuth;
     mockUseAuth.mockReturnValue({
       user: null,
@@ -58,6 +52,15 @@ describe("AuthContext", () => {
       deleteAccount: jest.fn(),
       migrateLocalDataToSupabase: jest.fn(),
     });
+  });
+
+  it("初期化時にStorageMigrationService.initializeStorageが呼ばれること", async () => {
+    const mockInitializeStorage =
+      require("../../services/StorageMigrationService").StorageMigrationService
+        .initializeStorage;
+
+    // レンダリング前にモックを確認
+    expect(mockInitializeStorage).not.toHaveBeenCalled();
 
     // コンポーネントをレンダリング
     render(
@@ -71,6 +74,9 @@ describe("AuthContext", () => {
   });
 
   it("AuthProviderが子コンポーネントに適切な値を提供する", () => {
+    // initializeStorageの呼び出しをリセット
+    jest.clearAllMocks();
+
     // useAuthフックのモック値を設定
     const mockUser = { id: "1", email: "test@example.com" };
     const mockUseAuth = require("../../hooks/useAuth").useAuth;
@@ -93,6 +99,12 @@ describe("AuthContext", () => {
         <AuthConsumer />
       </AuthProvider>
     );
+
+    // initializeStorageが呼ばれることを確認
+    const mockInitializeStorage =
+      require("../../services/StorageMigrationService").StorageMigrationService
+        .initializeStorage;
+    expect(mockInitializeStorage).toHaveBeenCalled();
 
     // 適切な値が子コンポーネントに渡されていることを確認
     expect(getByTestId("user-data").props.children).toBe(mockUser.email);

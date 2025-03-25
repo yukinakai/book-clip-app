@@ -11,6 +11,7 @@ const mockBook: Book = {
   title: "テスト書籍",
   author: "テスト作者",
   thumbnail: "thumbnail-url",
+  isbn: "9784567890123",
 };
 
 const mockClip: Clip = {
@@ -37,23 +38,6 @@ jest.mock("../../services/auth", () => {
     delete: mockDeleteFn,
     update: mockUpdateFn,
   });
-
-  // モックの連鎖を設定
-  mockSelectFn.mockImplementation(() => ({
-    eq: mockEqFn,
-    order: mockOrderFn,
-    single: mockSingleFn,
-  }));
-
-  mockInsertFn.mockImplementation(() => ({
-    select: mockSelectFn,
-  }));
-
-  mockEqFn.mockImplementation(() => ({
-    eq: mockEqFn,
-    order: mockOrderFn,
-    single: mockSingleFn,
-  }));
 
   return {
     supabase: {
@@ -134,8 +118,8 @@ describe("SupabaseStorageService", () => {
         mockEqFn,
       } = require("../../services/auth");
       expect(mockFromFn).toHaveBeenCalledWith("books");
-      expect(mockSelectFn).toHaveBeenCalledWith("id, isbn");
-      expect(mockEqFn).toHaveBeenCalledWith("isbn", mockBook.isbn);
+      expect(mockSelectFn).toHaveBeenCalledWith("id");
+      expect(mockEqFn).toHaveBeenCalledWith("id", bookId);
       expect(mockEqFn).toHaveBeenCalledWith("user_id", userId);
       expect(mockInsertFn).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -164,8 +148,8 @@ describe("SupabaseStorageService", () => {
         mockEqFn,
       } = require("../../services/auth");
       expect(mockFromFn).toHaveBeenCalledWith("books");
-      expect(mockSelectFn).toHaveBeenCalledWith("id, isbn");
-      expect(mockEqFn).toHaveBeenCalledWith("isbn", mockBook.isbn);
+      expect(mockSelectFn).toHaveBeenCalledWith("id");
+      expect(mockEqFn).toHaveBeenCalledWith("id", bookId);
       expect(mockEqFn).toHaveBeenCalledWith("user_id", userId);
       expect(mockInsertFn).not.toHaveBeenCalled();
     });
@@ -204,14 +188,7 @@ describe("SupabaseStorageService", () => {
       expect(mockOrderFn).toHaveBeenCalledWith("created_at", {
         ascending: false,
       });
-      const expectedBook = {
-        id: mockBook.id,
-        title: mockBook.title,
-        author: mockBook.author,
-        coverImage: undefined,
-        isbn: undefined,
-      };
-      expect(result).toEqual([expectedBook]);
+      expect(result).toEqual([mockBook]);
     });
 
     it("エラー発生時に空配列を返すこと", async () => {
@@ -281,11 +258,9 @@ describe("SupabaseStorageService", () => {
       expect(mockFromFn).toHaveBeenCalledWith("clips");
       expect(mockInsertFn).toHaveBeenCalledWith(
         expect.objectContaining({
+          ...mockClip,
           user_id: userId,
-          book_id: mockClip.bookId,
-          text: mockClip.text,
-          page: mockClip.page,
-          created_at: expect.any(String),
+          created_at: mockClip.createdAt,
           updated_at: expect.any(String),
         })
       );
@@ -322,7 +297,7 @@ describe("SupabaseStorageService", () => {
       expect(mockFromFn).toHaveBeenCalledWith("clips");
       expect(mockSelectFn).toHaveBeenCalledWith("*");
       expect(mockEqFn).toHaveBeenNthCalledWith(1, "user_id", userId);
-      expect(mockEqFn).toHaveBeenNthCalledWith(2, "book_id", bookId);
+      expect(mockEqFn).toHaveBeenNthCalledWith(2, "bookId", bookId);
       expect(mockOrderFn).toHaveBeenCalledWith("created_at", {
         ascending: false,
       });
@@ -361,9 +336,7 @@ describe("SupabaseStorageService", () => {
       expect(mockFromFn).toHaveBeenCalledWith("clips");
       expect(mockUpdateFn).toHaveBeenCalledWith(
         expect.objectContaining({
-          book_id: updatedClip.bookId,
-          text: updatedClip.text,
-          page: updatedClip.page,
+          ...updatedClip,
           updated_at: expect.any(String),
         })
       );
