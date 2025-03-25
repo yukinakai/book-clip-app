@@ -24,7 +24,7 @@ serve(async (req: Request) => {
       throw new Error("認証情報がありません");
     }
 
-    // 環境変数の確認
+    // 環境変数の確認 - Supabaseが自動的に提供する環境変数を使用
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -36,6 +36,38 @@ serve(async (req: Request) => {
       throw new Error("サーバー設定が不完全です");
     }
 
+    // 認証トークンを取得
+    const token = authHeader.replace("Bearer ", "");
+
+    // クライアントの初期化 - 認証ヘッダーを使用
+    const supabaseClient = createClient(
+      supabaseUrl,
+      Deno.env.get("SUPABASE_ANON_KEY") || "",
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      }
+    );
+
+    // 認証されたユーザー情報を取得
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseClient.auth.getUser();
+
+    if (userError) {
+      console.error("ユーザー情報の取得に失敗:", userError);
+      throw userError;
+    }
+
+    if (!user) {
+      console.error("ユーザーが見つかりません");
+      throw new Error("ユーザーが見つかりません");
+    }
+
+    console.log("削除するユーザーID:", user.id);
+
     // 管理者権限を持つクライアントを作成
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
       auth: {
@@ -44,42 +76,52 @@ serve(async (req: Request) => {
       },
     });
 
-    // 認証トークンからユーザー情報を取得
-    const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user: tokenUser },
-      error: tokenError,
-    } = await supabaseAdmin.auth.getUser(token);
+    // ユーザーに関連するデータを削除
+    try {
+      // 1. ユーザーのクリップデータを削除
+      const { error: clipsError } = await supabaseAdmin
+        .from("clips")
+        .delete()
+        .eq("user_id", user.id);
 
-    if (tokenError) {
-      console.error("トークンからのユーザー取得に失敗:", {
-        error: tokenError,
-        token: token.substring(0, 20) + "...", // トークンの一部のみをログ
-      });
-      throw tokenError;
+      if (clipsError) {
+        console.error("ユーザーのクリップデータ削除に失敗:", clipsError);
+      } else {
+        console.log("ユーザーのクリップデータを削除しました");
+      }
+
+      // 2. ユーザーの書籍データを削除
+      const { error: booksError } = await supabaseAdmin
+        .from("books")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (booksError) {
+        console.error("ユーザーの書籍データ削除に失敗:", booksError);
+      } else {
+        console.log("ユーザーの書籍データを削除しました");
+      }
+
+      // 3. その他のユーザー関連データの削除（必要に応じて追加）
+    } catch (dataError) {
+      console.error("ユーザーデータの削除中にエラーが発生:", dataError);
+      // データ削除エラーは致命的ではないため、続行します
     }
-
-    if (!tokenUser) {
-      console.error("ユーザーが見つかりません");
-      throw new Error("ユーザーが見つかりません");
-    }
-
-    console.log("削除するユーザーID:", tokenUser.id);
 
     // ユーザーアカウントを削除
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
-      tokenUser.id
+      user.id
     );
 
     if (deleteError) {
       console.error("ユーザー削除に失敗:", {
         error: deleteError,
-        userId: tokenUser.id,
+        userId: user.id,
       });
       throw deleteError;
     }
 
-    console.log("ユーザーが正常に削除されました:", tokenUser.id);
+    console.log("ユーザーが正常に削除されました:", user.id);
 
     return new Response(
       JSON.stringify({
