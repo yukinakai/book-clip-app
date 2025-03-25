@@ -190,6 +190,7 @@
 │   │   ├── ClipStorageService.test.ts
 │   │   ├── LocalStorageService.test.ts
 │   │   ├── OCRService.test.ts
+│   │   ├── RakutenBookService.test.ts
 │   │   ├── StorageInterface.test.ts
 │   │   ├── StorageMigrationService.test.ts
 │   │   ├── SupabaseStorageService.test.ts
@@ -200,4 +201,4 @@
 └── types
     └── env.d.ts
 
-48 directories, 153 files
+48 directories, 154 files
