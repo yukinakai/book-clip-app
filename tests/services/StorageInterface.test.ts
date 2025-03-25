@@ -21,6 +21,18 @@ class MockStorageService implements StorageInterface {
     return this.books;
   }
 
+  async getBookById(bookId: string): Promise<Book | null> {
+    return this.books.find((book) => book.id === bookId) || null;
+  }
+
+  async updateBook(book: Book): Promise<void> {
+    const index = this.books.findIndex((b) => b.id === book.id);
+    if (index === -1) {
+      throw new Error("指定されたIDの書籍が見つかりません");
+    }
+    this.books[index] = book;
+  }
+
   async removeBook(bookId: string): Promise<void> {
     this.books = this.books.filter((book) => book.id !== bookId);
   }
@@ -49,14 +61,20 @@ class MockStorageService implements StorageInterface {
     return this.clips.filter((clip) => clip.bookId === bookId);
   }
 
+  async getClipById(clipId: string): Promise<Clip | null> {
+    return this.clips.find((clip) => clip.id === clipId) || null;
+  }
+
   async removeClip(clipId: string): Promise<void> {
     this.clips = this.clips.filter((clip) => clip.id !== clipId);
   }
 
   async updateClip(updatedClip: Clip): Promise<void> {
-    this.clips = this.clips.map((clip) =>
-      clip.id === updatedClip.id ? updatedClip : clip
-    );
+    const index = this.clips.findIndex((clip) => clip.id === updatedClip.id);
+    if (index === -1) {
+      throw new Error("指定されたIDのクリップが見つかりません");
+    }
+    this.clips[index] = updatedClip;
   }
 
   async deleteClipsByBookId(bookId: string): Promise<void> {
@@ -169,6 +187,32 @@ describe("StorageInterface", () => {
         const lastBook = await mockStorage.getLastClipBook();
         expect(lastBook).toEqual(mockBook);
       });
+
+      it("書籍がIDで取得できること", async () => {
+        await mockStorage.saveBook(mockBook);
+        const book = await mockStorage.getBookById(mockBook.id);
+        expect(book).toEqual(mockBook);
+      });
+
+      it("存在しない書籍IDの場合、nullを返すこと", async () => {
+        const book = await mockStorage.getBookById("non-existent-id");
+        expect(book).toBeNull();
+      });
+
+      it("書籍が更新できること", async () => {
+        await mockStorage.saveBook(mockBook);
+        const updatedBook = { ...mockBook, title: "更新された書籍" };
+        await mockStorage.updateBook(updatedBook);
+        const book = await mockStorage.getBookById(mockBook.id);
+        expect(book).toEqual(updatedBook);
+      });
+
+      it("存在しない書籍の更新時にエラーがスローされること", async () => {
+        const nonExistentBook = { ...mockBook, id: "non-existent-id" };
+        await expect(mockStorage.updateBook(nonExistentBook)).rejects.toThrow(
+          "指定されたIDの書籍が見つかりません"
+        );
+      });
     });
 
     describe("クリップ関連の操作", () => {
@@ -257,6 +301,24 @@ describe("StorageInterface", () => {
         const clips = await mockStorage.getAllClips();
         expect(clips.length).toBe(1);
         expect(clips).toContainEqual(clip3);
+      });
+
+      it("クリップがIDで取得できること", async () => {
+        await mockStorage.saveClip(mockClip);
+        const clip = await mockStorage.getClipById(mockClip.id);
+        expect(clip).toEqual(mockClip);
+      });
+
+      it("存在しないクリップIDの場合、nullを返すこと", async () => {
+        const clip = await mockStorage.getClipById("non-existent-id");
+        expect(clip).toBeNull();
+      });
+
+      it("存在しないクリップの更新時にエラーがスローされること", async () => {
+        const nonExistentClip = { ...mockClip, id: "non-existent-id" };
+        await expect(mockStorage.updateClip(nonExistentClip)).rejects.toThrow(
+          "指定されたIDのクリップが見つかりません"
+        );
       });
     });
 
