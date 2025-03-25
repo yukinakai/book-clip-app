@@ -59,7 +59,7 @@ serve(async (req: Request) => {
     }
 
     // 認証トークンを取得
-    const token = authHeader.replace("Bearer ", "");
+    const _token = authHeader.replace("Bearer ", "");
     console.log("認証トークンを取得しました");
 
     // クライアントの初期化 - 認証ヘッダーを使用
