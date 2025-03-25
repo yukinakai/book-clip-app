@@ -5,13 +5,11 @@ import { ActivityIndicator } from "react-native";
 
 // ThemedTextコンポーネントをモック
 jest.mock("../../components/ThemedText", () => ({
-  ThemedText: ({
-    children,
-    style,
-  }: {
-    children: React.ReactNode;
-    style?: any;
-  }) => <React.Fragment>{children}</React.Fragment>,
+  ThemedText: (props: { children: React.ReactNode; style?: any }) => {
+    const { children } = props;
+    // Reactを直接参照せず、jsxでフラグメントを使用
+    return <>{children}</>;
+  },
 }));
 
 describe("DataMigrationConfirmDialog", () => {
