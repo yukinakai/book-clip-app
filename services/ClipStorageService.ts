@@ -57,13 +57,23 @@ export class ClipStorageService extends StorageService {
    * クリップを更新
    */
   static async updateClip(clip: Clip): Promise<void> {
-    return this.storageBackend.updateClip(clip);
+    try {
+      return await this.storageBackend.updateClip(clip);
+    } catch (error) {
+      console.error("Error updating clip:", error);
+      throw error;
+    }
   }
 
   /**
    * 書籍IDに関連するすべてのクリップを削除
    */
   static async deleteClipsByBookId(bookId: string): Promise<void> {
-    return this.storageBackend.deleteClipsByBookId(bookId);
+    try {
+      return await this.storageBackend.deleteClipsByBookId(bookId);
+    } catch (error) {
+      console.error("Error deleting clips by book ID:", error);
+      throw error;
+    }
   }
 }
