@@ -3,8 +3,13 @@ import { BookStorageService } from "./BookStorageService";
 import { ClipStorageService } from "./ClipStorageService";
 import { LocalStorageService } from "./LocalStorageService";
 import { SupabaseStorageService } from "./SupabaseStorageService";
-import { Book, Clip } from "../constants/MockData";
 import { supabase } from "./auth";
+import { Book, Clip } from "../constants/MockData";
+
+// ローカルIDとSupabase IDのマッピングを保持するオブジェクト
+interface BookIdMapping {
+  [localId: string]: string;
+}
 
 /**
  * データ移行の進捗状況を表すインターフェース
@@ -124,7 +129,7 @@ export class StorageMigrationService {
       let failed = 0;
 
       // ローカルIDとSupabase IDのマッピングを保持するオブジェクト
-      const bookIdMapping: Record<string, string> = {};
+      const bookIdMapping: BookIdMapping = {};
 
       // 書籍の移行
       for (const book of books) {
@@ -132,7 +137,7 @@ export class StorageMigrationService {
           // 書籍データを保存
           const newBookId = await this.saveBookToSupabase(userId, book);
           // IDのマッピングを保存
-          if (newBookId) {
+          if (newBookId && book.id) {
             bookIdMapping[book.id] = newBookId;
           }
           processed++;
