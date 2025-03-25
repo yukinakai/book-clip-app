@@ -1,4 +1,5 @@
-import { render, fireEvent } from "../../test-utils";
+import React from "react";
+import { render, fireEvent } from "@testing-library/react-native";
 import HomeScreen from "../../../app/(tabs)/index";
 import { Alert } from "react-native";
 
@@ -116,6 +117,9 @@ jest.mock("../../../contexts/LastClipBookContext", () => ({
     },
     setLastClipBook: jest.fn(),
   }),
+  // Provider自体もモックする
+  LastClipBookProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // useRouterのモック
