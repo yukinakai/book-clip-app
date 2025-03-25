@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
@@ -81,7 +82,19 @@ export default function OthersScreen() {
 
       // 退会成功の場合、ホーム画面に遷移
       if (result) {
-        console.log("退会処理が成功しました、ホーム画面に遷移します");
+        console.log("退会処理が成功しました、すぐにキャッシュをクリア");
+
+        // 認証情報をクリアしてエラーを防止
+        try {
+          // Supabaseのセッション情報を削除
+          await AsyncStorage.removeItem("supabase.auth.token");
+          await AsyncStorage.removeItem("supabase.auth.refreshToken");
+          console.log("認証キャッシュを削除しました");
+        } catch (storageError) {
+          console.error("認証キャッシュ削除エラー:", storageError);
+        }
+
+        // ホーム画面に遷移
         router.replace("/(tabs)");
       } else {
         console.error(
