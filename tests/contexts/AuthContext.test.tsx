@@ -1,5 +1,10 @@
 import React from "react";
-import { render, renderHook } from "@testing-library/react-native";
+import {
+  render,
+  renderHook,
+  act,
+  waitFor,
+} from "@testing-library/react-native";
 import { Text } from "react-native";
 import { AuthProvider, useAuthContext } from "../../contexts/AuthContext";
 
@@ -52,6 +57,12 @@ describe("AuthContext", () => {
       deleteAccount: jest.fn(),
       migrateLocalDataToSupabase: jest.fn(),
     });
+
+    // StorageMigrationService.initializeStorageをリセット
+    const mockInitializeStorage =
+      require("../../services/StorageMigrationService").StorageMigrationService
+        .initializeStorage;
+    mockInitializeStorage.mockClear();
   });
 
   it("初期化時にStorageMigrationService.initializeStorageが呼ばれること", async () => {
@@ -59,7 +70,7 @@ describe("AuthContext", () => {
       require("../../services/StorageMigrationService").StorageMigrationService
         .initializeStorage;
 
-    // レンダリング前にモックを確認
+    // テスト前は呼ばれていないことを確認
     expect(mockInitializeStorage).not.toHaveBeenCalled();
 
     // コンポーネントをレンダリング
@@ -69,14 +80,13 @@ describe("AuthContext", () => {
       </AuthProvider>
     );
 
-    // initializeStorageが呼ばれることを確認
-    expect(mockInitializeStorage).toHaveBeenCalled();
+    // 非同期で呼ばれるため、待機する
+    await waitFor(() => {
+      expect(mockInitializeStorage).toHaveBeenCalled();
+    });
   });
 
-  it("AuthProviderが子コンポーネントに適切な値を提供する", () => {
-    // initializeStorageの呼び出しをリセット
-    jest.clearAllMocks();
-
+  it("AuthProviderが子コンポーネントに適切な値を提供する", async () => {
     // useAuthフックのモック値を設定
     const mockUser = { id: "1", email: "test@example.com" };
     const mockUseAuth = require("../../hooks/useAuth").useAuth;
@@ -104,7 +114,11 @@ describe("AuthContext", () => {
     const mockInitializeStorage =
       require("../../services/StorageMigrationService").StorageMigrationService
         .initializeStorage;
-    expect(mockInitializeStorage).toHaveBeenCalled();
+
+    // 非同期で呼ばれるため、待機する
+    await waitFor(() => {
+      expect(mockInitializeStorage).toHaveBeenCalled();
+    });
 
     // 適切な値が子コンポーネントに渡されていることを確認
     expect(getByTestId("user-data").props.children).toBe(mockUser.email);

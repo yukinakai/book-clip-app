@@ -1,5 +1,4 @@
 import { ClipStorageService } from "../../services/ClipStorageService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Clip } from "../../constants/MockData";
 import { BookStorageService } from "../../services/BookStorageService";
 
@@ -247,17 +246,17 @@ describe("ClipStorageService", () => {
         .mockRejectedValue(new Error(errorMessage));
 
       // コンソールエラーをモック
-      const consoleSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
+      const originalError = console.error;
+      console.error = jest.fn();
 
       await expect(ClipStorageService.updateClip(mockClip)).rejects.toThrow();
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(console.error).toHaveBeenCalledWith(
         "Error updating clip:",
         expect.any(Error)
       );
 
-      consoleSpy.mockRestore();
+      // モックを復元
+      console.error = originalError;
     });
   });
 
@@ -282,19 +281,19 @@ describe("ClipStorageService", () => {
         .mockRejectedValue(new Error(errorMessage));
 
       // コンソールエラーをモック
-      const consoleSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
+      const originalError = console.error;
+      console.error = jest.fn();
 
       await expect(
         ClipStorageService.deleteClipsByBookId("book-1")
       ).rejects.toThrow();
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(console.error).toHaveBeenCalledWith(
         "Error deleting clips by book ID:",
         expect.any(Error)
       );
 
-      consoleSpy.mockRestore();
+      // モックを復元
+      console.error = originalError;
     });
   });
 });
