@@ -38,9 +38,12 @@ export default function ClipDetailScreen() {
   useEffect(() => {
     const loadClipDetails = async () => {
       try {
+        console.log("クリップ詳細の読み込み開始 - ID:", id);
         setLoading(true);
-        const allClips = await ClipStorageService.getAllClips();
-        const foundClip = allClips.find((c) => c.id === id);
+
+        // 単一のクリップデータを直接取得
+        const foundClip = await ClipStorageService.getClipById(id as string);
+        console.log("クリップ取得結果:", foundClip);
 
         if (foundClip) {
           setClip(foundClip);
@@ -49,10 +52,13 @@ export default function ClipDetailScreen() {
 
           // 書籍タイトルを取得する処理を追加することも可能
           // ここでは省略していますが、BookStorageServiceから取得できます
+        } else {
+          console.log("クリップが見つかりませんでした - ID:", id);
         }
       } catch (error) {
-        console.error("Error loading clip details:", error);
+        console.error("クリップ詳細の読み込み中にエラー:", error);
       } finally {
+        console.log("クリップ詳細の読み込み完了");
         setLoading(false);
       }
     };

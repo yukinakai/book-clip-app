@@ -2,6 +2,11 @@ import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react-native";
 import OthersScreen from "../../../app/(tabs)/others";
 
+// AsyncStorageをモック
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  removeItem: jest.fn().mockResolvedValue(null),
+}));
+
 // useColorSchemeフックをモック
 jest.mock("../../../hooks/useColorScheme", () => ({
   useColorScheme: () => "light",
@@ -16,6 +21,21 @@ jest.mock("@expo/vector-icons", () => {
     Ionicons: (props) => {
       return React.createElement(View, {
         testID: `icon-${props.name}`,
+        ...props,
+      });
+    },
+  };
+});
+
+// DataMigrationProgressコンポーネントをモック
+jest.mock("../../../components/DataMigrationProgress", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+
+  return {
+    DataMigrationProgress: (props) => {
+      return React.createElement(View, {
+        testID: "data-migration-progress",
         ...props,
       });
     },
@@ -45,6 +65,13 @@ const mockUseAuthContext = (isLoggedIn = false) => {
     isLoggedIn,
     signOut: jest.fn(),
     deleteAccount: jest.fn(),
+    migrateLocalDataToSupabase: jest.fn(),
+    migrationProgress: {
+      total: 0,
+      current: 0,
+      status: "completed",
+    },
+    showMigrationProgress: false,
   });
 };
 
@@ -80,6 +107,9 @@ describe("OthersScreen", () => {
     // ログイン済み時のみのメニュー項目は表示されないこと
     expect(screen.queryByText("ログアウト")).toBeNull();
     expect(screen.queryByText("退会")).toBeNull();
+
+    // 開発用データ同期ボタンが表示されないこと
+    expect(screen.queryByText("ローカルデータを同期（開発用）")).toBeNull();
   });
 
   it("ログイン済み時に正しいメニュー項目が表示されること", () => {
@@ -131,6 +161,9 @@ describe("OthersScreen", () => {
       isLoggedIn: true,
       signOut: mockSignOut,
       deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -178,12 +211,15 @@ describe("OthersScreen", () => {
   it("退会確認ダイアログで「退会する」をタップすると退会処理が実行されること", async () => {
     mockUseAuthContext(true);
     const { useAuthContext } = require("../../../contexts/AuthContext");
-    const mockDeleteAccount = jest.fn().mockResolvedValue(undefined);
+    const mockDeleteAccount = jest.fn().mockResolvedValue(true);
     useAuthContext.mockReturnValue({
       user: { id: "test-user-id", email: "test@example.com" },
       isLoggedIn: true,
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -206,6 +242,88 @@ describe("OthersScreen", () => {
     expect(mockReplace).toHaveBeenCalledWith("/(tabs)");
   });
 
+  it("退会成功時にAsyncStorageから認証情報が削除されること", async () => {
+    const AsyncStorage = require("@react-native-async-storage/async-storage");
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    const mockDeleteAccount = jest.fn().mockResolvedValue(true);
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+    });
+
+    render(<OthersScreen />);
+
+    // 退会ボタンをタップして退会確認ダイアログを表示
+    const withdrawButton = screen.getByText("退会");
+    fireEvent.press(withdrawButton);
+
+    // 退会確認ダイアログの「退会する」ボタンをタップ
+    const confirmButton = screen.getByText("退会する");
+    await act(async () => {
+      fireEvent.press(confirmButton);
+      // deleteAccountの完了を待つ
+      await mockDeleteAccount();
+    });
+
+    // AsyncStorageのremoveItemが正しく呼ばれたことを確認
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith("supabase.auth.token");
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(
+      "supabase.auth.refreshToken"
+    );
+    expect(mockReplace).toHaveBeenCalledWith("/(tabs)");
+  });
+
+  it("退会処理が失敗した場合(falseが返却)、ホーム画面に遷移しないこと", async () => {
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    const mockDeleteAccount = jest.fn().mockResolvedValue(false);
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+    });
+
+    const mockConsoleError = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    render(<OthersScreen />);
+
+    // 退会ボタンをタップして退会確認ダイアログを表示
+    const withdrawButton = screen.getByText("退会");
+    fireEvent.press(withdrawButton);
+
+    // 退会確認ダイアログの「退会する」ボタンをタップ
+    const confirmButton = screen.getByText("退会する");
+
+    await act(async () => {
+      fireEvent.press(confirmButton);
+      // deleteAccountの完了を待つ
+      await mockDeleteAccount();
+    });
+
+    // エラーがログに出力されること
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      "退会処理が失敗しました、ダイアログは閉じましたが退会は完了していません"
+    );
+
+    // AsyncStorageからの認証情報削除が呼び出されないこと
+    const AsyncStorage = require("@react-native-async-storage/async-storage");
+    expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
+
+    mockConsoleError.mockRestore();
+  });
+
   it("退会処理中はローディング状態が表示されること", async () => {
     mockUseAuthContext(true);
     const { useAuthContext } = require("../../../contexts/AuthContext");
@@ -218,6 +336,9 @@ describe("OthersScreen", () => {
       isLoggedIn: true,
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -244,6 +365,9 @@ describe("OthersScreen", () => {
       isLoggedIn: true,
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
     });
 
     // console.errorをモック
@@ -283,5 +407,71 @@ describe("OthersScreen", () => {
 
     // ダイアログが閉じること
     expect(screen.queryByText("退会の確認")).toBeNull();
+  });
+
+  // データ移行機能のテスト
+  it("開発モードでログイン時、データ移行ボタンが表示されること", () => {
+    // __DEV__フラグを一時的にtrueに設定
+    const originalDev = global.__DEV__;
+    global.__DEV__ = true;
+
+    mockUseAuthContext(true);
+    render(<OthersScreen />);
+
+    // データ移行ボタンが表示されること
+    expect(screen.getByText("ローカルデータを同期（開発用）")).toBeTruthy();
+
+    // __DEV__フラグを元に戻す
+    global.__DEV__ = originalDev;
+  });
+
+  it("データ移行ボタンをタップするとmigrateLocalDataToSupabaseが呼ばれること", () => {
+    // __DEV__フラグを一時的にtrueに設定
+    const originalDev = global.__DEV__;
+    global.__DEV__ = true;
+
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    const mockMigrateLocalDataToSupabase = jest.fn();
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: jest.fn(),
+      migrateLocalDataToSupabase: mockMigrateLocalDataToSupabase,
+      migrationProgress: { total: 0, current: 0, status: "completed" },
+      showMigrationProgress: false,
+    });
+
+    render(<OthersScreen />);
+
+    // データ移行ボタンをタップ
+    const migrateButton = screen.getByText("ローカルデータを同期（開発用）");
+    fireEvent.press(migrateButton);
+
+    // migrateLocalDataToSupabaseが呼ばれること
+    expect(mockMigrateLocalDataToSupabase).toHaveBeenCalled();
+
+    // __DEV__フラグを元に戻す
+    global.__DEV__ = originalDev;
+  });
+
+  it("移行進捗ダイアログが表示されること", () => {
+    mockUseAuthContext(true);
+    const { useAuthContext } = require("../../../contexts/AuthContext");
+    useAuthContext.mockReturnValue({
+      user: { id: "test-user-id", email: "test@example.com" },
+      isLoggedIn: true,
+      signOut: jest.fn(),
+      deleteAccount: jest.fn(),
+      migrateLocalDataToSupabase: jest.fn(),
+      migrationProgress: { total: 10, current: 5, status: "migrating" },
+      showMigrationProgress: true,
+    });
+
+    render(<OthersScreen />);
+
+    // 移行進捗ダイアログが表示されること
+    expect(screen.getByTestId("data-migration-progress")).toBeTruthy();
   });
 });

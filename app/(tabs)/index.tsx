@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   Modal,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import { Book } from "../../constants/MockData";
 import { Colors } from "../../constants/Colors";
@@ -18,6 +17,7 @@ import CameraView from "../../components/CameraView";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useRouter } from "expo-router";
 import { BookStorageService } from "../../services/BookStorageService";
+import { useLastClipBook } from "../../contexts/LastClipBookContext";
 
 export default function HomeScreen() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -26,6 +26,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
   const [bookCount, setBookCount] = useState(0);
+  const { lastClipBook } = useLastClipBook();
 
   // 書籍の件数を取得
   useEffect(() => {
@@ -58,17 +59,38 @@ export default function HomeScreen() {
   // 書籍追加カメラでの画像キャプチャ処理
   const handleImageCaptured = (imageUri: string) => {
     console.log("画像が選択されました:", imageUri);
-    // クリップ登録画面に遷移
-    router.push(`/book/add-clip?imageUri=${encodeURIComponent(imageUri)}`);
+    console.log("最後にクリップした書籍:", lastClipBook);
+    // クリップ登録画面に遷移（最後にクリップした書籍の情報を含める）
+    const params = {
+      imageUri: encodeURIComponent(imageUri),
+      ...(lastClipBook && {
+        bookId: lastClipBook.id,
+        bookTitle: encodeURIComponent(lastClipBook.title),
+      }),
+    };
+    router.push({
+      pathname: "/book/add-clip",
+      params,
+    });
   };
 
   // OCRカメラでの画像キャプチャ処理
   const handleOcrImageCaptured = (imageUri: string) => {
     console.log("OCR用画像が選択されました:", imageUri);
-    // クリップ登録画面に遷移（OCR処理用として）
-    router.push(
-      `/book/add-clip?imageUri=${encodeURIComponent(imageUri)}&isOcr=true`
-    );
+    console.log("最後にクリップした書籍:", lastClipBook);
+    // クリップ登録画面に遷移（OCR処理用として、最後にクリップした書籍の情報を含める）
+    const params = {
+      imageUri: encodeURIComponent(imageUri),
+      isOcr: "true",
+      ...(lastClipBook && {
+        bookId: lastClipBook.id,
+        bookTitle: encodeURIComponent(lastClipBook.title),
+      }),
+    };
+    router.push({
+      pathname: "/book/add-clip",
+      params,
+    });
     setIsOcrCameraOpen(false);
   };
 
@@ -113,10 +135,7 @@ export default function HomeScreen() {
       </View>
 
       {/* スクロール可能な領域 - メニューバーとブックシェルフを含む */}
-      <ScrollView
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.contentContainer}>
         {/* メニューバー - 件数表示と書籍追加ボタン */}
         <View style={styles.menuBar}>
           <View style={styles.bookCountContainer}>
@@ -151,7 +170,7 @@ export default function HomeScreen() {
             refreshTrigger={refreshTrigger}
           />
         </View>
-      </ScrollView>
+      </View>
 
       {/* 書籍追加用カメラモーダル */}
       <CameraModal
@@ -202,6 +221,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   scrollContainer: {
+    flex: 1,
+    width: "100%",
+  },
+  contentContainer: {
     flex: 1,
     width: "100%",
   },

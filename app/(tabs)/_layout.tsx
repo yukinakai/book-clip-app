@@ -105,19 +105,11 @@ export default function TabLayout({ user }: { user?: any }) {
         />
 
         <Tabs.Screen
-          name="search"
-          options={{
-            title: "検索",
-          }}
-          initialParams={{ user }}
-        />
-
-        <Tabs.Screen
           name="others"
           options={{
             title: "その他",
             tabBarIcon: ({ color }: { color: string }) => (
-              <IconSymbol size={28} name="ellipsis.circle.fill" color={color} />
+              <IconSymbol size={28} name="person.fill" color={color} />
             ),
           }}
           initialParams={{ user }}

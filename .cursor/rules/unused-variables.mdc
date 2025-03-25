@@ -41,15 +41,6 @@ function doSomething() {
 const _originalModule = jest.requireActual("../path/to/module");
 ```
 
-#### 関数パラメータが将来必要になる可能性がある場合
-
-```typescript
-// インターフェースを実装するために必要だが現時点では使わないパラメータ
-function handleEvent(_event: Event) {
-  // eventパラメータは現在使わないが、シグネチャを維持するために宣言
-}
-```
-
 #### 分割代入で一部のプロパティのみを使う場合
 
 ```typescript

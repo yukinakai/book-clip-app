@@ -109,9 +109,13 @@ describe("BookSelectScreen", () => {
     fireEvent.press(bookTitle);
 
     // 正しいURLに遷移することを確認
-    expect(mockRouter.push).toHaveBeenCalledWith(
-      "/book/add-clip?bookId=1&bookTitle=%E3%83%86%E3%82%B9%E3%83%88%E6%9B%B8%E7%B1%8D1"
-    );
+    expect(mockRouter.push).toHaveBeenCalledWith({
+      pathname: "/book/add-clip",
+      params: {
+        bookId: "1",
+        bookTitle: "テスト書籍1",
+      },
+    });
   });
 
   it("fromClip=trueの場合、clipTextパラメータ付きで正しいURLに遷移すること", async () => {
@@ -128,9 +132,14 @@ describe("BookSelectScreen", () => {
     fireEvent.press(bookTitle);
 
     // clipTextパラメータ付きで正しいURLに遷移することを確認
-    expect(mockRouter.push).toHaveBeenCalledWith(
-      "/book/add-clip?bookId=1&bookTitle=%E3%83%86%E3%82%B9%E3%83%88%E6%9B%B8%E7%B1%8D1&clipText=%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88"
-    );
+    expect(mockRouter.push).toHaveBeenCalledWith({
+      pathname: "/book/add-clip",
+      params: {
+        bookId: "1",
+        bookTitle: "テスト書籍1",
+        clipText: "サンプルテキスト",
+      },
+    });
   });
 
   it("戻るボタンを押すと前の画面に戻ること", async () => {
