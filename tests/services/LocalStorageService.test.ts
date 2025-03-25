@@ -243,6 +243,238 @@ describe("LocalStorageService", () => {
         consoleSpy.mockRestore();
       });
     });
+
+    describe("getBookById", () => {
+      it("指定したIDの書籍を正常に取得できること", async () => {
+        // モックデータがAsyncStorageから返されるようにセット
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(mockBooks));
+
+        // コンソールログをモック
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+
+        const bookId = "test-id-1";
+        const book = await localStorageService.getBookById(bookId);
+
+        // 正しい書籍が返されることを確認
+        expect(book).toEqual(mockBooks.find((b) => b.id === bookId));
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
+
+        consoleSpy.mockRestore();
+      });
+
+      it("存在しないIDの場合、nullを返すこと", async () => {
+        // モックデータがAsyncStorageから返されるようにセット
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(mockBooks));
+
+        // コンソールログをモック
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+
+        const nonExistingBookId = "non-existing-id";
+        const book = await localStorageService.getBookById(nonExistingBookId);
+
+        // nullが返されることを確認
+        expect(book).toBeNull();
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
+
+        consoleSpy.mockRestore();
+      });
+
+      it("保存されている書籍がない場合、nullを返すこと", async () => {
+        // AsyncStorage.getItemがnullを返すようにモック
+        AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+
+        // コンソールログをモック
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+
+        const bookId = "test-id-1";
+        const book = await localStorageService.getBookById(bookId);
+
+        // nullが返されることを確認
+        expect(book).toBeNull();
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
+
+        consoleSpy.mockRestore();
+      });
+
+      it("取得中にエラーが発生した場合、nullを返し、エラーをログ出力すること", async () => {
+        // AsyncStorage.getItemがエラーをスローするようにモック
+        const errorMessage = "取得中にエラーが発生しました";
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockRejectedValue(new Error(errorMessage));
+
+        // コンソールログとエラーをモック
+        const consoleLogSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+        const consoleErrorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        const bookId = "test-id-1";
+        const book = await localStorageService.getBookById(bookId);
+
+        // nullが返され、エラーログが出力されることを確認
+        expect(book).toBeNull();
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Error getting book by ID from local storage:",
+          expect.any(Error)
+        );
+
+        consoleLogSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      });
+    });
+
+    describe("updateBook", () => {
+      it("指定したIDの書籍が正常に更新されること", async () => {
+        // モックデータがAsyncStorageから返されるようにセット
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(mockBooks));
+
+        // コンソールログをモック
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+
+        // 更新する書籍データ
+        const updatedBook: Book = {
+          ...mockBook,
+          title: "更新されたタイトル",
+          author: "更新された著者",
+        };
+
+        await localStorageService.updateBook(updatedBook);
+
+        // 更新後の書籍リストを確認
+        const expectedBooks = mockBooks.map((book) =>
+          book.id === updatedBook.id ? updatedBook : book
+        );
+
+        expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+          "@books",
+          JSON.stringify(expectedBooks)
+        );
+
+        consoleSpy.mockRestore();
+      });
+
+      it("指定したIDの書籍が存在しない場合、エラーがスローされること", async () => {
+        // モックデータがAsyncStorageから返されるようにセット（対象のIDの書籍は含まれていない）
+        const booksWithoutTarget = mockBooks.filter(
+          (book) => book.id !== mockBook.id
+        );
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(booksWithoutTarget));
+
+        // コンソールログとエラーをモック
+        const consoleLogSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+        const consoleErrorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        // 更新する書籍のIDが存在しないケース
+        await expect(localStorageService.updateBook(mockBook)).rejects.toThrow(
+          "指定されたIDの書籍が見つかりません"
+        );
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Error updating book in local storage:",
+          expect.any(Error)
+        );
+
+        consoleLogSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      });
+
+      it("書籍データが存在しない場合、エラーがスローされること", async () => {
+        // AsyncStorage.getItemがnullを返すようにモック
+        AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+
+        // コンソールログとエラーをモック
+        const consoleLogSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+        const consoleErrorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        await expect(localStorageService.updateBook(mockBook)).rejects.toThrow(
+          "書籍データが見つかりません"
+        );
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Error updating book in local storage:",
+          expect.any(Error)
+        );
+
+        consoleLogSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      });
+
+      it("書籍IDが未指定の場合、エラーがスローされること", async () => {
+        // コンソールエラーをモック
+        const consoleErrorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        // IDがない書籍
+        const bookWithoutId = { ...mockBook, id: undefined };
+
+        await expect(
+          localStorageService.updateBook(bookWithoutId as any)
+        ).rejects.toThrow("書籍IDが指定されていません");
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Error updating book in local storage:",
+          expect.any(Error)
+        );
+
+        consoleErrorSpy.mockRestore();
+      });
+
+      it("更新中にエラーが発生した場合、エラーがスローされること", async () => {
+        // AsyncStorage.getItemがエラーをスローするようにモック
+        const errorMessage = "更新中にエラーが発生しました";
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockRejectedValue(new Error(errorMessage));
+
+        // コンソールログとエラーをモック
+        const consoleLogSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+        const consoleErrorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        await expect(
+          localStorageService.updateBook(mockBook)
+        ).rejects.toThrow();
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Error updating book in local storage:",
+          expect.any(Error)
+        );
+
+        consoleLogSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      });
+    });
   });
 
   // クリップ関連のテスト
@@ -571,6 +803,98 @@ describe("LocalStorageService", () => {
         consoleSpy.mockRestore();
       });
     });
+
+    describe("getClipById", () => {
+      it("指定したIDのクリップを正常に取得できること", async () => {
+        // モックデータがAsyncStorageから返されるようにセット
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(mockClips));
+
+        // コンソールログをモック
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+
+        const clipId = "clip-id-1";
+        const clip = await localStorageService.getClipById(clipId);
+
+        // 正しいクリップが返されることを確認
+        expect(clip).toEqual(mockClips.find((c) => c.id === clipId));
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
+
+        consoleSpy.mockRestore();
+      });
+
+      it("存在しないIDの場合、nullを返すこと", async () => {
+        // モックデータがAsyncStorageから返されるようにセット
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(mockClips));
+
+        // コンソールログをモック
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+
+        const nonExistingClipId = "non-existing-id";
+        const clip = await localStorageService.getClipById(nonExistingClipId);
+
+        // nullが返されることを確認
+        expect(clip).toBeNull();
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
+
+        consoleSpy.mockRestore();
+      });
+
+      it("保存されているクリップがない場合、nullを返すこと", async () => {
+        // AsyncStorage.getItemがnullを返すようにモック
+        AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+
+        // コンソールログをモック
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+
+        const clipId = "clip-id-1";
+        const clip = await localStorageService.getClipById(clipId);
+
+        // nullが返されることを確認
+        expect(clip).toBeNull();
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@clips");
+
+        consoleSpy.mockRestore();
+      });
+
+      it("取得中にエラーが発生した場合、nullを返し、エラーをログ出力すること", async () => {
+        // AsyncStorage.getItemがエラーをスローするようにモック
+        const errorMessage = "取得中にエラーが発生しました";
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockRejectedValue(new Error(errorMessage));
+
+        // コンソールログとエラーをモック
+        const consoleLogSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
+        const consoleErrorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        const clipId = "clip-id-1";
+        const clip = await localStorageService.getClipById(clipId);
+
+        // nullが返され、エラーログが出力されることを確認
+        expect(clip).toBeNull();
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Error getting clip by ID from local storage:",
+          expect.any(Error)
+        );
+
+        consoleLogSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      });
+    });
   });
 
   // ストレージ管理のテスト
@@ -601,6 +925,91 @@ describe("LocalStorageService", () => {
         await expect(localStorageService.clearAllData()).rejects.toThrow();
         expect(consoleSpy).toHaveBeenCalledWith(
           "Error clearing all data:",
+          expect.any(Error)
+        );
+
+        consoleSpy.mockRestore();
+      });
+    });
+
+    describe("setLastClipBook", () => {
+      it("最後に使用した書籍が正常に保存されること", async () => {
+        await localStorageService.setLastClipBook(mockBook);
+
+        // 正しく書籍が保存されることを確認
+        expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+          "@last_clip_book",
+          JSON.stringify(mockBook)
+        );
+      });
+
+      it("保存中にエラーが発生した場合、エラーがスローされること", async () => {
+        // AsyncStorage.setItemがエラーをスローするようにモック
+        const errorMessage = "保存中にエラーが発生しました";
+        AsyncStorage.setItem = jest
+          .fn()
+          .mockRejectedValue(new Error(errorMessage));
+
+        // コンソールエラーをモック
+        const consoleSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        await expect(
+          localStorageService.setLastClipBook(mockBook)
+        ).rejects.toThrow();
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Error setting last clip book:",
+          expect.any(Error)
+        );
+
+        consoleSpy.mockRestore();
+      });
+    });
+
+    describe("getLastClipBook", () => {
+      it("最後に使用した書籍を正常に取得できること", async () => {
+        // AsyncStorage.getItemが書籍データを返すようにモック
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(mockBook));
+
+        const book = await localStorageService.getLastClipBook();
+
+        // 正しい書籍が返されることを確認
+        expect(book).toEqual(mockBook);
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
+      });
+
+      it("データがない場合、nullを返すこと", async () => {
+        // AsyncStorage.getItemがnullを返すようにモック
+        AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+
+        const book = await localStorageService.getLastClipBook();
+
+        // nullが返されることを確認
+        expect(book).toBeNull();
+        expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
+      });
+
+      it("取得中にエラーが発生した場合、nullを返し、エラーをログ出力すること", async () => {
+        // AsyncStorage.getItemがエラーをスローするようにモック
+        const errorMessage = "取得中にエラーが発生しました";
+        AsyncStorage.getItem = jest
+          .fn()
+          .mockRejectedValue(new Error(errorMessage));
+
+        // コンソールエラーをモック
+        const consoleSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+
+        const book = await localStorageService.getLastClipBook();
+
+        // nullが返され、エラーログが出力されることを確認
+        expect(book).toBeNull();
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Error getting last clip book:",
           expect.any(Error)
         );
 
