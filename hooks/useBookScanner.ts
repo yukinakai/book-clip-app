@@ -52,6 +52,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
         title: bookTitle.trim(),
         author: bookAuthor.trim() || "不明",
         coverImage: NO_IMAGE_FLAG, // SVGプレースホルダーを使用するためnullを設定
+        isbn: `manual_${Date.now()}`, // 手動入力の場合は一意のISBNを生成
       };
 
       // 書籍を保存
@@ -91,7 +92,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
       isProcessingRef.current = true;
       setProcessedISBNs((prev) => new Set(prev).add(isbn));
       setScannedBarcode(isbn); // 検出したISBNを保存
-      setIsLoading(true);
+      // ここでローディング表示はしない
       setIsAlertShowing(true);
 
       Alert.alert(
@@ -102,7 +103,6 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
             text: "キャンセル",
             style: "cancel",
             onPress: () => {
-              setIsLoading(false);
               setIsAlertShowing(false);
               isProcessingRef.current = false;
             },
@@ -111,7 +111,10 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
             text: "検索する",
             onPress: async () => {
               try {
+                // 書籍検索中にローディング表示
+                setIsLoading(true);
                 const result = await RakutenBookService.searchByIsbn(isbn);
+                setIsLoading(false);
 
                 if (!result) {
                   Alert.alert(
@@ -131,7 +134,6 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                         onPress: () => {
                           setIsAlertShowing(false);
                           isProcessingRef.current = false;
-                          setIsLoading(false);
                           showManualForm();
                         },
                       },
@@ -156,8 +158,12 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                       text: "追加する",
                       onPress: async () => {
                         try {
+                          // 書籍保存中にローディング表示
+                          setIsLoading(true);
                           const saveResult =
                             await RakutenBookService.searchAndSaveBook(isbn);
+                          setIsLoading(false);
+
                           if (saveResult.isExisting) {
                             Alert.alert(
                               "登録済みの本",
@@ -188,7 +194,9 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                               ]
                             );
                           }
-                        } catch {
+                        } catch (error) {
+                          // エラーが発生した場合はローディングを非表示に
+                          setIsLoading(false);
                           // エラー詳細は不要なため、ユーザーへの通知のみを行う
                           Alert.alert(
                             "エラー",
@@ -208,7 +216,9 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                     },
                   ]
                 );
-              } catch {
+              } catch (error) {
+                // エラーが発生した場合はローディングを非表示に
+                setIsLoading(false);
                 // エラー詳細は不要なため、ユーザーへの通知のみを行う
                 Alert.alert("エラー", "本の検索中にエラーが発生しました。", [
                   {
@@ -219,8 +229,6 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                     },
                   },
                 ]);
-              } finally {
-                setIsLoading(false);
               }
             },
           },
