@@ -37,22 +37,29 @@ export default function BookDetailScreen() {
   // 書籍データとクリップを読み込む
   const loadBookDetailsAndClips = useCallback(async () => {
     try {
+      console.log("書籍詳細の読み込み開始 - ID:", id);
       setLoading(true);
 
       // 書籍情報を取得
       const books = await BookStorageService.getAllBooks();
+      console.log("取得した全書籍:", books);
       const foundBook = books.find((b) => b.id === id);
+      console.log("検索された書籍:", foundBook);
 
       if (foundBook) {
         setBook(foundBook);
 
         // 書籍に関連するクリップを取得
         const bookClips = await ClipStorageService.getClipsByBookId(id);
+        console.log("関連するクリップ:", bookClips);
         setClips(bookClips);
+      } else {
+        console.log("書籍が見つかりませんでした - ID:", id);
       }
     } catch (error) {
       console.error("Error loading book details:", error);
     } finally {
+      console.log("書籍詳細の読み込み完了");
       setLoading(false);
     }
   }, [id, setLoading, setBook, setClips]);

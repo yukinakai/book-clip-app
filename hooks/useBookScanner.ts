@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 import { RakutenBookService } from "@/services/RakutenBookService";
 import { BookStorageService } from "@/services/BookStorageService";
 import { Book } from "@/constants/MockData";
+import { router } from "expo-router";
 
 // No-Image用のフラグ - この値がcoverImageに設定された場合はプレースホルダーを表示
 const NO_IMAGE_FLAG = null;
@@ -38,6 +39,25 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
     setBookAuthor("");
   }, []);
 
+  // 書籍を選択して詳細画面に移動する関数
+  const navigateToBookDetail = useCallback(
+    (bookId: string | undefined) => {
+      if (!bookId) {
+        console.error("書籍IDが未定義です");
+        onClose();
+        return;
+      }
+
+      // onCloseを呼び出してカメラモーダルを閉じる
+      onClose();
+      // 少し遅延させて詳細画面に遷移
+      setTimeout(() => {
+        router.push(`/book/${bookId}`);
+      }, 300);
+    },
+    [onClose]
+  );
+
   // 手動入力された書籍情報を保存する関数
   const handleManualSave = useCallback(async () => {
     if (!bookTitle.trim()) {
@@ -60,7 +80,14 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
 
       Alert.alert("保存完了", `「${newBook.title}」を本棚に追加しました。`, [
         {
-          text: "OK",
+          text: "詳細を見る",
+          onPress: () => {
+            hideManualForm();
+            navigateToBookDetail(newBook.id);
+          },
+        },
+        {
+          text: "閉じる",
           onPress: () => {
             hideManualForm();
             onClose();
@@ -73,7 +100,7 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
         { text: "OK" },
       ]);
     }
-  }, [bookTitle, bookAuthor, hideManualForm, onClose]);
+  }, [bookTitle, bookAuthor, hideManualForm, onClose, navigateToBookDetail]);
 
   const handleBarcodeScanned = useCallback(
     async (isbn: string) => {
@@ -170,21 +197,49 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
                               `「${saveResult.book?.title}」は既に本棚に登録されています。`,
                               [
                                 {
-                                  text: "OK",
+                                  text: "詳細を見る",
                                   onPress: () => {
                                     setIsAlertShowing(false);
                                     isProcessingRef.current = false;
+                                    if (saveResult.book) {
+                                      navigateToBookDetail(saveResult.book.id);
+                                    }
+                                  },
+                                },
+                                {
+                                  text: "閉じる",
+                                  onPress: () => {
+                                    setIsAlertShowing(false);
+                                    isProcessingRef.current = false;
+                                    onClose();
                                   },
                                 },
                               ]
                             );
                           } else if (saveResult.book) {
+                            // このブロックにはsaveResult.bookが存在する
+                            const book = saveResult.book; // 変数に代入
+
                             Alert.alert(
                               "保存完了",
-                              `「${saveResult.book.title}」を本棚に追加しました。`,
+                              `「${book.title}」を本棚に追加しました。`,
                               [
                                 {
-                                  text: "OK",
+                                  text: "詳細を見る",
+                                  onPress: () => {
+                                    setIsAlertShowing(false);
+                                    isProcessingRef.current = false;
+                                    // null安全のために明示的にチェック
+                                    if (book && book.id) {
+                                      navigateToBookDetail(book.id);
+                                    } else {
+                                      console.error("書籍IDが取得できません");
+                                      onClose();
+                                    }
+                                  },
+                                },
+                                {
+                                  text: "閉じる",
                                   onPress: () => {
                                     setIsAlertShowing(false);
                                     isProcessingRef.current = false;
@@ -235,7 +290,13 @@ export const useBookScanner = ({ onClose }: UseBookScannerProps) => {
         ]
       );
     },
-    [isAlertShowing, processedISBNs, onClose, showManualForm]
+    [
+      isAlertShowing,
+      processedISBNs,
+      onClose,
+      showManualForm,
+      navigateToBookDetail,
+    ]
   );
 
   const resetScanner = useCallback(() => {
