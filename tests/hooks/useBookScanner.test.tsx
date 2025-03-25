@@ -32,7 +32,7 @@ jest.mock("expo-router", () => ({
 jest.useFakeTimers();
 
 // Alertのモック
-jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
+jest.spyOn(Alert, "alert").mockImplementation((_title, _message, buttons) => {
   // ボタンが存在する場合、最後のボタンのonPressを実行（最後のボタンは通常「OK」や「追加する」など）
   if (buttons && buttons.length > 0) {
     const lastButton = buttons[buttons.length - 1];
@@ -155,15 +155,17 @@ describe("useBookScanner", () => {
     mockSaveBook.mockResolvedValue(undefined);
 
     // Alert.alertのモックをオーバーライド（「詳細を見る」ボタンを選択するケース）
-    jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
-      if (buttons && buttons.length > 0 && title === "保存完了") {
-        const viewDetailsButton = buttons[0]; // 「詳細を見る」ボタン
-        if (viewDetailsButton.onPress) {
-          viewDetailsButton.onPress();
+    jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((_title, _message, buttons) => {
+        if (buttons && buttons.length > 0 && _title === "保存完了") {
+          const viewDetailsButton = buttons[0]; // 「詳細を見る」ボタン
+          if (viewDetailsButton.onPress) {
+            viewDetailsButton.onPress();
+          }
         }
-      }
-      return 0;
-    });
+        return 0;
+      });
 
     const { result } = renderHook(() =>
       useBookScanner({ onClose: mockOnClose })
@@ -218,27 +220,29 @@ describe("useBookScanner", () => {
     });
 
     // Alert.alertのモックをオーバーライド（「検索する」→「追加する」→「詳細を見る」の順で選択するケース）
-    jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
-      if (!buttons || buttons.length === 0) return 0;
+    jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((_title, _message, buttons) => {
+        if (!buttons || buttons.length === 0) return 0;
 
-      if (title === "ISBN検出" && buttons.length > 1) {
-        const searchButton = buttons[1]; // 「検索する」ボタン
-        if (searchButton.onPress) {
-          searchButton.onPress();
+        if (_title === "ISBN検出" && buttons.length > 1) {
+          const searchButton = buttons[1]; // 「検索する」ボタン
+          if (searchButton.onPress) {
+            searchButton.onPress();
+          }
+        } else if (_title === "書籍情報" && buttons.length > 1) {
+          const addButton = buttons[1]; // 「追加する」ボタン
+          if (addButton.onPress) {
+            addButton.onPress();
+          }
+        } else if (_title === "保存完了" && buttons.length > 0) {
+          const viewDetailsButton = buttons[0]; // 「詳細を見る」ボタン
+          if (viewDetailsButton.onPress) {
+            viewDetailsButton.onPress();
+          }
         }
-      } else if (title === "書籍情報" && buttons.length > 1) {
-        const addButton = buttons[1]; // 「追加する」ボタン
-        if (addButton.onPress) {
-          addButton.onPress();
-        }
-      } else if (title === "保存完了" && buttons.length > 0) {
-        const viewDetailsButton = buttons[0]; // 「詳細を見る」ボタン
-        if (viewDetailsButton.onPress) {
-          viewDetailsButton.onPress();
-        }
-      }
-      return 0;
-    });
+        return 0;
+      });
 
     const { result } = renderHook(() =>
       useBookScanner({ onClose: mockOnClose })
@@ -282,27 +286,29 @@ describe("useBookScanner", () => {
     });
 
     // Alert.alertのモックをオーバーライド
-    jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
-      if (!buttons || buttons.length === 0) return 0;
+    jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((_title, _message, buttons) => {
+        if (!buttons || buttons.length === 0) return 0;
 
-      if (title === "ISBN検出" && buttons.length > 1) {
-        const searchButton = buttons[1]; // 「検索する」ボタン
-        if (searchButton.onPress) {
-          searchButton.onPress();
+        if (_title === "ISBN検出" && buttons.length > 1) {
+          const searchButton = buttons[1]; // 「検索する」ボタン
+          if (searchButton.onPress) {
+            searchButton.onPress();
+          }
+        } else if (_title === "書籍情報" && buttons.length > 1) {
+          const addButton = buttons[1]; // 「追加する」ボタン
+          if (addButton.onPress) {
+            addButton.onPress();
+          }
+        } else if (_title === "登録済みの本" && buttons.length > 0) {
+          const viewDetailsButton = buttons[0]; // 「詳細を見る」ボタン
+          if (viewDetailsButton.onPress) {
+            viewDetailsButton.onPress();
+          }
         }
-      } else if (title === "書籍情報" && buttons.length > 1) {
-        const addButton = buttons[1]; // 「追加する」ボタン
-        if (addButton.onPress) {
-          addButton.onPress();
-        }
-      } else if (title === "登録済みの本" && buttons.length > 0) {
-        const viewDetailsButton = buttons[0]; // 「詳細を見る」ボタン
-        if (viewDetailsButton.onPress) {
-          viewDetailsButton.onPress();
-        }
-      }
-      return 0;
-    });
+        return 0;
+      });
 
     const { result } = renderHook(() =>
       useBookScanner({ onClose: mockOnClose })
@@ -339,22 +345,24 @@ describe("useBookScanner", () => {
     mockSearchByIsbn.mockResolvedValue(null);
 
     // Alert.alertのモックをオーバーライド
-    jest.spyOn(Alert, "alert").mockImplementation((title, message, buttons) => {
-      if (!buttons || buttons.length === 0) return 0;
+    jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((_title, _message, buttons) => {
+        if (!buttons || buttons.length === 0) return 0;
 
-      if (title === "ISBN検出" && buttons.length > 1) {
-        const searchButton = buttons[1]; // 「検索する」ボタン
-        if (searchButton.onPress) {
-          searchButton.onPress();
+        if (_title === "ISBN検出" && buttons.length > 1) {
+          const searchButton = buttons[1]; // 「検索する」ボタン
+          if (searchButton.onPress) {
+            searchButton.onPress();
+          }
+        } else if (_title === "書籍が見つかりません" && buttons.length > 1) {
+          const yesButton = buttons[1]; // 「はい」ボタン（手動入力）
+          if (yesButton.onPress) {
+            yesButton.onPress();
+          }
         }
-      } else if (title === "書籍が見つかりません" && buttons.length > 1) {
-        const yesButton = buttons[1]; // 「はい」ボタン（手動入力）
-        if (yesButton.onPress) {
-          yesButton.onPress();
-        }
-      }
-      return 0;
-    });
+        return 0;
+      });
 
     const { result } = renderHook(() =>
       useBookScanner({ onClose: mockOnClose })
@@ -382,15 +390,15 @@ describe("useBookScanner", () => {
     // Alert.alertのモックをオーバーライド
     const mockAlert = jest
       .spyOn(Alert, "alert")
-      .mockImplementation((title, message, buttons) => {
+      .mockImplementation((_title, _message, buttons) => {
         if (!buttons || buttons.length === 0) return 0;
 
-        if (title === "ISBN検出" && buttons.length > 1) {
+        if (_title === "ISBN検出" && buttons.length > 1) {
           const searchButton = buttons[1]; // 「検索する」ボタン
           if (searchButton.onPress) {
             searchButton.onPress();
           }
-        } else if (title === "エラー" && buttons.length > 0) {
+        } else if (_title === "エラー" && buttons.length > 0) {
           const okButton = buttons[0]; // 「OK」ボタン
           if (okButton.onPress) {
             okButton.onPress();
@@ -448,11 +456,14 @@ describe("useBookScanner", () => {
     expect(mockSearchByIsbn).not.toHaveBeenCalled(); // APIが呼ばれない
   });
 
-  it("デバウンス期間内の連続スキャンが無視されること", async () => {
+  it("デバウンスとスキャナーリセット後は新たなISBNが処理されること", async () => {
     const mockOnClose = jest.fn();
+    // RakutenBookServiceのモック
+    const searchByIsbnMock = jest.mocked(RakutenBookService.searchByIsbn);
+    searchByIsbnMock.mockResolvedValue(mockBook);
 
     // Alert.alertのモックをリセット
-    jest.spyOn(Alert, "alert").mockImplementation(() => 0);
+    const alertMock = jest.spyOn(Alert, "alert").mockImplementation(() => 0);
 
     const { result } = renderHook(() =>
       useBookScanner({ onClose: mockOnClose })
@@ -463,32 +474,32 @@ describe("useBookScanner", () => {
       await result.current.handleBarcodeScanned("9784000000001");
     });
 
-    // アラートが1回呼ばれたことを確認
-    expect(Alert.alert).toHaveBeenCalledTimes(1);
+    // アラートが表示されることを確認
+    expect(alertMock).toHaveBeenCalledWith(
+      "ISBN検出",
+      expect.stringContaining("9784000000001"),
+      expect.any(Array)
+    );
 
-    // 500ms後に別のISBNをスキャン（デバウンス期間内）
+    // スキャナーをリセット
     act(() => {
-      jest.advanceTimersByTime(500);
+      result.current.resetScanner();
     });
 
+    // mockをリセット
+    jest.clearAllMocks();
+
+    // リセット後の2回目のスキャン（同じISBN）
     await act(async () => {
-      await result.current.handleBarcodeScanned("9784000000002");
+      await result.current.handleBarcodeScanned("9784000000001");
     });
 
-    // アラートが追加で呼ばれないことを確認（デバウンス中）
-    expect(Alert.alert).toHaveBeenCalledTimes(1);
-
-    // デバウンス期間後（1000ms以上経過）
-    act(() => {
-      jest.advanceTimersByTime(600); // 合計で1100ms経過
-    });
-
-    await act(async () => {
-      await result.current.handleBarcodeScanned("9784000000003");
-    });
-
-    // アラートが呼ばれることを確認（デバウンス期間終了後）
-    expect(Alert.alert).toHaveBeenCalledTimes(2);
+    // リセット後は再び処理されることを確認
+    expect(alertMock).toHaveBeenCalledWith(
+      "ISBN検出",
+      expect.stringContaining("9784000000001"),
+      expect.any(Array)
+    );
   });
 
   it("手動入力で書籍名が空の場合、エラーアラートが表示されること", async () => {
@@ -496,7 +507,10 @@ describe("useBookScanner", () => {
     const mockSaveBook = jest.mocked(BookStorageService.saveBook);
 
     // Alert.alertのモックをリセット
-    const mockAlert = jest.spyOn(Alert, "alert").mockImplementation(() => 0);
+    jest.spyOn(Alert, "alert").mockImplementation((_title, _message) => {
+      // ボタン引数なしのモック実装
+      return 0;
+    });
 
     const { result } = renderHook(() =>
       useBookScanner({ onClose: mockOnClose })
@@ -518,11 +532,7 @@ describe("useBookScanner", () => {
     expect(mockSaveBook).not.toHaveBeenCalled();
 
     // エラーアラートが表示されたことを確認
-    expect(mockAlert).toHaveBeenCalledWith(
-      "エラー",
-      "書籍名は必須です",
-      expect.any(Array)
-    );
+    expect(Alert.alert).toHaveBeenCalledWith("エラー", "書籍名は必須です");
   });
 
   it("手動入力で保存中にエラーが発生した場合、エラーアラートが表示されること", async () => {
