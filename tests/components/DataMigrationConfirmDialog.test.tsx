@@ -1,16 +1,20 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import DataMigrationConfirmDialog from "../../components/DataMigrationConfirmDialog";
-import { ActivityIndicator, Text } from "react-native";
+import { ActivityIndicator } from "react-native";
 
 // ThemedTextコンポーネントをモック
-jest.mock("../../components/ThemedText", () => ({
-  ThemedText: (props: { children: React.ReactNode; style?: any }) => {
-    const { children } = props;
-    // Textコンポーネントを使ってテキスト内容を表示できるようにする
-    return <Text>{children}</Text>;
-  },
-}));
+jest.mock("../../components/ThemedText", () => {
+  // モック実装
+  return {
+    ThemedText: (props: any) => {
+      // モックされた関数を返す
+      const mockReact = jest.requireActual("react");
+      const mockText = jest.requireActual("react-native").Text;
+      return mockReact.createElement(mockText, props, props.children);
+    },
+  };
+});
 
 describe("DataMigrationConfirmDialog", () => {
   // テスト用のデフォルトprops
