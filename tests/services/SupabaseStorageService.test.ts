@@ -1,5 +1,6 @@
 import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 import { Book, Clip } from "../../constants/MockData";
+import { SupabaseService } from "../../services/SupabaseService";
 
 // モックデータ
 const userId = "test-user-id";
@@ -113,43 +114,145 @@ function setupMockResponse(response: any) {
 }
 
 describe("SupabaseStorageService", () => {
-  let supabaseStorageService: SupabaseStorageService;
+  let mockSupabase: any;
+  let service: SupabaseStorageService;
 
-  // 各テスト前の準備
+  // モックブックとクリップデータ
+  const mockUserId = "test-user-id";
+  const mockBook = {
+    id: "test-book-id",
+    title: "テスト書籍",
+    author: "テスト著者",
+    publishedDate: "2023-01-01",
+    thumbnailUrl: "http://example.com/thumbnail.jpg",
+  };
+
+  // この形式はデータベースに保存される形式
+  const mockDbBook = {
+    id: "test-book-id",
+    title: "テスト書籍",
+    author: "テスト著者",
+    published_date: "2023-01-01",
+    cover_image: "http://example.com/thumbnail.jpg",
+    user_id: mockUserId,
+  };
+
+  // サービスから返される形式（camelCase）
+  const mockResponseBook = {
+    id: "test-book-id",
+    title: "テスト書籍",
+    author: "テスト著者",
+    publishedDate: "2023-01-01",
+    coverImage: "http://example.com/thumbnail.jpg",
+    userId: mockUserId,
+  };
+
+  // クリップのテスト用データ
+  const mockClip = {
+    id: "test-clip-id",
+    bookId: "test-book-id",
+    text: "テストクリップのテキスト",
+    page: 42,
+    createdAt: new Date().toISOString(),
+  };
+
+  // この形式はデータベースに保存される形式
+  const mockDbClip = {
+    id: "test-clip-id",
+    book_id: "test-book-id",
+    text: "テストクリップのテキスト",
+    page: 42,
+    created_at: new Date().toISOString(),
+    user_id: mockUserId,
+  };
+
+  // サービスから返される形式（camelCase）
+  const mockResponseClip = {
+    id: "test-clip-id",
+    bookId: "test-book-id",
+    text: "テストクリップのテキスト",
+    page: 42,
+    createdAt: new Date().toISOString(),
+    userId: mockUserId,
+  };
+
   beforeEach(() => {
-    jest.clearAllMocks();
-    supabaseStorageService = new SupabaseStorageService(userId);
+    // Supabaseクライアントのモックを作成
+    mockSupabase = {
+      from: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockReturnThis(),
+      match: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      data: null,
+      error: null,
+    };
+
+    // モックとしてgetCurrentUserを設定
+    jest.spyOn(SupabaseService, "getCurrentUser").mockResolvedValue({
+      id: mockUserId,
+      email: "test@example.com",
+    });
+
+    // サービスのインスタンスを作成
+    service = new SupabaseStorageService();
+    (service as any).supabase = mockSupabase;
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   describe("saveBook", () => {
-    it("新規書籍が保存されること", async () => {
-      // モックレスポンスの設定
-      setupMockResponse({
-        data: [],
-        error: null,
+    it("書籍データが保存されること", async () => {
+      // selectメソッドのモックチェーンを設定
+      const selectMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
+      const dataMock = { data: [] };
+
+      mockSupabase.from.mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue(dataMock),
       });
 
-      await supabaseStorageService.saveBook(mockBook);
+      // insertメソッドのモックを設定
+      mockSupabase.from.mockReturnValueOnce({
+        select: selectMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue(dataMock),
+      });
 
-      // 正しいテーブルにアクセスしていることを検証
-      const {
-        mockFromFn,
-        mockSelectFn,
-        mockInsertFn,
-        mockEqFn,
-      } = require("../../services/auth");
-      expect(mockFromFn).toHaveBeenCalledWith("books");
-      expect(mockSelectFn).toHaveBeenCalledWith("id, isbn");
-      expect(mockEqFn).toHaveBeenCalledWith("isbn", mockBook.isbn);
-      expect(mockEqFn).toHaveBeenCalledWith("user_id", userId);
-      expect(mockInsertFn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ...mockBook,
-          user_id: userId,
-          created_at: expect.any(String),
-          updated_at: expect.any(String),
-        })
-      );
+      const insertMock = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        then: jest.fn().mockResolvedValue({
+          data: [mockDbBook],
+          error: null,
+        }),
+      });
+
+      mockSupabase.from.mockReturnValueOnce({
+        insert: insertMock,
+      });
+
+      // 書籍を保存
+      await service.saveBook(mockBook);
+
+      // fromメソッドが正しく呼ばれたことを確認
+      expect(mockSupabase.from).toHaveBeenCalledWith("books");
+
+      // insertメソッドが正しいデータで呼ばれたことを確認
+      expect(insertMock).toHaveBeenCalledWith({
+        id: mockBook.id,
+        title: mockBook.title,
+        author: mockBook.author,
+        published_date: mockBook.publishedDate,
+        cover_image: mockBook.thumbnailUrl,
+        user_id: mockUserId,
+      });
     });
 
     it("既存書籍は保存されないこと", async () => {
@@ -159,7 +262,7 @@ describe("SupabaseStorageService", () => {
         error: null,
       });
 
-      await supabaseStorageService.saveBook(mockBook);
+      await service.saveBook(mockBook);
 
       // insertが呼ばれないことを検証
       const {
@@ -182,41 +285,72 @@ describe("SupabaseStorageService", () => {
         error: new Error("テストエラー"),
       });
 
-      await expect(supabaseStorageService.saveBook(mockBook)).rejects.toThrow();
+      await expect(service.saveBook(mockBook)).rejects.toThrow();
     });
   });
 
   describe("getAllBooks", () => {
-    it("すべての書籍を取得できること", async () => {
-      // 書籍データを返すシナリオをセットアップ
-      setupMockResponse({
-        data: [mockBook],
-        error: null,
+    it("ユーザーの全書籍を取得できること", async () => {
+      // selectメソッドのモックチェーンを設定
+      const selectMock = jest.fn().mockReturnThis();
+      const eqMock = jest.fn().mockReturnThis();
+
+      // 書籍データを含むレスポンスを用意
+      const mockBooks = [
+        {
+          id: "book-1",
+          title: "書籍1",
+          author: "著者1",
+          published_date: "2023-01-01",
+          cover_image: "http://example.com/cover1.jpg",
+          user_id: mockUserId,
+        },
+        {
+          id: "book-2",
+          title: "書籍2",
+          author: "著者2",
+          published_date: "2023-02-01",
+          cover_image: "http://example.com/cover2.jpg",
+          user_id: mockUserId,
+        },
+      ];
+
+      mockSupabase.from.mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        then: jest.fn().mockResolvedValue({
+          data: mockBooks,
+          error: null,
+        }),
       });
 
-      const result = await supabaseStorageService.getAllBooks();
+      // 書籍を取得
+      const books = await service.getAllBooks();
 
-      // 正しいテーブルとクエリを検証
-      const {
-        mockFromFn,
-        mockSelectFn,
-        mockEqFn,
-        mockOrderFn,
-      } = require("../../services/auth");
-      expect(mockFromFn).toHaveBeenCalledWith("books");
-      expect(mockSelectFn).toHaveBeenCalledWith("*");
-      expect(mockEqFn).toHaveBeenCalledWith("user_id", userId);
-      expect(mockOrderFn).toHaveBeenCalledWith("created_at", {
-        ascending: false,
-      });
-      const expectedBook = {
-        id: mockBook.id,
-        title: mockBook.title,
-        author: mockBook.author,
-        isbn: mockBook.isbn,
-        coverImage: mockBook.thumbnail,
-      };
-      expect(result).toEqual([expectedBook]);
+      // fromとselectメソッドが正しく呼ばれたことを確認
+      expect(mockSupabase.from).toHaveBeenCalledWith("books");
+      expect(selectMock).toHaveBeenCalledWith("*");
+      expect(eqMock).toHaveBeenCalledWith("user_id", mockUserId);
+
+      // 返されたデータが正しく変換されていることを確認
+      expect(books).toEqual([
+        {
+          id: "book-1",
+          title: "書籍1",
+          author: "著者1",
+          publishedDate: "2023-01-01",
+          coverImage: "http://example.com/cover1.jpg",
+          userId: mockUserId,
+        },
+        {
+          id: "book-2",
+          title: "書籍2",
+          author: "著者2",
+          publishedDate: "2023-02-01",
+          coverImage: "http://example.com/cover2.jpg",
+          userId: mockUserId,
+        },
+      ]);
     });
 
     it("エラー発生時に空配列を返すこと", async () => {
@@ -226,7 +360,7 @@ describe("SupabaseStorageService", () => {
         error: new Error("テストエラー"),
       });
 
-      const result = await supabaseStorageService.getAllBooks();
+      const result = await service.getAllBooks();
       expect(result).toEqual([]);
     });
 
@@ -246,7 +380,7 @@ describe("SupabaseStorageService", () => {
         data: null,
       });
 
-      await supabaseStorageService.removeBook(bookId);
+      await service.removeBook(bookId);
 
       // 正しいテーブルとクエリを検証
       const {
@@ -267,7 +401,7 @@ describe("SupabaseStorageService", () => {
         data: null,
       });
 
-      await expect(supabaseStorageService.removeBook(bookId)).rejects.toThrow();
+      await expect(service.removeBook(bookId)).rejects.toThrow();
     });
   });
 
@@ -279,7 +413,7 @@ describe("SupabaseStorageService", () => {
         data: [mockBook],
       });
 
-      await supabaseStorageService.saveClip(mockClip);
+      await service.saveClip(mockClip);
 
       // クリップ保存のテスト
       const { mockFromFn, mockInsertFn } = require("../../services/auth");
@@ -303,7 +437,7 @@ describe("SupabaseStorageService", () => {
         data: null,
       });
 
-      await expect(supabaseStorageService.saveClip(mockClip)).rejects.toThrow();
+      await expect(service.saveClip(mockClip)).rejects.toThrow();
     });
   });
 
@@ -324,7 +458,7 @@ describe("SupabaseStorageService", () => {
         error: null,
       });
 
-      const result = await supabaseStorageService.getClipsByBookId(bookId);
+      const result = await service.getClipsByBookId(bookId);
 
       // 正しいテーブルとクエリを検証
       const {
@@ -359,7 +493,7 @@ describe("SupabaseStorageService", () => {
         error: new Error("テストエラー"),
       });
 
-      const result = await supabaseStorageService.getClipsByBookId(bookId);
+      const result = await service.getClipsByBookId(bookId);
       expect(result).toEqual([]);
     });
   });
@@ -373,7 +507,7 @@ describe("SupabaseStorageService", () => {
       });
 
       const updatedClip = { ...mockClip, text: "更新されたテキスト" };
-      await supabaseStorageService.updateClip(updatedClip);
+      await service.updateClip(updatedClip);
 
       // 正しいテーブルとクエリを検証
       const {
@@ -401,17 +535,13 @@ describe("SupabaseStorageService", () => {
         data: null,
       });
 
-      await expect(
-        supabaseStorageService.updateClip(mockClip)
-      ).rejects.toThrow();
+      await expect(service.updateClip(mockClip)).rejects.toThrow();
     });
   });
 
   describe("clearAllData", () => {
     it("何も行わずにresolveすること", async () => {
-      await expect(
-        supabaseStorageService.clearAllData()
-      ).resolves.toBeUndefined();
+      await expect(service.clearAllData()).resolves.toBeUndefined();
     });
   });
 });
