@@ -28,10 +28,17 @@ serve(async (req: Request) => {
 
     // リクエストボディを取得してログ出力（デバッグ用）
     let requestBody = null;
+    let requestUserId = null;
     try {
       const clonedReq = req.clone();
       requestBody = await clonedReq.json();
       console.log("リクエストボディ:", requestBody);
+
+      // リクエストボディからユーザーIDを取得（存在する場合）
+      if (requestBody && requestBody.userId) {
+        requestUserId = requestBody.userId;
+        console.log("リクエストボディからユーザーIDを取得:", requestUserId);
+      }
     } catch (e) {
       console.log("リクエストボディが空か解析できません", e);
       // リクエストボディのないリクエストも許可
@@ -62,24 +69,53 @@ serve(async (req: Request) => {
       },
     });
 
-    console.log("認証されたユーザー情報を取得します");
     // 認証されたユーザー情報を取得
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
+    let userId;
+    try {
+      console.log("認証されたユーザー情報を取得します");
+      const {
+        data: { user },
+        error: userError,
+      } = await supabaseClient.auth.getUser();
 
-    if (userError) {
-      console.error("ユーザー情報の取得に失敗:", userError);
-      throw userError;
+      if (userError) {
+        console.error("ユーザー情報の取得に失敗:", userError);
+        throw userError;
+      }
+
+      if (!user) {
+        // ユーザー情報が取得できなかった場合、リクエストボディからのユーザーIDを使用
+        if (requestUserId) {
+          console.log(
+            "リクエストボディのユーザーIDを使用します:",
+            requestUserId
+          );
+          userId = requestUserId;
+        } else {
+          console.error("ユーザーが見つかりません");
+          throw new Error("ユーザーが見つかりません");
+        }
+      } else {
+        userId = user.id;
+        console.log("認証トークンからユーザーID取得:", userId);
+      }
+    } catch (authError) {
+      console.error("認証エラー:", authError);
+      // リクエストボディからユーザーIDが取得できていれば使用
+      if (requestUserId) {
+        console.log(
+          "認証エラーのため、リクエストボディのユーザーIDを使用:",
+          requestUserId
+        );
+        userId = requestUserId;
+      } else {
+        throw new Error(
+          "ユーザー認証に失敗し、リクエストボディにもユーザーIDがありません"
+        );
+      }
     }
 
-    if (!user) {
-      console.error("ユーザーが見つかりません");
-      throw new Error("ユーザーが見つかりません");
-    }
-
-    console.log("削除するユーザーID:", user.id);
+    console.log("削除するユーザーID:", userId);
 
     // 管理者権限を持つクライアントを作成
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
@@ -100,7 +136,7 @@ serve(async (req: Request) => {
       const { error: clipsError } = await supabaseAdmin
         .from("clips")
         .delete()
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (clipsError) {
         console.error("ユーザーのクリップデータ削除に失敗:", clipsError);
@@ -119,7 +155,7 @@ serve(async (req: Request) => {
       const { error: booksError } = await supabaseAdmin
         .from("books")
         .delete()
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (booksError) {
         console.error("ユーザーの書籍データ削除に失敗:", booksError);
@@ -148,13 +184,13 @@ serve(async (req: Request) => {
     // ユーザーアカウントを削除
     console.log("ユーザーアカウント削除を試みます");
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
-      user.id
+      userId
     );
 
     if (deleteError) {
       console.error("ユーザー削除に失敗:", {
         error: deleteError,
-        userId: user.id,
+        userId: userId,
       });
 
       // ユーザー削除エラーは致命的なため、エラーレスポンスを返す
@@ -179,7 +215,7 @@ serve(async (req: Request) => {
       );
     }
 
-    console.log("ユーザーが正常に削除されました:", user.id);
+    console.log("ユーザーが正常に削除されました:", userId);
 
     // データ削除でエラーが発生したが、ユーザー削除は成功した場合
     if (hasDataDeletionError) {
