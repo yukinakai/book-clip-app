@@ -167,6 +167,7 @@
 │   │   ├── AuthWrapper.test.tsx
 │   │   ├── BookshelfView.test.tsx
 │   │   ├── CameraView.test.tsx
+│   │   ├── DataMigrationConfirmDialog.test.tsx
 │   │   ├── DataMigrationProgress.test.tsx
 │   │   ├── ImageSelectionView.test.tsx
 │   │   ├── OCRResultView.test.tsx
@@ -199,4 +200,4 @@
 └── types
     └── env.d.ts
 
-48 directories, 152 files
+48 directories, 153 files
