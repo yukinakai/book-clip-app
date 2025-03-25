@@ -31,6 +31,11 @@ const mockGetClipsByBookId = jest.fn().mockResolvedValue([
 const mockDeleteClipsByBookId = jest.fn().mockResolvedValue(true);
 const mockDeleteBook = jest.fn().mockResolvedValue(true);
 
+// expo-routerのモック
+const mockBack = jest.fn();
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+
 // NoImagePlaceholderのモック
 jest.mock(
   "../../../components/NoImagePlaceholder",
@@ -45,8 +50,6 @@ jest.mock("../../../app/book/[id]", () => {
   // モック化されたコンポーネントを返す関数
   const MockedComponent = () => {
     const React = jest.requireActual("react");
-    const { useRouter } = jest.requireActual("expo-router");
-    const router = useRouter();
 
     // モックされた状態を使用して簡易版コンポーネントを返す
     const [loading, setLoading] = React.useState(true);
@@ -68,7 +71,7 @@ jest.mock("../../../app/book/[id]", () => {
             React.createElement("TouchableOpacity", {
               key: "back-button",
               testID: "back-button",
-              onPress: () => router.back(),
+              onPress: () => mockBack(),
             }),
             React.createElement("Text", { key: "title" }, "テスト書籍1"),
             React.createElement("Text", { key: "author" }, "テスト著者1"),
@@ -79,7 +82,7 @@ jest.mock("../../../app/book/[id]", () => {
                 key: "add-button",
                 testID: "add-clip-button",
                 onPress: () => {
-                  router.push("/book/add-clip?bookId=1&bookTitle=テスト書籍1");
+                  mockPush("/book/add-clip?bookId=1&bookTitle=テスト書籍1");
                 },
               },
               "クリップを追加"
@@ -93,7 +96,7 @@ jest.mock("../../../app/book/[id]", () => {
                   // options-buttonを押すと削除確認までスキップ
                   mockDeleteClipsByBookId("1");
                   mockDeleteBook("1");
-                  router.replace("/");
+                  mockReplace("/");
                 },
               },
               "オプション"
@@ -105,7 +108,7 @@ jest.mock("../../../app/book/[id]", () => {
                 key: "clip-item-1",
                 testID: "clip-item-clip1",
                 onPress: () => {
-                  router.push("/clip/clip1");
+                  mockPush("/clip/clip1");
                 },
               },
               "テストクリップ1"
@@ -134,11 +137,6 @@ jest.mock("../../../services/ClipStorageService", () => ({
     deleteClipsByBookId: (id) => mockDeleteClipsByBookId(id),
   },
 }));
-
-// expo-routerのモック
-const mockBack = jest.fn();
-const mockPush = jest.fn();
-const mockReplace = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: jest.fn().mockReturnValue({ id: "1" }),
