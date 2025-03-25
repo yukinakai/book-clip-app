@@ -1,117 +1,21 @@
 import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 import { Book, Clip } from "../../constants/MockData";
-import { SupabaseService } from "../../services/SupabaseService";
+import { AuthService } from "../../services/auth";
 
 // モックデータ
 const userId = "test-user-id";
 const bookId = "test-book-id";
 const clipId = "test-clip-id";
 
-const mockBook: Book = {
-  id: bookId,
-  title: "テスト書籍",
-  author: "テスト作者",
-  thumbnail: "thumbnail-url",
-  isbn: "9784567890123",
-};
-
-const mockClip: Clip = {
-  id: clipId,
-  bookId: bookId,
-  text: "テストクリップ",
-  page: 1,
-  createdAt: "2023-01-01T00:00:00.000Z",
-};
-
-// Jestモック設定
-jest.mock("../../services/auth", () => {
-  // モックの作成
-  const mockSelectFn = jest.fn().mockReturnThis();
-  const mockInsertFn = jest.fn();
-  const mockDeleteFn = jest.fn().mockReturnThis();
-  const mockUpdateFn = jest.fn().mockReturnThis();
-  const mockEqFn = jest.fn().mockReturnThis();
-  const mockOrderFn = jest.fn().mockReturnThis();
-  const mockSingleFn = jest.fn().mockReturnThis();
-  const mockFromFn = jest.fn().mockReturnValue({
-    select: mockSelectFn,
-    insert: mockInsertFn,
-    delete: mockDeleteFn,
-    update: mockUpdateFn,
-  });
-
-  // モックの連鎖を設定
-  mockSelectFn.mockImplementation(() => ({
-    eq: mockEqFn,
-    order: mockOrderFn,
-    single: mockSingleFn,
-  }));
-
-  // insertの戻り値にselectメソッドを追加
-  const mockInsertReturn = {
-    select: jest.fn().mockReturnValue({
-      single: jest.fn().mockReturnValue({ data: null, error: null }),
-    }),
-  };
-  mockInsertFn.mockReturnValue(mockInsertReturn);
-
-  mockEqFn.mockImplementation(() => ({
-    eq: mockEqFn,
-    order: mockOrderFn,
-    single: mockSingleFn,
-  }));
-
-  return {
-    supabase: {
-      from: mockFromFn,
-    },
-    mockFromFn,
-    mockSelectFn,
-    mockInsertFn,
-    mockDeleteFn,
-    mockUpdateFn,
-    mockEqFn,
-    mockOrderFn,
-    mockSingleFn,
-  };
-});
-
-// テスト用のレスポンスをセットアップする関数
-function setupMockResponse(response: any) {
-  // selectメソッドのモックチェーン
-  require("../../services/auth").mockSelectFn.mockImplementation(() => ({
-    eq: require("../../services/auth").mockEqFn,
-    order: require("../../services/auth").mockOrderFn,
-    single: require("../../services/auth").mockSingleFn,
-  }));
-
-  // eqメソッドのモックチェーン
-  require("../../services/auth").mockEqFn.mockImplementation(() => ({
-    eq: require("../../services/auth").mockEqFn,
-    order: require("../../services/auth").mockOrderFn,
-    single: require("../../services/auth").mockSingleFn,
-    ...response,
-  }));
-
-  // insertメソッドのモック
-  require("../../services/auth").mockInsertFn.mockReturnValue(response);
-
-  // deleteメソッドのモックチェーン
-  require("../../services/auth").mockDeleteFn.mockImplementation(() => ({
-    eq: require("../../services/auth").mockEqFn,
-  }));
-
-  // updateメソッドのモックチェーン
-  require("../../services/auth").mockUpdateFn.mockImplementation(() => ({
-    eq: require("../../services/auth").mockEqFn,
-  }));
-
-  // orderメソッドのモック
-  require("../../services/auth").mockOrderFn.mockReturnValue(response);
-
-  // singleメソッドのモック
-  require("../../services/auth").mockSingleFn.mockReturnValue(response);
-}
+// モックのセットアップ
+jest.mock("../../services/auth", () => ({
+  AuthService: {
+    getCurrentUser: jest.fn(),
+  },
+  supabase: {
+    from: jest.fn(),
+  },
+}));
 
 describe("SupabaseStorageService", () => {
   let mockSupabase: any;
@@ -192,7 +96,7 @@ describe("SupabaseStorageService", () => {
     };
 
     // モックとしてgetCurrentUserを設定
-    jest.spyOn(SupabaseService, "getCurrentUser").mockResolvedValue({
+    jest.spyOn(AuthService, "getCurrentUser").mockResolvedValue({
       id: mockUserId,
       email: "test@example.com",
     });
@@ -257,10 +161,22 @@ describe("SupabaseStorageService", () => {
 
     it("既存書籍は保存されないこと", async () => {
       // 既存書籍が存在するシナリオをセットアップ
-      setupMockResponse({
-        data: [{ id: bookId }],
-        error: null,
-      });
+      jest
+        .spyOn(require("../../services/auth"), "mockSelectFn")
+        .mockImplementation(() => ({
+          eq: require("../../services/auth").mockEqFn,
+          order: require("../../services/auth").mockOrderFn,
+          single: require("../../services/auth").mockSingleFn,
+        }));
+
+      jest
+        .spyOn(require("../../services/auth"), "mockEqFn")
+        .mockImplementation(() => ({
+          eq: require("../../services/auth").mockEqFn,
+          order: require("../../services/auth").mockOrderFn,
+          single: require("../../services/auth").mockSingleFn,
+          data: [{ id: bookId }],
+        }));
 
       await service.saveBook(mockBook);
 
@@ -280,10 +196,22 @@ describe("SupabaseStorageService", () => {
 
     it("エラー発生時に例外がスローされること", async () => {
       // エラーシナリオをセットアップ
-      setupMockResponse({
-        data: null,
-        error: new Error("テストエラー"),
-      });
+      jest
+        .spyOn(require("../../services/auth"), "mockSelectFn")
+        .mockImplementation(() => ({
+          eq: require("../../services/auth").mockEqFn,
+          order: require("../../services/auth").mockOrderFn,
+          single: require("../../services/auth").mockSingleFn,
+        }));
+
+      jest
+        .spyOn(require("../../services/auth"), "mockEqFn")
+        .mockImplementation(() => ({
+          eq: require("../../services/auth").mockEqFn,
+          order: require("../../services/auth").mockOrderFn,
+          single: require("../../services/auth").mockSingleFn,
+          error: new Error("テストエラー"),
+        }));
 
       await expect(service.saveBook(mockBook)).rejects.toThrow();
     });
@@ -355,10 +283,22 @@ describe("SupabaseStorageService", () => {
 
     it("エラー発生時に空配列を返すこと", async () => {
       // エラーシナリオをセットアップ
-      setupMockResponse({
-        data: null,
-        error: new Error("テストエラー"),
-      });
+      jest
+        .spyOn(require("../../services/auth"), "mockSelectFn")
+        .mockImplementation(() => ({
+          eq: require("../../services/auth").mockEqFn,
+          order: require("../../services/auth").mockOrderFn,
+          single: require("../../services/auth").mockSingleFn,
+        }));
+
+      jest
+        .spyOn(require("../../services/auth"), "mockEqFn")
+        .mockImplementation(() => ({
+          eq: require("../../services/auth").mockEqFn,
+          order: require("../../services/auth").mockOrderFn,
+          single: require("../../services/auth").mockSingleFn,
+          error: new Error("テストエラー"),
+        }));
 
       const result = await service.getAllBooks();
       expect(result).toEqual([]);
