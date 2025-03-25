@@ -120,15 +120,10 @@ export function useAuth() {
             console.error("Failed to switch to Supabase storage:", error);
           }
         } else if (user) {
-          // ログアウト時の処理
-          try {
-            // ローカルデータをクリア
-            await StorageMigrationService.clearLocalData();
-            // ローカルストレージに切り替え
-            await StorageMigrationService.switchToLocalStorage();
-          } catch (error) {
-            console.error("Failed to switch to local storage:", error);
-          }
+          // ログアウト時の処理はsignOutメソッドに一元化
+          console.log(
+            "ログアウト検出: ユーザー状態の変更をsignOutメソッドで処理"
+          );
         }
       }
 
@@ -182,10 +177,36 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
+      console.log("ログアウト処理を開始");
+
+      // 1. 認証サービスでのログアウト処理
+      console.log("認証サービスのログアウト処理を呼び出し");
       await AuthService.signOut();
+
+      // 2. ユーザー状態のクリア
+      console.log("ユーザー状態をクリア");
       setUser(null);
       setVerificationSuccess(false);
+
+      // 3. ストレージ切り替え処理
+      console.log("ローカルストレージに切り替え");
+      try {
+        // ローカルデータをクリア
+        console.log("ローカルデータをクリア");
+        await StorageMigrationService.clearLocalData();
+
+        // ローカルストレージに切り替え
+        console.log("ストレージをローカルに切り替え");
+        await StorageMigrationService.switchToLocalStorage();
+        console.log("ストレージの切り替え完了");
+      } catch (storageError) {
+        console.error("ストレージ切り替えエラー:", storageError);
+        // ストレージエラーが発生しても認証自体は続行
+      }
+
+      console.log("ログアウト処理が完了");
     } catch (error) {
+      console.error("ログアウトエラー:", error);
       setError(filterError(error as Error));
     } finally {
       setLoading(false);
