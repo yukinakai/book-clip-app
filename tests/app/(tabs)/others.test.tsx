@@ -314,8 +314,7 @@ describe("OthersScreen", () => {
 
     // エラーがログに出力されること
     expect(mockConsoleError).toHaveBeenCalledWith(
-      "退会処理が失敗しました、ダイアログは閉じましたが退会は完了していません",
-      expect.anything()
+      "退会処理が失敗しました、ダイアログは閉じましたが退会は完了していません"
     );
 
     // AsyncStorageからの認証情報削除が呼び出されないこと
