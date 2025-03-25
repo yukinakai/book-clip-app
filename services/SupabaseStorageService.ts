@@ -351,7 +351,9 @@ export class SupabaseStorageService implements StorageInterface {
       const { error } = await supabase
         .from(this.CLIPS_TABLE)
         .update({
-          ...updatedClip,
+          book_id: updatedClip.bookId,
+          text: updatedClip.text,
+          page: updatedClip.page,
           updated_at: new Date().toISOString(),
         })
         .eq("id", updatedClip.id)
