@@ -14,7 +14,12 @@ export class ClipStorageService extends StorageService {
    * クリップを保存
    */
   static async saveClip(clip: Clip): Promise<void> {
-    return this.storageBackend.saveClip(clip);
+    try {
+      return await this.storageBackend.saveClip(clip);
+    } catch (error) {
+      console.error("Error saving clip:", error);
+      throw error;
+    }
   }
 
   /**

@@ -120,13 +120,19 @@ describe("ClipStorageService", () => {
         .mockRejectedValue(new Error(errorMessage));
 
       // コンソールエラーをモック
-      const consoleSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
 
-      await expect(ClipStorageService.saveClip(mockClip)).rejects.toThrow();
-
-      consoleSpy.mockRestore();
+      try {
+        await expect(ClipStorageService.saveClip(mockClip)).rejects.toThrow();
+        expect(console.error).toHaveBeenCalledWith(
+          "Error saving clip:",
+          expect.any(Error)
+        );
+      } finally {
+        // テスト終了後に元に戻す
+        console.error = originalConsoleError;
+      }
     });
   });
 
@@ -157,6 +163,48 @@ describe("ClipStorageService", () => {
       expect(
         ClipStorageService["storageBackend"].getAllClips
       ).toHaveBeenCalled();
+    });
+  });
+
+  describe("getClipById", () => {
+    it("バックエンドがgetClipByIdをサポートしている場合、そのメソッドを使うこと", async () => {
+      // バックエンドがgetClipByIdをサポートするケース
+      const getClipByIdSpy = jest
+        .spyOn(ClipStorageService["storageBackend"], "getClipById")
+        .mockResolvedValue(mockClip);
+
+      const result = await ClipStorageService.getClipById("test-id-1");
+
+      expect(result).toEqual(mockClip);
+      expect(getClipByIdSpy).toHaveBeenCalledWith("test-id-1");
+    });
+
+    it("バックエンドがgetClipByIdをサポートしていない場合、全クリップから検索すること", async () => {
+      // バックエンドからgetClipByIdを削除
+      const tempBackend = { ...ClipStorageService["storageBackend"] };
+      delete (tempBackend as any).getClipById;
+      ClipStorageService.setStorageBackend(tempBackend);
+
+      // getAllClipsをモック
+      const getAllClipsSpy = jest
+        .spyOn(ClipStorageService["storageBackend"], "getAllClips")
+        .mockResolvedValue(mockClips);
+
+      const result = await ClipStorageService.getClipById("test-id-1");
+
+      expect(result).toEqual(mockClips[0]);
+      expect(getAllClipsSpy).toHaveBeenCalled();
+    });
+
+    it("指定したIDのクリップが存在しない場合、nullを返すこと", async () => {
+      // getAllClipsをモック
+      jest
+        .spyOn(ClipStorageService["storageBackend"], "getAllClips")
+        .mockResolvedValue(mockClips);
+
+      const result = await ClipStorageService.getClipById("non-existing-id");
+
+      expect(result).toBeNull();
     });
   });
 
@@ -238,7 +286,7 @@ describe("ClipStorageService", () => {
         .spyOn(ClipStorageService["storageBackend"], "updateClip")
         .mockRejectedValue(new Error(errorMessage));
 
-      // コンソールエラーをモック（グローバルconsole.errorをjest.fnに置き換え）
+      // コンソールエラーをモック
       const originalConsoleError = console.error;
       console.error = jest.fn();
 
@@ -275,7 +323,7 @@ describe("ClipStorageService", () => {
         .spyOn(ClipStorageService["storageBackend"], "deleteClipsByBookId")
         .mockRejectedValue(new Error(errorMessage));
 
-      // コンソールエラーをモック（グローバルconsole.errorをjest.fnに置き換え）
+      // コンソールエラーをモック
       const originalConsoleError = console.error;
       console.error = jest.fn();
 
