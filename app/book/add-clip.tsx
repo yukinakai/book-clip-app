@@ -75,7 +75,7 @@ export default function AddClipScreen() {
 
         // 書籍の読み込み優先順位:
         // 1. URL指定のbookId
-        // 2. 最後に使用した書籍
+        // 2. 最後に使用した書籍（コンテキストから）
         // 3. 最初に見つかった書籍（書籍がない場合はnull）
 
         let bookToSet: Book | null = null;
@@ -86,10 +86,9 @@ export default function AddClipScreen() {
           bookToSet = books.find((b) => b.id === params.bookId) || null;
         }
 
-        if (!bookToSet) {
-          // 最後に使用した書籍を取得
-          const lastBook = await BookStorageService.getLastClipBook();
-          bookToSet = lastBook;
+        if (!bookToSet && lastClipBook) {
+          // コンテキストから最後に使用した書籍を使用
+          bookToSet = lastClipBook;
         }
 
         if (!bookToSet && books.length > 0) {
@@ -106,7 +105,7 @@ export default function AddClipScreen() {
     }
 
     loadBook();
-  }, [params?.bookId]);
+  }, [params?.bookId, lastClipBook]);
 
   // 画像が渡された場合の処理
   useEffect(() => {
