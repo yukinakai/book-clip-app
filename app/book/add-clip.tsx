@@ -323,7 +323,7 @@ export default function AddClipScreen() {
                 <Text
                   style={[
                     styles.changeBookButtonText,
-                    { color: Colors[colorScheme].primary },
+                    { color: Colors[colorScheme].text },
                   ]}
                 >
                   変更
