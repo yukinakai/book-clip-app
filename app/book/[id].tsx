@@ -26,6 +26,13 @@ export default function BookDetailScreen() {
   const [book, setBook] = useState<Book | null>(null);
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bookLoading, setBookLoading] = useState(true);
+  const [clipsLoading, setClipsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreClips, setHasMoreClips] = useState(true);
+  const [page, setPage] = useState(1);
+  const CLIPS_PER_PAGE = 10;
+
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
 
@@ -37,32 +44,90 @@ export default function BookDetailScreen() {
   // 書籍データとクリップを読み込む
   const loadBookDetailsAndClips = useCallback(async () => {
     try {
+      const startTime = Date.now();
       console.log("書籍詳細の読み込み開始 - ID:", id);
       setLoading(true);
+      setBookLoading(true);
+      setClipsLoading(true);
 
-      // 単一の書籍データを直接取得
-      const foundBook = await BookStorageService.getBookById(id as string);
-      console.log("書籍取得結果:", foundBook);
+      // 書籍情報とクリップを並行して取得
+      const bookPromise = BookStorageService.getBookById(id as string);
+      const clipsPromise = ClipStorageService.getClipsByBookId(id as string);
+
+      // Promise.allを使用して並行処理
+      const [foundBook, bookClips] = await Promise.all([
+        bookPromise,
+        clipsPromise,
+      ]);
+
+      const bookEndTime = Date.now();
+      console.log(
+        `書籍情報取得完了 (${bookEndTime - startTime}ms) - 結果:`,
+        foundBook
+      );
 
       if (foundBook) {
         setBook(foundBook);
+        setBookLoading(false);
 
-        // 書籍に関連するクリップを取得
-        const bookClips = await ClipStorageService.getClipsByBookId(
-          id as string
+        const clipsToShow = bookClips.slice(0, CLIPS_PER_PAGE);
+        const hasMore = bookClips.length > CLIPS_PER_PAGE;
+
+        console.log(
+          `クリップ取得完了 (${Date.now() - startTime}ms) - 全${
+            bookClips.length
+          }件中${clipsToShow.length}件表示`
         );
-        console.log("関連するクリップ:", bookClips.length, "件");
-        setClips(bookClips);
+        setClips(clipsToShow);
+        setHasMoreClips(hasMore);
+
+        // 全データを取得済みでキャッシュしておく（ページネーション用）
+        // @ts-ignore
+        window._cachedClips = bookClips;
       } else {
         console.log("書籍が見つかりませんでした - ID:", id);
       }
     } catch (error) {
       console.error("書籍詳細の読み込み中にエラー:", error);
     } finally {
-      console.log("書籍詳細の読み込み完了");
+      const endTime = Date.now();
+      console.log(
+        `書籍詳細の読み込み完了 - 合計時間: ${endTime - startTime}ms`
+      );
+      setBookLoading(false);
+      setClipsLoading(false);
       setLoading(false);
     }
   }, [id, setLoading, setBook, setClips]);
+
+  // さらにクリップを読み込む（無限スクロール用）
+  const loadMoreClips = useCallback(() => {
+    if (loadingMore || !hasMoreClips) return;
+
+    try {
+      setLoadingMore(true);
+      // @ts-ignore
+      const cachedClips = window._cachedClips || [];
+      const nextPage = page + 1;
+      const startIndex = (nextPage - 1) * CLIPS_PER_PAGE;
+      const endIndex = nextPage * CLIPS_PER_PAGE;
+
+      // キャッシュから次のページのクリップを取得
+      const nextClips = cachedClips.slice(startIndex, endIndex);
+
+      if (nextClips.length > 0) {
+        setClips((prev) => [...prev, ...nextClips]);
+        setPage(nextPage);
+        setHasMoreClips(endIndex < cachedClips.length);
+      } else {
+        setHasMoreClips(false);
+      }
+    } catch (error) {
+      console.error("追加クリップ読み込みエラー:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMoreClips, page, CLIPS_PER_PAGE]);
 
   // 画面がフォーカスされるたびにデータを再読み込み
   useFocusEffect(
@@ -189,15 +254,66 @@ export default function BookDetailScreen() {
     </View>
   );
 
-  if (loading) {
+  // スケルトンローダー用コンポーネント
+  const BookDetailSkeleton = () => (
+    <View style={styles.bookInfoContainer}>
+      <View
+        style={[styles.coverImageSkeleton, { backgroundColor: dividerColor }]}
+      />
+      <View style={styles.bookInfo}>
+        <View
+          style={[styles.titleSkeleton, { backgroundColor: dividerColor }]}
+        />
+        <View
+          style={[styles.authorSkeleton, { backgroundColor: dividerColor }]}
+        />
+      </View>
+    </View>
+  );
+
+  const ClipItemSkeleton = () => (
+    <View
+      style={[styles.clipItem, { backgroundColor: secondaryBackgroundColor }]}
+    >
+      <View style={styles.clipContent}>
+        <View
+          style={[styles.clipTextSkeleton, { backgroundColor: dividerColor }]}
+        />
+        <View
+          style={[
+            styles.clipTextSkeleton,
+            { width: "70%", backgroundColor: dividerColor },
+          ]}
+        />
+        <View style={styles.clipInfo}>
+          <View
+            style={[styles.pageInfoSkeleton, { backgroundColor: dividerColor }]}
+          />
+          <View
+            style={[styles.dateInfoSkeleton, { backgroundColor: dividerColor }]}
+          />
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+
     return (
-      <View style={[styles.loadingContainer, { backgroundColor }]}>
-        <Text style={{ color: textColor }}>読み込み中...</Text>
+      <View style={styles.loadingMoreContainer}>
+        <Text style={{ color: textColor }}>さらに読み込み中...</Text>
       </View>
     );
-  }
+  };
 
-  if (!book) {
+  const handleEndReached = () => {
+    if (!loadingMore && hasMoreClips) {
+      loadMoreClips();
+    }
+  };
+
+  if (!bookLoading && !book) {
     return (
       <View style={[styles.errorContainer, { backgroundColor }]}>
         <Text style={{ color: textColor }}>書籍が見つかりませんでした</Text>
@@ -236,37 +352,52 @@ export default function BookDetailScreen() {
         contentContainerStyle={styles.clipsList}
         ListHeaderComponent={() => (
           <>
-            <View style={styles.bookInfoContainer}>
-              {book.coverImage ? (
-                <Image
-                  source={{ uri: book.coverImage }}
-                  style={styles.coverImage}
-                />
-              ) : (
-                <View style={styles.coverImage}>
-                  <NoImagePlaceholder width={100} height={150} />
+            {bookLoading ? (
+              <BookDetailSkeleton />
+            ) : (
+              <View style={styles.bookInfoContainer}>
+                {book?.coverImage ? (
+                  <Image
+                    source={{ uri: book.coverImage }}
+                    style={styles.coverImage}
+                  />
+                ) : (
+                  <View style={styles.coverImage}>
+                    <NoImagePlaceholder width={100} height={150} />
+                  </View>
+                )}
+                <View style={styles.bookInfo}>
+                  <Text style={[styles.title, { color: textColor }]}>
+                    {book?.title}
+                  </Text>
+                  <Text style={[styles.author, { color: textColor }]}>
+                    {book?.author}
+                  </Text>
                 </View>
-              )}
-              <View style={styles.bookInfo}>
-                <Text style={[styles.title, { color: textColor }]}>
-                  {book.title}
-                </Text>
-                <Text style={[styles.author, { color: textColor }]}>
-                  {book.author}
-                </Text>
               </View>
-            </View>
+            )}
 
             <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
             <View style={styles.clipsSection}>
               <Text style={[styles.sectionTitle, { color: textColor }]}>
-                クリップ
+                クリップ {clipsLoading ? "" : `(${clips.length}件)`}
               </Text>
             </View>
+
+            {clipsLoading && (
+              <>
+                <ClipItemSkeleton />
+                <ClipItemSkeleton />
+                <ClipItemSkeleton />
+              </>
+            )}
           </>
         )}
-        ListEmptyComponent={renderEmptyClipsList}
+        ListEmptyComponent={!clipsLoading ? renderEmptyClipsList : null}
+        ListFooterComponent={renderFooter}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
       />
 
       <TouchableOpacity
@@ -415,5 +546,47 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     position: "absolute",
     right: 16,
+  },
+  coverImageSkeleton: {
+    width: 100,
+    height: 150,
+    borderRadius: 8,
+    opacity: 0.3,
+  },
+  titleSkeleton: {
+    height: 24,
+    borderRadius: 4,
+    marginBottom: 8,
+    width: "90%",
+    opacity: 0.3,
+  },
+  authorSkeleton: {
+    height: 18,
+    borderRadius: 4,
+    width: "60%",
+    opacity: 0.3,
+  },
+  clipTextSkeleton: {
+    height: 16,
+    borderRadius: 4,
+    marginBottom: 8,
+    width: "100%",
+    opacity: 0.3,
+  },
+  pageInfoSkeleton: {
+    height: 14,
+    width: 40,
+    borderRadius: 4,
+    opacity: 0.3,
+  },
+  dateInfoSkeleton: {
+    height: 14,
+    width: 80,
+    borderRadius: 4,
+    opacity: 0.3,
+  },
+  loadingMoreContainer: {
+    padding: 16,
+    alignItems: "center",
   },
 });
