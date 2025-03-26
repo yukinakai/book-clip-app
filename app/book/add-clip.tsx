@@ -210,13 +210,13 @@ export default function AddClipScreen() {
       // 最後に使用した書籍を更新
       setLastClipBook(selectedBook);
 
-      // 保存成功したらホーム画面に戻る
+      // 保存成功したら書籍詳細画面に遷移
       Alert.alert("成功", "クリップを保存しました", [
         {
           text: "OK",
           onPress: () => {
-            // ホーム画面に直接遷移（履歴をリセットして直接戻る）
-            router.replace("/");
+            // 書籍詳細画面に直接遷移
+            router.replace(`/book/${selectedBook.id}`);
           },
         },
       ]);
@@ -323,7 +323,7 @@ export default function AddClipScreen() {
                 <Text
                   style={[
                     styles.changeBookButtonText,
-                    { color: Colors[colorScheme].primary },
+                    { color: Colors[colorScheme].text },
                   ]}
                 >
                   変更

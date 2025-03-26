@@ -149,7 +149,7 @@ describe("AddClipScreen", () => {
     expect(ClipStorageService.saveClip).not.toHaveBeenCalled();
   });
 
-  it("有効な入力でクリップが保存され、前の画面に戻ること", async () => {
+  it("有効な入力でクリップが保存され、書籍詳細画面に遷移すること", async () => {
     const { getByTestId } = render(<AddClipScreen />);
     const router = require("expo-router").useRouter();
 
@@ -197,8 +197,8 @@ describe("AddClipScreen", () => {
       ])
     );
 
-    // ホーム画面に遷移することを確認（Alertのコールバックをシミュレートしたので）
-    expect(router.replace).toHaveBeenCalledWith("/");
+    // 書籍詳細画面に遷移することを確認（Alertのコールバックをシミュレートしたので）
+    expect(router.replace).toHaveBeenCalledWith("/book/test-book-id");
   });
 
   it("戻るボタンを押すと前の画面に戻ること", async () => {
