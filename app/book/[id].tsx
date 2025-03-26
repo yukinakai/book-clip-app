@@ -30,7 +30,6 @@ export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [book, setBook] = useState<Book | null>(null);
   const [clips, setClips] = useState<Clip[]>([]);
-  const [loading, setLoading] = useState(true);
   const [bookLoading, setBookLoading] = useState(true);
   const [clipsLoading, setClipsLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -52,7 +51,6 @@ export default function BookDetailScreen() {
     let startTime = Date.now();
     try {
       console.log("書籍詳細の読み込み開始 - ID:", id);
-      setLoading(true);
       setBookLoading(true);
       setClipsLoading(true);
 
@@ -102,7 +100,6 @@ export default function BookDetailScreen() {
       // ローディング状態を確実に終了する
       setBookLoading(false);
       setClipsLoading(false);
-      setLoading(false);
     }
   }, [id]);
 
