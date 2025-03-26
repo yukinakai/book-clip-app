@@ -21,6 +21,11 @@ import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import NoImagePlaceholder from "../../components/NoImagePlaceholder";
 
+// グローバル型定義を拡張
+declare global {
+  var _cachedClips: Clip[];
+}
+
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [book, setBook] = useState<Book | null>(null);
@@ -43,8 +48,9 @@ export default function BookDetailScreen() {
 
   // 書籍データとクリップを読み込む
   const loadBookDetailsAndClips = useCallback(async () => {
+    // スコープ外で参照できるようにする
+    let startTime = Date.now();
     try {
-      const startTime = Date.now();
       console.log("書籍詳細の読み込み開始 - ID:", id);
       setLoading(true);
       setBookLoading(true);
@@ -81,9 +87,8 @@ export default function BookDetailScreen() {
         setClips(clipsToShow);
         setHasMoreClips(hasMore);
 
-        // 全データを取得済みでキャッシュしておく（ページネーション用）
-        // @ts-ignore
-        window._cachedClips = bookClips;
+        // globalにキャッシュする（React Nativeでは window は使わない）
+        global._cachedClips = bookClips;
       } else {
         console.log("書籍が見つかりませんでした - ID:", id);
       }
@@ -94,11 +99,12 @@ export default function BookDetailScreen() {
       console.log(
         `書籍詳細の読み込み完了 - 合計時間: ${endTime - startTime}ms`
       );
+      // ローディング状態を確実に終了する
       setBookLoading(false);
       setClipsLoading(false);
       setLoading(false);
     }
-  }, [id, setLoading, setBook, setClips]);
+  }, [id]);
 
   // さらにクリップを読み込む（無限スクロール用）
   const loadMoreClips = useCallback(() => {
@@ -106,8 +112,8 @@ export default function BookDetailScreen() {
 
     try {
       setLoadingMore(true);
-      // @ts-ignore
-      const cachedClips = window._cachedClips || [];
+      // windowではなくglobalを使用
+      const cachedClips = global._cachedClips || [];
       const nextPage = page + 1;
       const startIndex = (nextPage - 1) * CLIPS_PER_PAGE;
       const endIndex = nextPage * CLIPS_PER_PAGE;
