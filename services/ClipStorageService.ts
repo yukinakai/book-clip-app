@@ -1,84 +1,66 @@
 import { Clip } from "../constants/MockData";
-import { StorageService } from "./StorageInterface";
-import { LocalStorageService } from "./LocalStorageService";
 
 /**
  * クリップストレージサービス
- * データの保存先を自動的に切り替える
+ * 匿名認証環境ではSupabaseデータベースへの操作を担当
  */
-export class ClipStorageService extends StorageService {
-  // 初期設定としてLocalStorageを使用
-  protected static storageBackend = new LocalStorageService();
-
+export class ClipStorageService {
   /**
    * クリップを保存
+   * 匿名認証環境ではSupabaseに直接保存されるため、このメソッドは使用されない
    */
   static async saveClip(clip: Clip): Promise<void> {
-    try {
-      return await this.storageBackend.saveClip(clip);
-    } catch (error) {
-      console.error("Error saving clip:", error);
-      throw error;
-    }
+    console.warn("匿名認証環境ではクリップの保存はSupabaseに直接行われます");
   }
 
   /**
    * すべてのクリップを取得
+   * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
   static async getAllClips(): Promise<Clip[]> {
-    return this.storageBackend.getAllClips();
+    console.warn("匿名認証環境ではクリップの取得はSupabaseから直接行われます");
+    return [];
   }
 
   /**
    * 書籍IDに関連するクリップを取得
+   * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
   static async getClipsByBookId(bookId: string): Promise<Clip[]> {
-    return this.storageBackend.getClipsByBookId(bookId);
+    console.warn("匿名認証環境ではクリップの取得はSupabaseから直接行われます");
+    return [];
   }
 
   /**
    * クリップIDで単一のクリップを取得
-   * この方法はストレージバックエンドがサポートしている場合は効率的に動作
+   * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
   static async getClipById(clipId: string): Promise<Clip | null> {
-    // StorageInterfaceが対応していればそのメソッドを使用
-    if ("getClipById" in this.storageBackend) {
-      return (this.storageBackend as any).getClipById(clipId);
-    }
-
-    // 対応していない場合は全クリップから検索
-    const clips = await this.getAllClips();
-    return clips.find((clip) => clip.id === clipId) || null;
+    console.warn("匿名認証環境ではクリップの取得はSupabaseから直接行われます");
+    return null;
   }
 
   /**
    * クリップを削除
+   * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
   static async removeClip(clipId: string): Promise<void> {
-    return this.storageBackend.removeClip(clipId);
+    console.warn("匿名認証環境ではクリップの削除はSupabaseで直接行われます");
   }
 
   /**
    * クリップを更新
+   * 匿名認証環境ではSupabaseで直接更新されるため、このメソッドは使用されない
    */
   static async updateClip(clip: Clip): Promise<void> {
-    try {
-      return await this.storageBackend.updateClip(clip);
-    } catch (error) {
-      console.error("Error updating clip:", error);
-      throw error;
-    }
+    console.warn("匿名認証環境ではクリップの更新はSupabaseで直接行われます");
   }
 
   /**
    * 書籍IDに関連するすべてのクリップを削除
+   * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
   static async deleteClipsByBookId(bookId: string): Promise<void> {
-    try {
-      return await this.storageBackend.deleteClipsByBookId(bookId);
-    } catch (error) {
-      console.error("Error deleting clips by book ID:", error);
-      throw error;
-    }
+    console.warn("匿名認証環境ではクリップの削除はSupabaseで直接行われます");
   }
 }

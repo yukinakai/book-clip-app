@@ -13,7 +13,7 @@ export class LocalStorageService {
     console.log("LocalStorageService initialized (最後のクリップ書籍のみ対応)");
   }
 
-  // 最後に選択された書籍を保存（コンテキスト間でのデータ共有用）
+  // 最後に選択された書籍を保存
   async setLastClipBook(book: Book): Promise<void> {
     try {
       await AsyncStorage.setItem(LAST_CLIP_BOOK_KEY, JSON.stringify(book));
@@ -33,13 +33,13 @@ export class LocalStorageService {
     }
   }
 
-  // 必要なデータをクリア（ログアウト時や退会時に使用）
+  // ローカルストレージのデータをクリア
   async clearAllData(): Promise<void> {
     try {
       await AsyncStorage.removeItem(LAST_CLIP_BOOK_KEY);
       console.log("Last clip book data cleared");
     } catch (error) {
-      console.error("Error clearing last clip book data:", error);
+      console.error("Error clearing data:", error);
       throw error;
     }
   }

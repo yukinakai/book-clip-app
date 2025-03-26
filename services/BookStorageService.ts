@@ -1,89 +1,77 @@
 import { Book } from "../constants/MockData";
-import { StorageService } from "./StorageInterface";
 import { LocalStorageService } from "./LocalStorageService";
 
 /**
  * 書籍ストレージサービス
- * データの保存先を自動的に切り替える
+ * Supabaseデータベースと最後のクリップブック情報の管理を担当
  */
-export class BookStorageService extends StorageService {
-  // 初期設定としてLocalStorageを使用
-  protected static storageBackend = new LocalStorageService();
+export class BookStorageService {
+  // LocalStorageServiceは最後のクリップブック情報の管理にのみ使用
+  private static localStorageService = new LocalStorageService();
 
   /**
    * 書籍を保存
+   * 匿名認証環境ではSupabaseに直接保存されるため、このメソッドは使用されない
    */
   static async saveBook(book: Book): Promise<void> {
-    return this.storageBackend.saveBook(book);
+    console.warn("匿名認証環境では書籍の保存はSupabaseに直接行われます");
   }
 
   /**
    * すべての書籍を取得
+   * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
   static async getAllBooks(): Promise<Book[]> {
-    return this.storageBackend.getAllBooks();
+    console.warn("匿名認証環境では書籍の取得はSupabaseから直接行われます");
+    return [];
   }
 
   /**
    * 書籍IDで単一の書籍を取得
-   * この方法はストレージバックエンドがサポートしている場合は効率的に動作
+   * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
   static async getBookById(bookId: string): Promise<Book | null> {
-    // StorageInterfaceが対応していればそのメソッドを使用
-    if ("getBookById" in this.storageBackend) {
-      return (this.storageBackend as any).getBookById(bookId);
-    }
-
-    // 対応していない場合は全書籍から検索
-    const books = await this.getAllBooks();
-    return books.find((book) => book.id === bookId) || null;
+    console.warn("匿名認証環境では書籍の取得はSupabaseから直接行われます");
+    return null;
   }
 
   /**
    * 書籍を更新
-   * この方法はストレージバックエンドがupdateBookメソッドをサポートしている場合は直接そのメソッドを使用
-   * サポートしていない場合は、削除して再保存する処理を内部で行う
+   * 匿名認証環境ではSupabaseで直接更新されるため、このメソッドは使用されない
    */
   static async updateBook(book: Book): Promise<void> {
-    // StorageInterfaceがupdateBookに対応していればそのメソッドを使用
-    if ("updateBook" in this.storageBackend) {
-      return (this.storageBackend as any).updateBook(book);
-    }
-
-    // 対応していない場合は削除して再保存する
-    if (!book.id) {
-      throw new Error("書籍IDが指定されていません");
-    }
-
-    await this.removeBook(book.id);
-    return this.saveBook(book);
+    console.warn("匿名認証環境では書籍の更新はSupabaseで直接行われます");
   }
 
   /**
    * 書籍を削除
+   * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
   static async removeBook(bookId: string): Promise<void> {
-    return this.storageBackend.removeBook(bookId);
+    console.warn("匿名認証環境では書籍の削除はSupabaseで直接行われます");
   }
 
   /**
    * 書籍を削除（エイリアス）
+   * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
   static async deleteBook(bookId: string): Promise<void> {
-    return this.removeBook(bookId);
+    console.warn("匿名認証環境では書籍の削除はSupabaseで直接行われます");
   }
 
   /**
    * 最後にクリップした書籍を設定
+   * LocalStorageServiceを使用して保存
    */
   static async setLastClipBook(book: Book): Promise<void> {
-    return this.storageBackend.setLastClipBook(book);
+    return this.localStorageService.setLastClipBook(book);
   }
 
   /**
    * 最後にクリップした書籍を取得
+   * LocalStorageServiceから取得
    */
   static async getLastClipBook(): Promise<Book | null> {
-    return this.storageBackend.getLastClipBook();
+    return this.localStorageService.getLastClipBook();
   }
 }
