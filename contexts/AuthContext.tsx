@@ -21,6 +21,8 @@ interface AuthContextType {
   hasLocalData: boolean;
   showMigrationConfirm: boolean;
   cancelMigration: () => void;
+  isAnonymous: boolean;
+  linkEmailToUser: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
