@@ -100,7 +100,7 @@ const BookshelfView: React.FC<BookshelfViewProps> = ({
       <FlatList
         data={books}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id || `book-${index}`}
         numColumns={3}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={renderHeader}
