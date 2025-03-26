@@ -1,5 +1,4 @@
 import { StorageMigrationService } from "../../services/StorageMigrationService";
-import { LocalStorageService } from "../../services/LocalStorageService";
 
 // Supabaseのモック
 jest.mock("@supabase/supabase-js", () => {
