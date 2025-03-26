@@ -1,8 +1,5 @@
 import { AuthService } from "./auth";
-import { BookStorageService } from "./BookStorageService";
-import { ClipStorageService } from "./ClipStorageService";
 import { LocalStorageService } from "./LocalStorageService";
-import { SupabaseStorageService } from "./SupabaseStorageService";
 
 /**
  * データ移行の進捗状況を表すインターフェース
@@ -16,103 +13,78 @@ export interface MigrationProgress {
 
 /**
  * ストレージ移行サービス
- * ローカルデータとSupabaseデータの間の移行を管理
+ * 匿名認証環境でのストレージ管理を担当
+ * 注意: 匿名認証を使用するため、すべてのデータはSupabaseに保存され、
+ * このサービスは最後に選択した書籍情報のみをローカルストレージで管理します
  */
 export class StorageMigrationService {
+  private static localStorageService = new LocalStorageService();
+
   /**
    * 認証状態に基づいてストレージを初期化
-   * 注意: アプリが匿名認証を使用する場合、すべてのユーザーがSupabaseストレージを使用します
+   * 匿名認証環境では特に何も行いません
    */
   static async initializeStorage(): Promise<void> {
     try {
-      // 現在のユーザーを取得
       const user = await AuthService.getCurrentUser();
-
       if (user) {
-        // 認証済みの場合（匿名ユーザーを含む）
-        const supabaseStorage = new SupabaseStorageService(user.id);
-        BookStorageService.setStorageBackend(supabaseStorage);
-        ClipStorageService.setStorageBackend(supabaseStorage);
-        BookStorageService.switchToSupabase();
-        ClipStorageService.switchToSupabase();
         if (__DEV__) {
-          console.log(
-            "Supabaseストレージに初期化しました - ユーザーID:",
-            user.id
-          );
+          console.log("ユーザーが認証済みです - ユーザーID:", user.id);
         }
       } else {
-        // ユーザーが存在しない場合（初回起動時や認証エラー時）
-        // 匿名認証が成功するまでの一時的な措置としてローカルストレージを使用
-        const localStorage = new LocalStorageService();
-        BookStorageService.setStorageBackend(localStorage);
-        ClipStorageService.setStorageBackend(localStorage);
-        BookStorageService.switchToLocal();
-        ClipStorageService.switchToLocal();
         if (__DEV__) {
-          console.log("一時的にローカルストレージを使用します（匿名認証待ち）");
+          console.log("未認証状態です、匿名認証が行われるまで待機します");
         }
       }
     } catch (error) {
       console.error("ストレージの初期化に失敗しました:", error);
-      // エラー時はローカルストレージにフォールバック
-      const localStorage = new LocalStorageService();
-      BookStorageService.setStorageBackend(localStorage);
-      ClipStorageService.setStorageBackend(localStorage);
-      BookStorageService.switchToLocal();
-      ClipStorageService.switchToLocal();
-      if (__DEV__) {
-        console.log(
-          "ストレージ初期化エラー（ローカルストレージにフォールバック）"
-        );
-      }
     }
   }
 
   /**
    * ユーザー認証時のストレージ切り替え
+   * 匿名認証環境では特に何も行いません
    */
   static async switchToSupabaseStorage(
     userId: string,
     _progressCallback?: (progress: MigrationProgress) => void
   ): Promise<void> {
-    // Supabaseストレージを作成
-    const supabaseStorage = new SupabaseStorageService(userId);
-    BookStorageService.setStorageBackend(supabaseStorage);
-    ClipStorageService.setStorageBackend(supabaseStorage);
-    BookStorageService.switchToSupabase();
-    ClipStorageService.switchToSupabase();
+    if (__DEV__) {
+      console.log("Supabaseストレージを使用します - ユーザーID:", userId);
+    }
   }
 
   /**
    * ユーザーログアウト時のストレージ切り替え
+   * 匿名認証環境では特に何も行いません
    */
   static async switchToLocalStorage(): Promise<void> {
-    // ローカルストレージを作成
-    const localStorage = new LocalStorageService();
-    BookStorageService.setStorageBackend(localStorage);
-    ClipStorageService.setStorageBackend(localStorage);
-    BookStorageService.switchToLocal();
-    ClipStorageService.switchToLocal();
+    if (__DEV__) {
+      console.log(
+        "ログアウト時のストレージ切り替え（匿名認証環境では操作なし）"
+      );
+    }
   }
 
   /**
    * ローカルデータをクリア
+   * 最後に選択した書籍情報をクリアします
    */
   static async clearLocalData(): Promise<void> {
     try {
-      const localStorage = new LocalStorageService();
-      await localStorage.clearAllData();
+      await this.localStorageService.clearAllData();
+      if (__DEV__) {
+        console.log("最後に選択した書籍情報をクリアしました");
+      }
     } catch (error) {
-      console.error("Failed to clear local data:", error);
+      console.error("ローカルデータのクリアに失敗しました:", error);
       throw error;
     }
   }
 
   /**
    * ローカルデータをSupabaseに移行
-   * 注意: 匿名認証を使用する場合、この機能は不要になります。
-   * すべてのデータは最初からSupabaseに保存されるため、移行は必要ありません。
+   * 匿名認証環境では不要な操作です
    */
   static async migrateLocalToSupabase(
     _userId: string,
@@ -122,9 +94,8 @@ export class StorageMigrationService {
     processed: number;
     failed: number;
   }> {
-    // 匿名認証を使用する場合、この機能は不要
     console.warn(
-      "匿名認証を使用する場合、データ移行は不要です。すべて成功として返します。"
+      "匿名認証環境では、データ移行は不要です。すべて成功として返します。"
     );
 
     return {
@@ -132,5 +103,17 @@ export class StorageMigrationService {
       processed: 0,
       failed: 0,
     };
+  }
+
+  /**
+   * ローカルデータをSupabaseに移行（別名）
+   * 互換性のために残していますが、匿名認証環境では使用されません
+   */
+  static async migrateLocalDataToSupabase(
+    userId: string,
+    progressCallback?: (progress: MigrationProgress) => void
+  ): Promise<boolean> {
+    await this.migrateLocalToSupabase(userId, progressCallback);
+    return true;
   }
 }
