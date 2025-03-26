@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   scanButton: {
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: `${Colors.dark.background}dd`, // darkPaperを半透明に
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
@@ -272,10 +272,10 @@ const styles = StyleSheet.create({
     minWidth: 180,
   },
   scanningButton: {
-    backgroundColor: "rgba(0, 100, 200, 0.7)",
+    backgroundColor: `${Colors.dark.primary}dd`, // deepBookNavyを半透明に
   },
   scannedButton: {
-    backgroundColor: "rgba(0, 150, 0, 0.7)",
+    backgroundColor: `${Colors.dark.accent2}dd`, // darkInsightGreenを半透明に
   },
   scanButtonText: {
     color: "white",
