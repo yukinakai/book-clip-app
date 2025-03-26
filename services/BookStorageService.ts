@@ -1,5 +1,7 @@
 import { Book } from "../constants/MockData";
 import { LocalStorageService } from "./LocalStorageService";
+import { SupabaseStorageService } from "./SupabaseStorageService";
+import { AuthService } from "./auth";
 
 /**
  * 書籍ストレージサービス
@@ -8,55 +10,104 @@ import { LocalStorageService } from "./LocalStorageService";
 export class BookStorageService {
   // LocalStorageServiceは最後のクリップブック情報の管理にのみ使用
   private static localStorageService = new LocalStorageService();
+  private static supabaseService: SupabaseStorageService | null = null;
+
+  /**
+   * SupabaseServiceのインスタンスを取得または作成
+   * @returns SupabaseStorageServiceのインスタンス
+   */
+  private static async getSupabaseService(): Promise<SupabaseStorageService> {
+    try {
+      // 既存のインスタンスがあればそれを返す
+      if (this.supabaseService) {
+        return this.supabaseService;
+      }
+
+      // 現在のユーザーIDを取得
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        throw new Error("ユーザーが認証されていません");
+      }
+
+      // 新しいインスタンスを作成
+      this.supabaseService = new SupabaseStorageService(user.id);
+      return this.supabaseService;
+    } catch (error) {
+      console.error("Supabaseサービス初期化エラー:", error);
+      throw error;
+    }
+  }
 
   /**
    * 書籍を保存
-   * 匿名認証環境ではSupabaseに直接保存されるため、このメソッドは使用されない
    */
-  static async saveBook(_book: Book): Promise<void> {
-    console.warn("匿名認証環境では書籍の保存はSupabaseに直接行われます");
+  static async saveBook(book: Book): Promise<void> {
+    try {
+      const service = await this.getSupabaseService();
+      await service.saveBook(book);
+    } catch (error) {
+      console.error("書籍保存エラー:", error);
+      throw error;
+    }
   }
 
   /**
    * すべての書籍を取得
-   * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
   static async getAllBooks(): Promise<Book[]> {
-    console.warn("匿名認証環境では書籍の取得はSupabaseから直接行われます");
-    return [];
+    try {
+      const service = await this.getSupabaseService();
+      return await service.getAllBooks();
+    } catch (error) {
+      console.error("書籍一覧取得エラー:", error);
+      return [];
+    }
   }
 
   /**
    * 書籍IDで単一の書籍を取得
-   * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
-  static async getBookById(_bookId: string): Promise<Book | null> {
-    console.warn("匿名認証環境では書籍の取得はSupabaseから直接行われます");
-    return null;
+  static async getBookById(bookId: string): Promise<Book | null> {
+    try {
+      const service = await this.getSupabaseService();
+      return await service.getBookById(bookId);
+    } catch (error) {
+      console.error("書籍取得エラー:", error);
+      return null;
+    }
   }
 
   /**
    * 書籍を更新
-   * 匿名認証環境ではSupabaseで直接更新されるため、このメソッドは使用されない
    */
-  static async updateBook(_book: Book): Promise<void> {
-    console.warn("匿名認証環境では書籍の更新はSupabaseで直接行われます");
+  static async updateBook(book: Book): Promise<void> {
+    try {
+      const service = await this.getSupabaseService();
+      await service.updateBook(book);
+    } catch (error) {
+      console.error("書籍更新エラー:", error);
+      throw error;
+    }
   }
 
   /**
    * 書籍を削除
-   * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
-  static async removeBook(_bookId: string): Promise<void> {
-    console.warn("匿名認証環境では書籍の削除はSupabaseで直接行われます");
+  static async removeBook(bookId: string): Promise<void> {
+    try {
+      const service = await this.getSupabaseService();
+      await service.removeBook(bookId);
+    } catch (error) {
+      console.error("書籍削除エラー:", error);
+      throw error;
+    }
   }
 
   /**
    * 書籍を削除（エイリアス）
-   * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
-  static async deleteBook(_bookId: string): Promise<void> {
-    console.warn("匿名認証環境では書籍の削除はSupabaseで直接行われます");
+  static async deleteBook(bookId: string): Promise<void> {
+    return this.removeBook(bookId);
   }
 
   /**
