@@ -60,8 +60,8 @@ export default function ImageSelectionView({
   // カラーパレットの色を使用
   const borderColor = Colors[colorScheme].tabIconDefault;
   const buttonColor = Colors[colorScheme].paper;
-  const selectionBorderColor = Colors[colorScheme].alert;
-  const confirmButtonColor = Colors[colorScheme].success;
+  const selectionBorderColor = Colors[colorScheme].accent2;
+  const confirmButtonColor = Colors[colorScheme].primary;
 
   // 画像読み込み完了時の処理
   const handleImageLoad = () => {
@@ -228,7 +228,7 @@ export default function ImageSelectionView({
                       width: currentSelection.width,
                       height: currentSelection.height,
                       borderColor: selectionBorderColor,
-                      backgroundColor: `${Colors[colorScheme].alert}20`, // 20は16進数での透明度12.5%
+                      backgroundColor: `${Colors[colorScheme].accent2}20`, // 20は16進数での透明度12.5%
                     },
                   ]}
                 />
@@ -250,12 +250,12 @@ export default function ImageSelectionView({
                   <Ionicons
                     name="scan-outline"
                     size={20}
-                    color={Colors[colorScheme].alert}
+                    color={Colors[colorScheme].text}
                   />
                   <Text
                     style={[
                       styles.utilityButtonText,
-                      { color: Colors[colorScheme].alert },
+                      { color: Colors[colorScheme].text },
                     ]}
                   >
                     すべて選択
@@ -275,12 +275,12 @@ export default function ImageSelectionView({
                   <Ionicons
                     name="close-circle-outline"
                     size={20}
-                    color={Colors[colorScheme].alert}
+                    color={Colors[colorScheme].text}
                   />
                   <Text
                     style={[
                       styles.utilityButtonText,
-                      { color: Colors[colorScheme].alert },
+                      { color: Colors[colorScheme].text },
                     ]}
                   >
                     選択解除

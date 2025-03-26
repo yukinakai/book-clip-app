@@ -201,7 +201,7 @@ export default function AddClipScreen() {
     try {
       await ClipStorageService.saveClip({
         id: Date.now().toString(),
-        bookId: selectedBook.id,
+        bookId: selectedBook.id!,
         text: clipText.trim(),
         page,
         createdAt: new Date().toISOString(),
@@ -393,12 +393,12 @@ export default function AddClipScreen() {
                 <Ionicons
                   name="camera"
                   size={24}
-                  color={Colors[colorScheme].success}
+                  color={Colors[colorScheme].text}
                 />
                 <Text
                   style={[
                     styles.cameraButtonText,
-                    { color: Colors[colorScheme].success },
+                    { color: Colors[colorScheme].text },
                   ]}
                 >
                   写真から追加

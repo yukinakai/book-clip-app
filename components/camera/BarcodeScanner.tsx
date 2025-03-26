@@ -1,40 +1,51 @@
 // components/camera/BarcodeScanner.tsx
-import React, { useState, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Animated, Easing, Dimensions } from 'react-native';
-import { CameraView, BarcodeScanningResult } from 'expo-camera';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useRef } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Easing,
+  Dimensions,
+} from "react-native";
+import { CameraView, BarcodeScanningResult } from "expo-camera";
+import { Ionicons } from "@expo/vector-icons";
+import { Colors } from "../../constants/Colors";
 
 interface BarcodeScannerProps {
   onBarcodeScanned: (isbn: string) => void;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => {
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
+  onBarcodeScanned,
+}) => {
   const [scanned, setScanned] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [lastScannedISBN, setLastScannedISBN] = useState<string | null>(null);
-  
+
   // 画面の高さを取得
-  const screenHeight = Dimensions.get('window').height;
+  const screenHeight = Dimensions.get("window").height;
   // 画面の中央のy座標
   const middleY = screenHeight / 2;
-  
+
   // スキャンアニメーション用
   const scanLineAnim = useRef(new Animated.Value(0)).current;
-  
+
   const startScanning = () => {
     if (scanning || scanned) return;
-    
+
     setScanning(true);
-    
+
     // スキャンラインのアニメーションを開始
     scanLineAnim.setValue(0);
     Animated.timing(scanLineAnim, {
       toValue: 1,
       duration: 1500,
       easing: Easing.linear,
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start();
-    
+
     // 3秒後にスキャンモードを自動終了
     setTimeout(() => {
       if (!scanned) {
@@ -45,50 +56,57 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
 
   const handleBarcodeScanned = (scanningResult: BarcodeScanningResult) => {
     if (!scanning || scanned) return;
-    
+
     const { type, data, bounds } = scanningResult;
-    
+
     // バーコードの位置情報をログに出力
-    console.log(`バーコード: ${data}, 位置: ${JSON.stringify(bounds)}, 画面の高さ: ${screenHeight}`);
-    
+    console.log(
+      `バーコード: ${data}, 位置: ${JSON.stringify(
+        bounds
+      )}, 画面の高さ: ${screenHeight}`
+    );
+
     // バーコードの位置をチェック（y座標が中央値より大きいかどうか）
     // boundsの値が0〜1の範囲の場合と、ピクセル値の場合の両方に対応
     let isBottomHalf = false;
-    
+
     if (bounds && bounds.origin) {
       const y = bounds.origin.y;
-      
+
       // yがピクセル値の場合（大きな値の場合）
       if (y > 1) {
         isBottomHalf = y > middleY;
-      } 
+      }
       // yが0〜1の正規化された値の場合
       else {
         isBottomHalf = y > 0.5;
       }
     }
-    
+
     // 下半分のバーコードはスキップ
     if (isBottomHalf) {
-      console.log('下部のバーコードなのでスキップします', bounds?.origin?.y);
+      console.log("下部のバーコードなのでスキップします", bounds?.origin?.y);
       return;
     }
-    
+
     // 代替方法: 特定のプレフィックスをスキップ（必要に応じて有効化）
     // if (data.startsWith('192')) {
     //   console.log('商品バーコードなのでスキップします:', data);
     //   return;
     // }
-    
-    if (type === 'ean13' && (data.startsWith('978') || data.startsWith('979'))) {
+
+    if (
+      type === "ean13" &&
+      (data.startsWith("978") || data.startsWith("979"))
+    ) {
       if (lastScannedISBN === data) return;
-      
-      console.log('ISBN検出:', data);
+
+      console.log("ISBN検出:", data);
       setScanned(true);
       setScanning(false);
       setLastScannedISBN(data);
       onBarcodeScanned(data);
-      
+
       // 2秒後にスキャン状態をリセット
       setTimeout(() => {
         setScanned(false);
@@ -99,7 +117,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
   // スキャンラインのアニメーション設定
   const translateY = scanLineAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 120]
+    outputRange: [0, 120],
   });
 
   return (
@@ -113,44 +131,53 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
       >
         {scanned && (
           <View style={styles.scannedOverlay}>
-            <Ionicons name="checkmark-circle" size={24} color="#FFF" style={styles.statusIcon} />
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color="#FFF"
+              style={styles.statusIcon}
+            />
             <Text style={styles.scannedText}>ISBNを検出しました</Text>
           </View>
         )}
-        
+
         <View style={styles.scannerTargetOverlay}>
           {/* ガイダンステキストを追加 */}
-          <Text style={styles.guidanceText}>上部のISBNバーコードを枠内に収めてください</Text>
-          
+          <Text style={styles.guidanceText}>
+            上部のISBNバーコードを枠内に収めてください
+          </Text>
+
           <View style={[styles.scannerTarget, styles.scannerTargetTop]}>
             {scanning && (
-              <Animated.View 
-                style={[
-                  styles.scanLine,
-                  { transform: [{ translateY }] }
-                ]}
+              <Animated.View
+                style={[styles.scanLine, { transform: [{ translateY }] }]}
               />
             )}
           </View>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
               styles.scanButton,
               scanning && styles.scanningButton,
-              scanned && styles.scannedButton
+              scanned && styles.scannedButton,
             ]}
             onPress={startScanning}
             disabled={scanning || scanned}
           >
             <Text style={styles.scanButtonText}>
-              {scanned 
-                ? "検出済み" 
-                : scanning 
-                  ? "スキャン中..." 
-                  : "タップしてスキャン"}
+              {scanned
+                ? "検出済み"
+                : scanning
+                ? "スキャン中..."
+                : "タップしてスキャン"}
             </Text>
             {!scanning && !scanned && (
-              <Ionicons name="scan-outline" size={20} color="white" style={styles.buttonIcon} />
+              <Ionicons
+                name="scan-outline"
+                size={20}
+                color="white"
+                style={styles.buttonIcon}
+              />
             )}
           </TouchableOpacity>
         </View>
@@ -162,60 +189,60 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeScanned }) => 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
+    width: "100%",
   },
   camera: {
     flex: 1,
-    width: '100%',
+    width: "100%",
   },
   scannedOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 180, 0, 0.7)',
+    backgroundColor: "rgba(65, 105, 86, 0.7)",
     padding: 15,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
     zIndex: 10,
   },
   statusIcon: {
     marginRight: 8,
   },
   scannedText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   scannerTargetOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   scannerTarget: {
     width: 280,
     height: 120,
     borderWidth: 2,
     borderRadius: 10,
-    borderColor: '#00FF00',
-    backgroundColor: 'rgba(0, 255, 0, 0.05)',
-    overflow: 'hidden',
+    borderColor: Colors.dark.accent2,
+    backgroundColor: "rgba(65, 105, 86, 0.05)",
+    overflow: "hidden",
   },
   // 上部にスキャナーターゲットを配置
   scannerTargetTop: {
     marginBottom: 200, // 画面の上部に配置
   },
   scanLine: {
-    position: 'absolute',
-    width: '100%',
+    position: "absolute",
+    width: "100%",
     height: 2,
-    backgroundColor: '#00FF00',
-    shadowColor: '#00FF00',
+    backgroundColor: Colors.dark.accent2,
+    shadowColor: Colors.dark.accent2,
     shadowOffset: {
       width: 0,
       height: 0,
@@ -225,36 +252,36 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   guidanceText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     padding: 10,
     borderRadius: 5,
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   scanButton: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: `${Colors.dark.background}dd`, // darkPaperを半透明に
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
     marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     minWidth: 180,
   },
   scanningButton: {
-    backgroundColor: 'rgba(0, 100, 200, 0.7)',
+    backgroundColor: `${Colors.dark.primary}dd`, // deepBookNavyを半透明に
   },
   scannedButton: {
-    backgroundColor: 'rgba(0, 150, 0, 0.7)',
+    backgroundColor: `${Colors.dark.accent2}dd`, // darkInsightGreenを半透明に
   },
   scanButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
   },
   buttonIcon: {
     marginLeft: 8,
