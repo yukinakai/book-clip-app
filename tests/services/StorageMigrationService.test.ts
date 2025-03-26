@@ -1,8 +1,5 @@
 import { StorageMigrationService } from "../../services/StorageMigrationService";
-import { BookStorageService } from "../../services/BookStorageService";
-import { ClipStorageService } from "../../services/ClipStorageService";
 import { LocalStorageService } from "../../services/LocalStorageService";
-import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 
 // Supabaseのモック
 jest.mock("@supabase/supabase-js", () => {
@@ -74,9 +71,9 @@ jest.mock("../../services/ClipStorageService", () => ({
 }));
 jest.mock("../../services/LocalStorageService", () => ({
   LocalStorageService: jest.fn().mockImplementation(() => ({
-    getAllBooks: jest.fn().mockResolvedValue([]),
-    getAllClips: jest.fn().mockResolvedValue([]),
     clearAllData: jest.fn().mockResolvedValue(undefined),
+    getLastClipBook: jest.fn().mockResolvedValue(null),
+    setLastClipBook: jest.fn().mockResolvedValue(undefined),
   })),
 }));
 jest.mock("../../services/SupabaseStorageService", () => ({
@@ -90,53 +87,56 @@ describe("StorageMigrationService", () => {
   // テスト前の共通設定
   beforeEach(() => {
     jest.clearAllMocks();
-    // mockInitializeStorageを追加
-    jest
-      .spyOn(StorageMigrationService, "initializeStorage")
-      .mockResolvedValue(undefined);
+    // DEVフラグをモック
+    global.__DEV__ = true;
   });
 
   // テスト用データ
   const mockUser = { id: "test-user-id", email: "test@example.com" };
 
   describe("initializeStorage", () => {
-    it("認証済みユーザーがいる場合、Supabaseストレージを使用するように初期化されること", async () => {
+    it("認証済みユーザーがいる場合、ログに出力すること", async () => {
       // モックの設定 - AuthService.getCurrentUserに正しいモックを提供
       const { AuthService } = require("../../services/auth");
       AuthService.getCurrentUser.mockResolvedValueOnce(mockUser);
 
-      // モックの呼び出しを復元
-      jest.spyOn(StorageMigrationService, "initializeStorage").mockRestore();
+      const consoleSpy = jest
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
 
       await StorageMigrationService.initializeStorage();
 
-      // SupabaseStorageServiceが正しく作成されたか確認
-      expect(SupabaseStorageService).toHaveBeenCalledWith(mockUser.id);
+      // ログが出力されたことを確認
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "ユーザーが認証済みです - ユーザーID:",
+        mockUser.id
+      );
 
-      // BookStorageServiceとClipStorageServiceの設定が正しく行われたか確認
-      expect(BookStorageService.setStorageBackend).toHaveBeenCalled();
-      expect(ClipStorageService.setStorageBackend).toHaveBeenCalled();
+      // クリーンアップ
+      consoleSpy.mockRestore();
     });
 
-    it("認証済みユーザーがいない場合、ローカルストレージを使用するように初期化されること", async () => {
+    it("未認証の場合、ログに出力すること", async () => {
       // ユーザーがいないケースをモック
       const { AuthService } = require("../../services/auth");
       AuthService.getCurrentUser.mockResolvedValueOnce(null);
 
-      // モックの呼び出しを復元
-      jest.spyOn(StorageMigrationService, "initializeStorage").mockRestore();
+      const consoleSpy = jest
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
 
       await StorageMigrationService.initializeStorage();
 
-      // LocalStorageServiceが正しく作成されたか確認
-      expect(LocalStorageService).toHaveBeenCalled();
+      // ログが出力されたことを確認
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "未認証状態です、匿名認証が行われるまで待機します"
+      );
 
-      // BookStorageServiceとClipStorageServiceの設定が正しく行われたか確認
-      expect(BookStorageService.setStorageBackend).toHaveBeenCalled();
-      expect(ClipStorageService.setStorageBackend).toHaveBeenCalled();
+      // クリーンアップ
+      consoleSpy.mockRestore();
     });
 
-    it("認証チェック中にエラーが発生した場合、ローカルストレージにフォールバックすること", async () => {
+    it("認証チェック中にエラーが発生した場合、エラーログを出力すること", async () => {
       // エラーケースをモック
       const mockError = new Error("Authentication error");
       const { AuthService } = require("../../services/auth");
@@ -147,261 +147,167 @@ describe("StorageMigrationService", () => {
         .spyOn(console, "error")
         .mockImplementation(() => {});
 
-      // モックの呼び出しを復元
-      jest.spyOn(StorageMigrationService, "initializeStorage").mockRestore();
-
       await StorageMigrationService.initializeStorage();
 
       // エラーログが出力されたか確認
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to initialize storage:",
+        "ストレージの初期化に失敗しました:",
         mockError
       );
 
-      // LocalStorageServiceが正しく作成されたか確認
-      expect(LocalStorageService).toHaveBeenCalled();
-
-      // BookStorageServiceとClipStorageServiceの設定が正しく行われたか確認
-      expect(BookStorageService.setStorageBackend).toHaveBeenCalled();
-      expect(ClipStorageService.setStorageBackend).toHaveBeenCalled();
-
-      // モックを復元
+      // クリーンアップ
       consoleSpy.mockRestore();
     });
   });
 
   describe("switchToSupabaseStorage", () => {
-    it("SupabaseStorageに正しく切り替えられること", async () => {
+    it("ログ出力のみ行うこと", async () => {
       const userId = "test-user-id";
+      const consoleSpy = jest
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
 
       await StorageMigrationService.switchToSupabaseStorage(userId);
 
-      // SupabaseStorageServiceが正しく作成されたか確認
-      expect(SupabaseStorageService).toHaveBeenCalledWith(userId);
+      // ログが出力されたことを確認
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Supabaseストレージを使用します - ユーザーID:",
+        userId
+      );
 
-      // BookStorageServiceとClipStorageServiceの設定が正しく行われたか確認
-      expect(BookStorageService.setStorageBackend).toHaveBeenCalled();
-      expect(ClipStorageService.setStorageBackend).toHaveBeenCalled();
-      expect(BookStorageService.switchToSupabase).toHaveBeenCalled();
-      expect(ClipStorageService.switchToSupabase).toHaveBeenCalled();
+      // クリーンアップ
+      consoleSpy.mockRestore();
     });
   });
 
   describe("switchToLocalStorage", () => {
-    it("ローカルストレージに正しく切り替えられること", async () => {
-      await StorageMigrationService.switchToLocalStorage();
-
-      // LocalStorageServiceが正しく作成されたか確認
-      expect(LocalStorageService).toHaveBeenCalled();
-
-      // BookStorageServiceとClipStorageServiceの設定が正しく行われたか確認
-      expect(BookStorageService.setStorageBackend).toHaveBeenCalled();
-      expect(ClipStorageService.setStorageBackend).toHaveBeenCalled();
-      expect(BookStorageService.switchToLocal).toHaveBeenCalled();
-      expect(ClipStorageService.switchToLocal).toHaveBeenCalled();
-    });
-  });
-
-  describe("migrateLocalToSupabase", () => {
-    // テスト用のプログレスコールバック関数
-    const mockProgressCallback = jest.fn();
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      // 実装の内部で使われるプライベートメソッドのモック
-      jest
-        .spyOn(StorageMigrationService as any, "saveBookToSupabase")
-        .mockImplementation((_userId: string, book: any) =>
-          Promise.resolve(book.id)
-        );
-      jest
-        .spyOn(StorageMigrationService as any, "saveClipToSupabase")
-        .mockImplementation(() => Promise.resolve());
-    });
-
-    it("ローカルデータがSupabaseに正しく移行されること", async () => {
-      // モックデータ
-      const mockBooks = [
-        { id: "book1", title: "Book 1" },
-        { id: "book2", title: "Book 2" },
-      ];
-      const mockClips = [
-        { id: "clip1", bookId: "book1", text: "Clip 1" },
-        { id: "clip2", bookId: "book1", text: "Clip 2" },
-        { id: "clip3", bookId: "book2", text: "Clip 3" },
-      ];
-
-      // LocalStorageServiceのモック
-      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
-        getAllBooks: jest.fn().mockResolvedValue(mockBooks),
-        getAllClips: jest.fn().mockResolvedValue(mockClips),
-      }));
-
-      const result = await StorageMigrationService.migrateLocalToSupabase(
-        "test-user-id",
-        mockProgressCallback
-      );
-
-      // 進捗コールバックが呼ばれたことを確認
-      expect(mockProgressCallback).toHaveBeenCalled();
-
-      // 期待される結果の確認
-      expect(result).toEqual({
-        total: 5, // 2冊の書籍 + 3つのクリップ
-        processed: 5, // すべて正常に処理された
-        failed: 0, // 失敗なし
-      });
-    });
-
-    it("一部のデータ移行に失敗した場合、結果に失敗数が反映されること", async () => {
-      // モックデータ
-      const mockBooks = [
-        { id: "book1", title: "Book 1" },
-        { id: "book2", title: "Book 2" },
-      ];
-      const mockClips = [
-        { id: "clip1", bookId: "book1", text: "Clip 1" },
-        { id: "clip2", bookId: "book1", text: "Clip 2" },
-        { id: "clip3", bookId: "book2", text: "Clip 3" },
-      ];
-
-      // LocalStorageServiceのモック
-      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
-        getAllBooks: jest.fn().mockResolvedValue(mockBooks),
-        getAllClips: jest.fn().mockResolvedValue(mockClips),
-      }));
-
-      // 2番目の書籍の保存に失敗するように設定
-      jest
-        .spyOn(StorageMigrationService as any, "saveBookToSupabase")
-        .mockImplementationOnce((_userId: string, book: any) =>
-          Promise.resolve(book.id)
-        )
-        .mockImplementationOnce(() => Promise.reject(new Error("保存エラー")));
-
-      const result = await StorageMigrationService.migrateLocalToSupabase(
-        "test-user-id",
-        mockProgressCallback
-      );
-
-      // 進捗コールバックが呼ばれたことを確認
-      expect(mockProgressCallback).toHaveBeenCalled();
-
-      // 期待される結果の確認
-      expect(result).toEqual({
-        total: 5, // 2冊の書籍 + 3つのクリップ
-        processed: 3, // 実際の実装結果に合わせる
-        failed: 2, // 実際の実装結果に合わせる
-      });
-    });
-
-    it("移行処理全体が失敗した場合、エラーがスローされプログレスが失敗状態になること", async () => {
-      // 全体的な失敗を引き起こすモック
-      const mockError = new Error("Failed to get data");
-
-      // LocalStorageServiceのモック - エラーを投げる
-      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
-        getAllBooks: jest.fn().mockRejectedValue(mockError),
-        getAllClips: jest.fn().mockResolvedValue([]),
-      }));
-
-      // コンソールエラーをモック
+    it("ログ出力のみ行うこと", async () => {
       const consoleSpy = jest
-        .spyOn(console, "error")
+        .spyOn(console, "log")
         .mockImplementation(() => {});
 
-      // エラーがスローされることを確認
-      await expect(
-        StorageMigrationService.migrateLocalToSupabase(
-          "test-user-id",
-          mockProgressCallback
-        )
-      ).rejects.toThrow(mockError);
+      await StorageMigrationService.switchToLocalStorage();
 
-      // エラーログが出力されたか確認
-      expect(consoleSpy).toHaveBeenCalledWith("Migration failed:", mockError);
-
-      // プログレスコールバックが失敗状態で呼ばれたことを確認
-      expect(mockProgressCallback).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: "failed",
-          error: mockError,
-        })
+      // ログが出力されたことを確認
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "ログアウト時のストレージ切り替え（匿名認証環境では操作なし）"
       );
 
-      // モックを復元
+      // クリーンアップ
       consoleSpy.mockRestore();
     });
   });
 
   describe("clearLocalData", () => {
-    it("ローカルデータが正しくクリアされること", async () => {
-      // LocalStorageServiceのインスタンスを設定
+    it("LocalStorageService.clearAllDataが呼ばれること", async () => {
       const mockClearAllData = jest.fn().mockResolvedValue(undefined);
       (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
         clearAllData: mockClearAllData,
       }));
 
-      // モックの呼び出しを復元
-      jest.spyOn(StorageMigrationService, "clearLocalData").mockRestore();
+      const consoleSpy = jest
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
 
       await StorageMigrationService.clearLocalData();
 
       // clearAllDataが呼ばれることを確認
       expect(mockClearAllData).toHaveBeenCalled();
-    });
-  });
-
-  describe("migrateLocalDataToSupabase", () => {
-    const mockProgressCallback = jest.fn();
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      // migrateLocalToSupabaseのモック
-      jest
-        .spyOn(StorageMigrationService, "migrateLocalToSupabase")
-        .mockResolvedValue({
-          total: 5,
-          processed: 5,
-          failed: 0,
-        });
-    });
-
-    it("データ移行が成功した場合、trueを返すこと", async () => {
-      const result = await StorageMigrationService.migrateLocalDataToSupabase(
-        "test-user-id",
-        mockProgressCallback
+      // ログが出力されたことを確認
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "最後に選択した書籍情報をクリアしました"
       );
 
-      expect(result).toBe(true);
-      expect(
-        StorageMigrationService.migrateLocalToSupabase
-      ).toHaveBeenCalledWith("test-user-id", mockProgressCallback);
+      // クリーンアップ
+      consoleSpy.mockRestore();
     });
 
-    it("データ移行が失敗した場合、falseを返すこと", async () => {
-      // エラーをスローするようにモック
-      jest
-        .spyOn(StorageMigrationService, "migrateLocalToSupabase")
-        .mockRejectedValue(new Error("Migration failed"));
+    it("エラーが発生した場合、エラーログを出力しエラーを再スローすること", async () => {
+      const mockError = new Error("Clear data failed");
+      const mockClearAllData = jest.fn().mockRejectedValue(mockError);
+      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
+        clearAllData: mockClearAllData,
+      }));
 
-      // コンソールエラーをモック
       const consoleSpy = jest
         .spyOn(console, "error")
         .mockImplementation(() => {});
 
+      await expect(StorageMigrationService.clearLocalData()).rejects.toThrow(
+        mockError
+      );
+
+      // エラーログが出力されたことを確認
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "ローカルデータのクリアに失敗しました:",
+        mockError
+      );
+
+      // クリーンアップ
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("migrateLocalToSupabase", () => {
+    it("警告ログを出力し成功結果を返すこと", async () => {
+      const consoleSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+      const mockProgressCallback = jest.fn();
+
+      const result = await StorageMigrationService.migrateLocalToSupabase(
+        "test-user-id",
+        mockProgressCallback
+      );
+
+      // 警告ログが出力されたことを確認
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "匿名認証環境では、データ移行は不要です。すべて成功として返します。"
+      );
+
+      // 結果が適切であることを確認
+      expect(result).toEqual({
+        total: 0,
+        processed: 0,
+        failed: 0,
+      });
+
+      // コールバックは呼ばれないことを確認
+      expect(mockProgressCallback).not.toHaveBeenCalled();
+
+      // クリーンアップ
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("migrateLocalDataToSupabase", () => {
+    it("常にtrueを返すこと", async () => {
+      const mockProgressCallback = jest.fn();
+      // migrateLocalToSupabaseのスパイ
+      const migrateLocalToSupabaseSpy = jest
+        .spyOn(StorageMigrationService, "migrateLocalToSupabase")
+        .mockResolvedValue({
+          total: 0,
+          processed: 0,
+          failed: 0,
+        });
+
       const result = await StorageMigrationService.migrateLocalDataToSupabase(
         "test-user-id",
         mockProgressCallback
       );
 
-      expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "データ移行に失敗しました:",
-        expect.any(Error)
+      // migrateLocalToSupabaseが呼ばれたことを確認
+      expect(migrateLocalToSupabaseSpy).toHaveBeenCalledWith(
+        "test-user-id",
+        mockProgressCallback
       );
 
-      consoleSpy.mockRestore();
+      // trueが返されることを確認
+      expect(result).toBe(true);
+
+      // モックの復元
+      migrateLocalToSupabaseSpy.mockRestore();
     });
   });
 });
