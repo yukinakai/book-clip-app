@@ -21,6 +21,7 @@ export function useAuth() {
   // 会員登録検出のための状態
   const [isNewUser, setIsNewUser] = useState(false);
   const [hasLocalData, setHasLocalData] = useState(false);
+  // 匿名認証を使用する場合、データ移行ダイアログは表示しない
   const [showMigrationConfirm, setShowMigrationConfirm] = useState(false);
 
   // データ移行の状態
@@ -153,14 +154,12 @@ export function useAuth() {
       if (!previousUser && newUser && event === "SIGNED_IN") {
         setIsNewUser(true);
 
-        // ローカルデータがあるか確認
-        const hasData = await checkLocalData();
-        setHasLocalData(hasData);
-
-        if (hasData) {
-          // データ移行確認ダイアログを表示
-          setShowMigrationConfirm(true);
-        }
+        // 匿名認証を使用する場合、ローカルデータ確認と移行確認ダイアログ表示は不要
+        // const hasData = await checkLocalData();
+        // setHasLocalData(hasData);
+        // if (hasData) {
+        //   setShowMigrationConfirm(true);
+        // }
       }
 
       // ユーザー状態の変更があった場合の処理
@@ -320,7 +319,13 @@ export function useAuth() {
   };
 
   // 会員登録時のデータ移行処理
+  // 匿名認証を使用する場合、この機能は不要
   const migrateLocalDataToSupabase = async () => {
+    // 匿名認証を使用する場合は常に成功を返す（移行不要）
+    return true;
+
+    // 以下の移行ロジックは使用しない
+    /*
     if (!user) return false;
 
     try {
@@ -348,6 +353,7 @@ export function useAuth() {
       console.error("Data migration error:", error);
       return false;
     }
+    */
   };
 
   return {

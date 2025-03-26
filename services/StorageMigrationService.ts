@@ -28,6 +28,7 @@ export interface MigrationProgress {
 export class StorageMigrationService {
   /**
    * 認証状態に基づいてストレージを初期化
+   * 注意: アプリが匿名認証を使用する場合、すべてのユーザーがSupabaseストレージを使用します
    */
   static async initializeStorage(): Promise<void> {
     try {
@@ -35,28 +36,32 @@ export class StorageMigrationService {
       const user = await AuthService.getCurrentUser();
 
       if (user) {
-        // 認証済みの場合
+        // 認証済みの場合（匿名ユーザーを含む）
         const supabaseStorage = new SupabaseStorageService(user.id);
         BookStorageService.setStorageBackend(supabaseStorage);
         ClipStorageService.setStorageBackend(supabaseStorage);
         BookStorageService.switchToSupabase();
         ClipStorageService.switchToSupabase();
         if (__DEV__) {
-          console.log("Storage initialized");
+          console.log(
+            "Supabaseストレージに初期化しました - ユーザーID:",
+            user.id
+          );
         }
       } else {
-        // 未認証の場合
+        // ユーザーが存在しない場合（初回起動時や認証エラー時）
+        // 匿名認証が成功するまでの一時的な措置としてローカルストレージを使用
         const localStorage = new LocalStorageService();
         BookStorageService.setStorageBackend(localStorage);
         ClipStorageService.setStorageBackend(localStorage);
         BookStorageService.switchToLocal();
         ClipStorageService.switchToLocal();
         if (__DEV__) {
-          console.log("Storage initialized");
+          console.log("一時的にローカルストレージを使用します（匿名認証待ち）");
         }
       }
     } catch (error) {
-      console.error("Failed to initialize storage:", error);
+      console.error("ストレージの初期化に失敗しました:", error);
       // エラー時はローカルストレージにフォールバック
       const localStorage = new LocalStorageService();
       BookStorageService.setStorageBackend(localStorage);
@@ -64,7 +69,9 @@ export class StorageMigrationService {
       BookStorageService.switchToLocal();
       ClipStorageService.switchToLocal();
       if (__DEV__) {
-        console.log("Storage initialized (fallback to local)");
+        console.log(
+          "ストレージ初期化エラー（ローカルストレージにフォールバック）"
+        );
       }
     }
   }
@@ -97,7 +104,22 @@ export class StorageMigrationService {
   }
 
   /**
+   * ローカルデータをクリア
+   */
+  static async clearLocalData(): Promise<void> {
+    try {
+      const localStorage = new LocalStorageService();
+      await localStorage.clearAllData();
+    } catch (error) {
+      console.error("Failed to clear local data:", error);
+      throw error;
+    }
+  }
+
+  /**
    * ローカルデータをSupabaseに移行
+   * 注意: 匿名認証を使用する場合、この機能は不要になります。
+   * すべてのデータは最初からSupabaseに保存されるため、移行は必要ありません。
    */
   static async migrateLocalToSupabase(
     userId: string,
@@ -107,6 +129,9 @@ export class StorageMigrationService {
     processed: number;
     failed: number;
   }> {
+    // 匿名認証を使用する場合、この機能は不要
+    console.warn("匿名認証を使用する場合、データ移行は不要です。");
+
     // 一時的にローカルストレージのインスタンスを作成
     const localStorage = new LocalStorageService();
 
@@ -198,50 +223,33 @@ export class StorageMigrationService {
       console.error("Migration failed:", error);
 
       // エラー状態を通知
-      const progress: MigrationProgress = {
-        total: 0,
-        current: 0,
-        status: "failed",
-        error: error instanceof Error ? error : new Error(String(error)),
-      };
-      if (_progressCallback) _progressCallback(progress);
+      if (_progressCallback) {
+        _progressCallback({
+          total: 0,
+          current: 0,
+          status: "failed",
+          error: error as Error,
+        });
+      }
 
       throw error;
     }
   }
 
   /**
-   * 書籍データをSupabaseに保存し、新しく生成されたIDを返す
+   * 書籍データをSupabaseに保存
    */
   private static async saveBookToSupabase(
     userId: string,
     book: Book
   ): Promise<string | null> {
     try {
-      // ISBNで既存の書籍を検索
-      const { data: existingBooks, error: checkError } = await supabase
-        .from("books")
-        .select("id, isbn")
-        .eq("isbn", book.isbn)
-        .eq("user_id", userId);
-
-      if (checkError) {
-        console.error("書籍の存在確認でエラー:", checkError);
-        throw checkError;
-      }
-
-      // 書籍が存在する場合はそのIDを返す
-      if (existingBooks && existingBooks.length > 0) {
-        return existingBooks[0].id;
-      }
-
-      // 書籍が存在しない場合は新規作成
       const bookData = {
-        user_id: userId,
-        isbn: book.isbn,
         title: book.title,
         author: book.author,
+        isbn: book.isbn,
         cover_image: book.coverImage,
+        user_id: userId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -249,7 +257,7 @@ export class StorageMigrationService {
       const { data, error } = await supabase
         .from("books")
         .insert(bookData)
-        .select()
+        .select("id")
         .single();
 
       if (error) {
@@ -257,8 +265,7 @@ export class StorageMigrationService {
         throw error;
       }
 
-      // 新しく生成されたIDを返す
-      return data.id;
+      return data?.id || null;
     } catch (error) {
       console.error("Error saving book to Supabase:", error);
       throw error;
@@ -292,32 +299,6 @@ export class StorageMigrationService {
     } catch (error) {
       console.error("Error saving clip to Supabase:", error);
       throw error;
-    }
-  }
-
-  /**
-   * ローカルデータをクリア
-   */
-  static async clearLocalData(): Promise<void> {
-    const localStorage = new LocalStorageService();
-    await localStorage.clearAllData();
-  }
-
-  /**
-   * ローカルデータをSupabaseに移行する
-   * @param userId Supabaseのユーザーid
-   * @param _progressCallback 進捗を報告するコールバック関数
-   */
-  static async migrateLocalDataToSupabase(
-    _userId: string,
-    _progressCallback?: (progress: MigrationProgress) => void
-  ): Promise<boolean> {
-    try {
-      await this.migrateLocalToSupabase(_userId, _progressCallback);
-      return true;
-    } catch (error) {
-      console.error("データ移行に失敗しました:", error);
-      return false;
     }
   }
 }
