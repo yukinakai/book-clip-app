@@ -27,21 +27,6 @@ jest.mock("@expo/vector-icons", () => {
   };
 });
 
-// DataMigrationProgressコンポーネントをモック
-jest.mock("../../../components/DataMigrationProgress", () => {
-  const React = require("react");
-  const { View } = require("react-native");
-
-  return {
-    DataMigrationProgress: (props) => {
-      return React.createElement(View, {
-        testID: "data-migration-progress",
-        ...props,
-      });
-    },
-  };
-});
-
 // useRouterをモック
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -66,12 +51,6 @@ const mockUseAuthContext = (isLoggedIn = false) => {
     signOut: jest.fn(),
     deleteAccount: jest.fn(),
     migrateLocalDataToSupabase: jest.fn(),
-    migrationProgress: {
-      total: 0,
-      current: 0,
-      status: "completed",
-    },
-    showMigrationProgress: false,
   });
 };
 
@@ -162,8 +141,6 @@ describe("OthersScreen", () => {
       signOut: mockSignOut,
       deleteAccount: mockDeleteAccount,
       migrateLocalDataToSupabase: jest.fn(),
-      migrationProgress: { total: 0, current: 0, status: "completed" },
-      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -218,8 +195,6 @@ describe("OthersScreen", () => {
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
       migrateLocalDataToSupabase: jest.fn(),
-      migrationProgress: { total: 0, current: 0, status: "completed" },
-      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -253,8 +228,6 @@ describe("OthersScreen", () => {
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
       migrateLocalDataToSupabase: jest.fn(),
-      migrationProgress: { total: 0, current: 0, status: "completed" },
-      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -289,8 +262,6 @@ describe("OthersScreen", () => {
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
       migrateLocalDataToSupabase: jest.fn(),
-      migrationProgress: { total: 0, current: 0, status: "completed" },
-      showMigrationProgress: false,
     });
 
     const mockConsoleError = jest
@@ -337,8 +308,6 @@ describe("OthersScreen", () => {
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
       migrateLocalDataToSupabase: jest.fn(),
-      migrationProgress: { total: 0, current: 0, status: "completed" },
-      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -366,8 +335,6 @@ describe("OthersScreen", () => {
       signOut: jest.fn(),
       deleteAccount: mockDeleteAccount,
       migrateLocalDataToSupabase: jest.fn(),
-      migrationProgress: { total: 0, current: 0, status: "completed" },
-      showMigrationProgress: false,
     });
 
     // console.errorをモック
@@ -439,8 +406,6 @@ describe("OthersScreen", () => {
       signOut: jest.fn(),
       deleteAccount: jest.fn(),
       migrateLocalDataToSupabase: mockMigrateLocalDataToSupabase,
-      migrationProgress: { total: 0, current: 0, status: "completed" },
-      showMigrationProgress: false,
     });
 
     render(<OthersScreen />);
@@ -454,24 +419,5 @@ describe("OthersScreen", () => {
 
     // __DEV__フラグを元に戻す
     global.__DEV__ = originalDev;
-  });
-
-  it("移行進捗ダイアログが表示されること", () => {
-    mockUseAuthContext(true);
-    const { useAuthContext } = require("../../../contexts/AuthContext");
-    useAuthContext.mockReturnValue({
-      user: { id: "test-user-id", email: "test@example.com" },
-      isLoggedIn: true,
-      signOut: jest.fn(),
-      deleteAccount: jest.fn(),
-      migrateLocalDataToSupabase: jest.fn(),
-      migrationProgress: { total: 10, current: 5, status: "migrating" },
-      showMigrationProgress: true,
-    });
-
-    render(<OthersScreen />);
-
-    // 移行進捗ダイアログが表示されること
-    expect(screen.getByTestId("data-migration-progress")).toBeTruthy();
   });
 });
