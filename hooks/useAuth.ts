@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthService, supabase } from "../services/auth";
 import { User } from "@supabase/supabase-js";
-import {
-  StorageMigrationService,
-  MigrationProgress,
-} from "../services/StorageMigrationService";
-import { LocalStorageService } from "../services/LocalStorageService";
+import { StorageMigrationService } from "../services/StorageMigrationService";
 
 // 無視するエラーメッセージのリスト
 const IGNORED_ERROR_MESSAGES = ["auth session missing", "session not found"];
@@ -20,19 +16,6 @@ export function useAuth() {
 
   // 会員登録検出のための状態
   const [isNewUser, setIsNewUser] = useState(false);
-  const [hasLocalData, setHasLocalData] = useState(false);
-  // 匿名認証を使用する場合、データ移行ダイアログは表示しない
-  const [showMigrationConfirm, setShowMigrationConfirm] = useState(false);
-
-  // データ移行の状態
-  const [migrationProgress, setMigrationProgress] = useState<MigrationProgress>(
-    {
-      total: 0,
-      current: 0,
-      status: "completed", // 初期状態では完了状態
-    }
-  );
-  const [showMigrationProgress, setShowMigrationProgress] = useState(false);
 
   // エラーをフィルタリングする関数
   const filterError = (error: Error | null): Error | null => {
@@ -49,19 +32,6 @@ export function useAuth() {
     }
 
     return error;
-  };
-
-  // ローカルデータの存在確認
-  const checkLocalData = async () => {
-    try {
-      const localStorage = new LocalStorageService();
-      const books = await localStorage.getAllBooks();
-      const clips = await localStorage.getAllClips();
-      return books.length > 0 || clips.length > 0;
-    } catch (error) {
-      console.error("Failed to check local data:", error);
-      return false;
-    }
   };
 
   // 自動匿名サインイン
@@ -153,13 +123,6 @@ export function useAuth() {
       // 新規会員登録の検出（ユーザーが不在→存在に変わった場合）
       if (!previousUser && newUser && event === "SIGNED_IN") {
         setIsNewUser(true);
-
-        // 匿名認証を使用する場合、ローカルデータ確認と移行確認ダイアログ表示は不要
-        // const hasData = await checkLocalData();
-        // setHasLocalData(hasData);
-        // if (hasData) {
-        //   setShowMigrationConfirm(true);
-        // }
       }
 
       // ユーザー状態の変更があった場合の処理
@@ -313,47 +276,10 @@ export function useAuth() {
     }
   };
 
-  // データ移行のキャンセル
-  const cancelMigration = () => {
-    setShowMigrationConfirm(false);
-  };
-
   // 会員登録時のデータ移行処理
-  // 匿名認証を使用する場合、この機能は不要
+  // 匿名認証を使用する場合は常に成功を返す
   const migrateLocalDataToSupabase = async () => {
-    // 匿名認証を使用する場合は常に成功を返す（移行不要）
     return true;
-
-    // 以下の移行ロジックは使用しない
-    /*
-    if (!user) return false;
-
-    try {
-      setShowMigrationConfirm(false);
-      setShowMigrationProgress(true);
-
-      const result = await StorageMigrationService.migrateLocalToSupabase(
-        user.id,
-        (progress) => {
-          setMigrationProgress(progress);
-        }
-      );
-
-      // 移行が完了したらローカルデータをクリア
-      if (result.processed > 0) {
-        await StorageMigrationService.clearLocalData();
-      }
-
-      setTimeout(() => {
-        setShowMigrationProgress(false);
-      }, 2000); // 完了メッセージを2秒間表示
-
-      return true;
-    } catch (error) {
-      console.error("Data migration error:", error);
-      return false;
-    }
-    */
   };
 
   return {
@@ -366,13 +292,8 @@ export function useAuth() {
     verifyOtp,
     signOut,
     deleteAccount,
-    migrationProgress,
-    showMigrationProgress,
     migrateLocalDataToSupabase,
     isNewUser,
-    hasLocalData,
-    showMigrationConfirm,
-    cancelMigration,
     isAnonymous,
     linkEmailToUser,
   };
