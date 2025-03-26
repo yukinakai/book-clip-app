@@ -120,7 +120,6 @@
 │   ├── LocalStorageService.ts
 │   ├── OCRService.ts
 │   ├── RakutenBookService.ts
-│   ├── StorageInterface.ts
 │   ├── StorageMigrationService.ts
 │   ├── SupabaseStorageService.ts
 │   ├── auth.ts
@@ -201,4 +200,4 @@
 └── types
     └── env.d.ts
 
-48 directories, 154 files
+48 directories, 153 files
