@@ -13,7 +13,7 @@ export class BookStorageService {
    * 書籍を保存
    * 匿名認証環境ではSupabaseに直接保存されるため、このメソッドは使用されない
    */
-  static async saveBook(book: Book): Promise<void> {
+  static async saveBook(_book: Book): Promise<void> {
     console.warn("匿名認証環境では書籍の保存はSupabaseに直接行われます");
   }
 
@@ -30,7 +30,7 @@ export class BookStorageService {
    * 書籍IDで単一の書籍を取得
    * 匿名認証環境ではSupabaseから直接取得されるため、このメソッドは使用されない
    */
-  static async getBookById(bookId: string): Promise<Book | null> {
+  static async getBookById(_bookId: string): Promise<Book | null> {
     console.warn("匿名認証環境では書籍の取得はSupabaseから直接行われます");
     return null;
   }
@@ -39,7 +39,7 @@ export class BookStorageService {
    * 書籍を更新
    * 匿名認証環境ではSupabaseで直接更新されるため、このメソッドは使用されない
    */
-  static async updateBook(book: Book): Promise<void> {
+  static async updateBook(_book: Book): Promise<void> {
     console.warn("匿名認証環境では書籍の更新はSupabaseで直接行われます");
   }
 
@@ -47,7 +47,7 @@ export class BookStorageService {
    * 書籍を削除
    * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
-  static async removeBook(bookId: string): Promise<void> {
+  static async removeBook(_bookId: string): Promise<void> {
     console.warn("匿名認証環境では書籍の削除はSupabaseで直接行われます");
   }
 
@@ -55,7 +55,7 @@ export class BookStorageService {
    * 書籍を削除（エイリアス）
    * 匿名認証環境ではSupabaseで直接削除されるため、このメソッドは使用されない
    */
-  static async deleteBook(bookId: string): Promise<void> {
+  static async deleteBook(_bookId: string): Promise<void> {
     console.warn("匿名認証環境では書籍の削除はSupabaseで直接行われます");
   }
 

@@ -24,7 +24,7 @@ describe("BookStorageService", () => {
     isbn: "9784000000000",
   };
 
-  const mockBooks: Book[] = [
+  const _mockBooks: Book[] = [
     mockBook,
     {
       id: "test-id-2",
