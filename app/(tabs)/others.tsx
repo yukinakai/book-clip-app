@@ -13,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuthContext } from "@/contexts/AuthContext";
 import WithdrawConfirmDialog from "@/components/WithdrawConfirmDialog";
-import { DataMigrationProgress } from "../../components/DataMigrationProgress";
 
 // メニュー項目の型定義
 type MenuItem = {
@@ -25,14 +24,8 @@ type MenuItem = {
 export default function OthersScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
-  const {
-    user,
-    signOut,
-    deleteAccount,
-    migrateLocalDataToSupabase,
-    migrationProgress,
-    showMigrationProgress,
-  } = useAuthContext();
+  const { user, signOut, deleteAccount, migrateLocalDataToSupabase } =
+    useAuthContext();
   const [withdrawDialogVisible, setWithdrawDialogVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -225,12 +218,6 @@ export default function OthersScreen() {
         onClose={() => setWithdrawDialogVisible(false)}
         onConfirm={handleWithdraw}
         loading={isLoading}
-      />
-
-      {/* データ移行進捗ダイアログ */}
-      <DataMigrationProgress
-        visible={showMigrationProgress}
-        progress={migrationProgress}
       />
     </SafeAreaView>
   );

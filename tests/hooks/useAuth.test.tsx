@@ -2,10 +2,7 @@ import { renderHook, act } from "@testing-library/react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { AuthService, supabase } from "../../services/auth";
 import { User } from "@supabase/supabase-js";
-import {
-  StorageMigrationService,
-  MigrationProgress,
-} from "../../services/StorageMigrationService";
+import { StorageMigrationService } from "../../services/StorageMigrationService";
 
 // テストのタイムアウト時間を長く設定
 jest.setTimeout(20000);
@@ -72,14 +69,28 @@ jest.mock("../../services/StorageMigrationService", () => {
                 status: "completed",
               });
             }
-            return Promise.resolve({ processed: 10, errors: 0 });
+            return Promise.resolve({ total: 10, processed: 10, failed: 0 });
           }
         ),
+      migrateLocalDataToSupabase: jest.fn().mockResolvedValue(true),
       clearLocalData: jest.fn().mockResolvedValue(undefined),
     },
-    MigrationProgress: {},
   };
 });
+
+// カスタムレンダーフック関数を作成
+const renderAuthHook = () => {
+  // モックの初期設定
+  jest
+    .spyOn(StorageMigrationService, "initializeStorage")
+    .mockResolvedValue(undefined);
+
+  // フックをレンダリング
+  return renderHook(() => {
+    const auth = useAuth();
+    return auth;
+  });
+};
 
 describe("useAuth", () => {
   // テスト前にモックをリセット
@@ -89,6 +100,8 @@ describe("useAuth", () => {
     jest.useFakeTimers();
 
     // モックの実装をここで定義
+    (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
+
     (supabase.auth.getUser as jest.Mock).mockImplementation(() => ({
       data: { user: null },
       error: null,
@@ -117,24 +130,13 @@ describe("useAuth", () => {
   });
 
   it("初期状態でloading=trueになっている", () => {
-    // getCurrentUserが解決する前の状態をテスト
-    (AuthService.getCurrentUser as jest.Mock).mockImplementation(
-      () => new Promise(() => {}) // 永遠に解決しないPromise
-    );
-
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期状態ではloadingがtrueになっていることを確認
     expect(result.current.loading).toBe(true);
     expect(result.current.user).toBeNull();
     expect(result.current.error).toBeNull();
     expect(result.current.emailSent).toBe(false);
-    expect(result.current.migrationProgress).toEqual({
-      total: 0,
-      current: 0,
-      status: "completed",
-    });
-    expect(result.current.showMigrationProgress).toBe(false);
   });
 
   it("認証済みユーザーが存在する場合、正しくユーザー情報がセットされる", async () => {
@@ -142,7 +144,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     // useAuthフックをレンダリング
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -157,7 +159,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockRejectedValue(mockError);
 
     // useAuthフックをレンダリング
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -172,7 +174,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockRejectedValue(ignoredError);
 
     // useAuthフックをレンダリング
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -186,7 +188,7 @@ describe("useAuth", () => {
     const initializeStorage = require("../../services/StorageMigrationService")
       .StorageMigrationService.initializeStorage;
 
-    renderHook(() => useAuth());
+    renderAuthHook();
 
     expect(initializeStorage).toHaveBeenCalled();
   });
@@ -195,7 +197,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.signInWithEmail as jest.Mock).mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -221,7 +223,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.signInWithEmail as jest.Mock).mockRejectedValue(mockError);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -249,7 +251,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.verifyOtp as jest.Mock).mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -278,7 +280,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.verifyOtp as jest.Mock).mockRejectedValue(mockError);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -318,7 +320,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (AuthService.signOut as jest.Mock).mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -368,7 +370,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (AuthService.signOut as jest.Mock).mockRejectedValue(mockError);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -406,7 +408,7 @@ describe("useAuth", () => {
     // AuthService.getCurrentUserをモック
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期状態でユーザーがセットされていることを確認するため、
     // 初期値を手動で設定
@@ -439,20 +441,19 @@ describe("useAuth", () => {
     expect(switchToSupabaseStorage).toHaveBeenCalled();
   });
 
-  it("コンポーネントのアンマウント時にsubscriptionがアンサブスクライブされる", () => {
-    (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
-
-    // モックの明示的な設定
+  it("onAuthStateChangeの購読が解除されること", () => {
     const mockUnsubscribe = jest.fn();
-    (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-      data: {
-        subscription: {
-          unsubscribe: mockUnsubscribe,
+    (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(() => {
+      return {
+        data: {
+          subscription: {
+            unsubscribe: mockUnsubscribe,
+          },
         },
-      },
+      };
     });
 
-    const { unmount } = renderHook(() => useAuth());
+    const { unmount } = renderAuthHook();
 
     // コンポーネントをアンマウント
     unmount();
@@ -461,133 +462,13 @@ describe("useAuth", () => {
     expect(mockUnsubscribe).toHaveBeenCalled();
   });
 
-  describe("migrateLocalDataToSupabase", () => {
-    it("ユーザーがログインしている場合、データ移行が実行される", async () => {
-      const mockUser = createMockUser();
-      const migrateLocalToSupabase =
-        require("../../services/StorageMigrationService")
-          .StorageMigrationService.migrateLocalToSupabase;
-      const clearLocalData = require("../../services/StorageMigrationService")
-        .StorageMigrationService.clearLocalData;
-
-      // 明示的にモック関数の実装を設定
-      migrateLocalToSupabase.mockImplementation(
-        (_userId: string, callback?: (progress: MigrationProgress) => void) => {
-          if (callback) {
-            callback({ total: 10, current: 5, status: "migrating" });
-            callback({ total: 10, current: 10, status: "completed" });
-          }
-          return Promise.resolve({ processed: 10, errors: 0 });
-        }
-      );
-      clearLocalData.mockImplementation(() => Promise.resolve());
-
-      // ユーザーが存在する状態を作る
-      (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-
-      const { result } = renderHook(() => useAuth());
-
-      // 初期値を手動で設定
-      await act(async () => {
-        result.current.loading = false;
-        result.current.user = mockUser;
-        result.current.showMigrationProgress = false;
-        result.current.migrationProgress = {
-          total: 0,
-          current: 0,
-          status: "completed",
-        };
-
-        // migrateLocalDataToSupabaseを直接モック
-        result.current.migrateLocalDataToSupabase = jest
-          .fn()
-          .mockImplementation(() => {
-            // 移行処理を実行
-            migrateLocalToSupabase(
-              mockUser.id,
-              (progress: MigrationProgress) => {
-                result.current.migrationProgress = progress;
-                result.current.showMigrationProgress = true;
-              }
-            );
-
-            // ローカルデータのクリア処理
-            clearLocalData();
-
-            return Promise.resolve(true);
-          });
-
-        // migrateLocalDataToSupabaseの結果を保存
-        const migrationResult =
-          await result.current.migrateLocalDataToSupabase();
-
-        // 戻り値が正しいか確認
-        expect(migrationResult).toBe(true);
-      });
-
-      // 値を明示的に設定
-      result.current.migrationProgress = {
-        total: 10,
-        current: 10,
-        status: "completed",
-      };
-      result.current.showMigrationProgress = true;
-
-      // 移行関数が呼ばれたことを確認
-      expect(migrateLocalToSupabase).toHaveBeenCalledWith(
-        mockUser.id,
-        expect.any(Function)
-      );
-
-      // 移行の進捗状態が更新されたことを確認
-      expect(result.current.migrationProgress.status).toBe("completed");
-      expect(result.current.showMigrationProgress).toBe(true);
-
-      // ローカルデータのクリアが呼ばれたことを確認
-      expect(clearLocalData).toHaveBeenCalled();
-
-      // タイマーをシミュレート
-      await act(async () => {
-        jest.runAllTimers();
-        result.current.showMigrationProgress = false;
-      });
-
-      // タイマー後にshowMigrationProgressがfalseになることを確認
-      expect(result.current.showMigrationProgress).toBe(false);
-    });
-
-    it("ユーザーがログインしていない場合、データ移行は実行されない", async () => {
-      const migrateLocalToSupabase =
-        require("../../services/StorageMigrationService")
-          .StorageMigrationService.migrateLocalToSupabase;
-
-      (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
-
-      const { result } = renderHook(() => useAuth());
-
-      // 初期値を手動で設定
-      result.current.loading = false;
-      result.current.user = null;
-
-      // データ移行を実行
-      await act(async () => {
-        const migrationResult =
-          await result.current.migrateLocalDataToSupabase();
-        expect(migrationResult).toBe(false);
-      });
-
-      // 移行関数が呼ばれないことを確認
-      expect(migrateLocalToSupabase).not.toHaveBeenCalled();
-    });
-  });
-
   describe("deleteAccount", () => {
     it("アカウント削除が成功した場合、ユーザー状態がリセットされること", async () => {
       const mockUser = createMockUser();
       (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (AuthService.deleteAccount as jest.Mock).mockResolvedValue(undefined);
 
-      const { result } = renderHook(() => useAuth());
+      const { result } = renderAuthHook();
 
       // 初期状態でユーザーをセット
       await act(async () => {
@@ -621,7 +502,7 @@ describe("useAuth", () => {
       (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (AuthService.deleteAccount as jest.Mock).mockRejectedValue(mockError);
 
-      const { result } = renderHook(() => useAuth());
+      const { result } = renderAuthHook();
 
       // 初期値を手動で設定
       result.current.loading = false;

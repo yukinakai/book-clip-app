@@ -9,6 +9,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // 認証サービスクラス
 export class AuthService {
+  // 匿名サインイン
+  static async signInAnonymously() {
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("匿名サインインエラー:", error);
+      throw error;
+    }
+  }
+
   // メールによるパスワードレス認証（OTP）の送信
   static async signInWithEmail(email: string) {
     try {
@@ -64,6 +77,21 @@ export class AuthService {
       return user;
     } catch (error) {
       console.error("ユーザー取得エラー:", error);
+      throw error;
+    }
+  }
+
+  // アノニマスユーザーにメールアドレスを紐付ける
+  static async linkEmailToAnonymousUser(email: string) {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        email,
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("メールアドレス紐付けエラー:", error);
       throw error;
     }
   }

@@ -1,11 +1,10 @@
 import { Book, Clip } from "../constants/MockData";
-import { StorageInterface } from "./StorageInterface";
 import { supabase } from "./auth";
 
 /**
  * Supabaseを使用したストレージの実装
  */
-export class SupabaseStorageService implements StorageInterface {
+export class SupabaseStorageService {
   private readonly BOOKS_TABLE = "books";
   private readonly CLIPS_TABLE = "clips";
   private readonly userId: string;

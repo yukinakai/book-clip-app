@@ -21,9 +21,10 @@ describe("BookStorageService", () => {
     title: "テスト書籍",
     author: "テスト著者",
     coverImage: "https://example.com/cover.jpg",
+    isbn: "9784000000000",
   };
 
-  const mockBooks: Book[] = [
+  const _mockBooks: Book[] = [
     mockBook,
     {
       id: "test-id-2",
@@ -39,222 +40,129 @@ describe("BookStorageService", () => {
     },
   ];
 
-  describe("saveBook", () => {
-    it("書籍が正常に保存されること", async () => {
-      // AsyncStorage.getItemが空の配列を返すようにモック
-      AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
+  describe("匿名認証環境向けメソッド", () => {
+    it("saveBookは警告を出力して何も行わないこと", async () => {
+      const consoleSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
 
       await BookStorageService.saveBook(mockBook);
 
-      // setItemが正しいキーと値で呼ばれたことを確認
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@books",
-        JSON.stringify([mockBook])
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "匿名認証環境では書籍の保存はSupabaseに直接行われます"
       );
-    });
-
-    it("既存の書籍がある場合、追加して保存されること", async () => {
-      // 既存の書籍がある状態をモック
-      const existingBooks = [
-        {
-          id: "existing-id",
-          title: "既存の書籍",
-          author: "既存の著者",
-          coverImage: "https://example.com/existing.jpg",
-        },
-      ];
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockResolvedValue(JSON.stringify(existingBooks));
-
-      await BookStorageService.saveBook(mockBook);
-
-      // 既存の書籍と新しい書籍が結合されたことを確認
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@books",
-        JSON.stringify([...existingBooks, mockBook])
-      );
-    });
-
-    it("IDが重複する書籍は追加されないこと", async () => {
-      // 既存の書籍がある状態をモック
-      const existingBooks = [
-        {
-          id: "test-id-1", // 新しく追加する書籍と同じID
-          title: "既存の書籍",
-          author: "既存の著者",
-          coverImage: "https://example.com/existing.jpg",
-        },
-      ];
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockResolvedValue(JSON.stringify(existingBooks));
-
-      await BookStorageService.saveBook(mockBook);
-
-      // setItemが呼ばれないことを確認（重複書籍のため）
       expect(AsyncStorage.setItem).not.toHaveBeenCalled();
-    });
-
-    it("保存中にエラーが発生した場合、エラーがスローされること", async () => {
-      // AsyncStorage.getItemがエラーをスローするようにモック
-      const errorMessage = "保存中にエラーが発生しました";
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockRejectedValue(new Error(errorMessage));
-
-      // コンソールエラーをモック
-      const consoleSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
-      await expect(BookStorageService.saveBook(mockBook)).rejects.toThrow();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Error saving book:",
-        expect.any(Error)
-      );
 
       consoleSpy.mockRestore();
     });
-  });
 
-  describe("getAllBooks", () => {
-    it("保存されているすべての書籍を取得できること", async () => {
-      // モックデータがAsyncStorageから返されるようにセット
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockResolvedValue(JSON.stringify(mockBooks));
-
-      const books = await BookStorageService.getAllBooks();
-
-      // getAllBooksがモックデータと同じ結果を返すことを確認
-      expect(books).toEqual(mockBooks);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
-    });
-
-    it("保存されている書籍がない場合、空の配列を返すこと", async () => {
-      AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
-
-      const books = await BookStorageService.getAllBooks();
-
-      expect(books).toEqual([]);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith("@books");
-    });
-
-    it("取得中にエラーが発生した場合、空の配列を返し、エラーをログ出力すること", async () => {
-      // AsyncStorage.getItemがエラーをスローするようにモック
-      const errorMessage = "取得中にエラーが発生しました";
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockRejectedValue(new Error(errorMessage));
-
-      // コンソールエラーをモック
+    it("getAllBooksは警告を出力して空配列を返すこと", async () => {
       const consoleSpy = jest
-        .spyOn(console, "error")
+        .spyOn(console, "warn")
         .mockImplementation(() => {});
 
-      const books = await BookStorageService.getAllBooks();
+      const result = await BookStorageService.getAllBooks();
 
-      expect(books).toEqual([]);
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Error getting books:",
-        expect.any(Error)
+        "匿名認証環境では書籍の取得はSupabaseから直接行われます"
       );
+      expect(result).toEqual([]);
+      expect(AsyncStorage.getItem).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
-  });
 
-  describe("removeBook", () => {
-    it("指定したIDの書籍が削除されること", async () => {
-      // モックデータがAsyncStorageから返されるようにセット
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockResolvedValue(JSON.stringify(mockBooks));
-
-      const bookIdToRemove = "test-id-1";
-      await BookStorageService.removeBook(bookIdToRemove);
-
-      // 削除後の書籍リストを確認
-      const expectedBooks = mockBooks.filter(
-        (book) => book.id !== bookIdToRemove
-      );
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        "@books",
-        JSON.stringify(expectedBooks)
-      );
-    });
-
-    it("削除中にエラーが発生した場合、エラーがスローされること", async () => {
-      // AsyncStorage.getItemがエラーをスローするようにモック
-      const errorMessage = "削除中にエラーが発生しました";
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockRejectedValue(new Error(errorMessage));
-
-      // コンソールエラーをモック
+    it("getBookByIdは警告を出力してnullを返すこと", async () => {
       const consoleSpy = jest
-        .spyOn(console, "error")
+        .spyOn(console, "warn")
         .mockImplementation(() => {});
 
-      await expect(BookStorageService.removeBook("test-id")).rejects.toThrow();
+      const result = await BookStorageService.getBookById("test-id");
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Error removing book:",
-        expect.any(Error)
+        "匿名認証環境では書籍の取得はSupabaseから直接行われます"
       );
+      expect(result).toBeNull();
+      expect(AsyncStorage.getItem).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
-  });
 
-  describe("deleteBook", () => {
-    it("deleteBookはremoveBookのエイリアスとして機能すること", async () => {
-      // AsyncStorageのモックをリセット
-      AsyncStorage.getItem = jest
-        .fn()
-        .mockResolvedValue(JSON.stringify(mockBooks));
+    it("updateBookは警告を出力して何も行わないこと", async () => {
+      const consoleSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
 
-      // removeBookメソッドをスパイ
-      const removeBookSpy = jest.spyOn(BookStorageService, "removeBook");
+      await BookStorageService.updateBook(mockBook);
 
-      const bookId = "test-id-1";
-      await BookStorageService.deleteBook(bookId);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "匿名認証環境では書籍の更新はSupabaseで直接行われます"
+      );
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
 
-      // removeBookが同じ引数で呼ばれたことを確認
-      expect(removeBookSpy).toHaveBeenCalledWith(bookId);
+      consoleSpy.mockRestore();
+    });
 
-      removeBookSpy.mockRestore();
+    it("removeBookは警告を出力して何も行わないこと", async () => {
+      const consoleSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      await BookStorageService.removeBook("test-id");
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "匿名認証環境では書籍の削除はSupabaseで直接行われます"
+      );
+      expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+
+    it("deleteBookは警告を出力して何も行わないこと", async () => {
+      const consoleSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      await BookStorageService.deleteBook("test-id");
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "匿名認証環境では書籍の削除はSupabaseで直接行われます"
+      );
+      expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
     });
   });
 
   describe("setLastClipBook", () => {
-    it("最後に使用した書籍が正常に保存されること", async () => {
+    it("最後に選択された書籍が正常に保存されること", async () => {
       await BookStorageService.setLastClipBook(mockBook);
 
-      // setItemが正しいキーと値で呼ばれたことを確認
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
         "@last_clip_book",
         JSON.stringify(mockBook)
       );
     });
 
-    it("保存中にエラーが発生した場合、エラーがスローされること", async () => {
-      // AsyncStorage.setItemがエラーをスローするようにモック
-      const errorMessage = "保存中にエラーが発生しました";
+    it("保存中にエラーが発生した場合もエラーをスローせず、コンソールに出力すること", async () => {
+      // setItemがエラーを投げるよう設定
       AsyncStorage.setItem = jest
         .fn()
-        .mockRejectedValue(new Error(errorMessage));
+        .mockRejectedValue(new Error("保存エラー"));
 
       // コンソールエラーをモック
       const consoleSpy = jest
         .spyOn(console, "error")
         .mockImplementation(() => {});
 
+      // エラーがスローされないことを確認
       await expect(
         BookStorageService.setLastClipBook(mockBook)
-      ).rejects.toThrow();
+      ).resolves.not.toThrow();
+
+      // エラーがコンソールに出力されることを確認
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Error setting last clip book:",
+        "Error saving last clip book:",
         expect.any(Error)
       );
 
@@ -263,34 +171,35 @@ describe("BookStorageService", () => {
   });
 
   describe("getLastClipBook", () => {
-    it("最後に使用した書籍を取得できること", async () => {
-      // モックデータがAsyncStorageから返されるようにセット
+    it("保存されている最後のクリップ書籍を取得できること", async () => {
+      // 保存されている書籍データをモック
       AsyncStorage.getItem = jest
         .fn()
         .mockResolvedValue(JSON.stringify(mockBook));
 
       const book = await BookStorageService.getLastClipBook();
 
-      // getLastClipBookがモックデータと同じ結果を返すことを確認
+      // 正しい書籍が返されることを確認
       expect(book).toEqual(mockBook);
       expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
     });
 
     it("保存されている書籍がない場合、nullを返すこと", async () => {
+      // 保存データなしをモック
       AsyncStorage.getItem = jest.fn().mockResolvedValue(null);
 
       const book = await BookStorageService.getLastClipBook();
 
+      // nullが返されることを確認
       expect(book).toBeNull();
       expect(AsyncStorage.getItem).toHaveBeenCalledWith("@last_clip_book");
     });
 
     it("取得中にエラーが発生した場合、nullを返し、エラーをログ出力すること", async () => {
-      // AsyncStorage.getItemがエラーをスローするようにモック
-      const errorMessage = "取得中にエラーが発生しました";
+      // getItemがエラーを投げるよう設定
       AsyncStorage.getItem = jest
         .fn()
-        .mockRejectedValue(new Error(errorMessage));
+        .mockRejectedValue(new Error("取得エラー"));
 
       // コンソールエラーをモック
       const consoleSpy = jest
@@ -299,6 +208,7 @@ describe("BookStorageService", () => {
 
       const book = await BookStorageService.getLastClipBook();
 
+      // nullが返され、エラーログが出力されることを確認
       expect(book).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith(
         "Error getting last clip book:",

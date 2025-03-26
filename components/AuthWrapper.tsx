@@ -1,37 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useAuthContext } from "../contexts/AuthContext";
-import DataMigrationConfirmDialog from "./DataMigrationConfirmDialog";
-import { DataMigrationProgress } from "./DataMigrationProgress";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
 }
 
 export function AuthWrapper({ children }: AuthWrapperProps) {
-  const {
-    user,
-    loading,
-    showMigrationConfirm,
-    hasLocalData,
-    cancelMigration,
-    migrateLocalDataToSupabase,
-    migrationProgress,
-    showMigrationProgress,
-  } = useAuthContext();
-  const [migrationLoading, setMigrationLoading] = useState(false);
-
-  // データ移行処理
-  const handleMigrateData = async () => {
-    setMigrationLoading(true);
-    try {
-      await migrateLocalDataToSupabase();
-    } catch (error) {
-      console.error("データ移行エラー:", error);
-    } finally {
-      setMigrationLoading(false);
-    }
-  };
+  const { user, loading } = useAuthContext();
 
   if (loading) {
     return (
@@ -46,28 +22,13 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     <>
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child, {
+          return React.cloneElement(child as React.ReactElement<any>, {
             isLoggedIn: !!user,
             user: user,
           });
         }
         return child;
       })}
-
-      {/* データ移行確認ダイアログ */}
-      <DataMigrationConfirmDialog
-        visible={showMigrationConfirm}
-        onClose={cancelMigration}
-        onConfirm={handleMigrateData}
-        loading={migrationLoading}
-        hasLocalData={hasLocalData}
-      />
-
-      {/* データ移行進捗ダイアログ */}
-      <DataMigrationProgress
-        visible={showMigrationProgress}
-        progress={migrationProgress}
-      />
     </>
   );
 }

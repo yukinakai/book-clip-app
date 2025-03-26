@@ -87,11 +87,19 @@ const createSearchSvg = (isDark: boolean) => {
 // オンボーディング完了のフラグをAsyncStorageに保存するキー
 const ONBOARDING_COMPLETE_KEY = "@bookclip:onboarding_complete";
 
+// スライドの型を定義
+type Slide = {
+  id: string;
+  title: string;
+  description: string;
+  svgContent: string;
+};
+
 export default function OnboardingScreen() {
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useSharedValue(0);
-  const flatListRef = useRef(null);
+  const flatListRef = useRef<Animated.FlatList<Slide>>(null);
 
   // カラーテーマを取得
   const colorScheme = useColorScheme();
@@ -152,7 +160,7 @@ export default function OnboardingScreen() {
     }
   };
 
-  const renderItem = ({ item, _index }) => {
+  const renderItem = ({ item }: { item: Slide }) => {
     return (
       <View style={[styles.slide, { width }]}>
         <SvgXml xml={item.svgContent} width={200} height={200} />
