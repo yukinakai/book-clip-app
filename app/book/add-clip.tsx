@@ -201,7 +201,7 @@ export default function AddClipScreen() {
     try {
       await ClipStorageService.saveClip({
         id: Date.now().toString(),
-        bookId: selectedBook.id,
+        bookId: selectedBook.id!,
         text: clipText.trim(),
         page,
         createdAt: new Date().toISOString(),
