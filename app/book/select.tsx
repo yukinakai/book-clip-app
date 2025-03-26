@@ -125,7 +125,7 @@ export default function BookSelectScreen() {
       <FlatList
         data={books}
         renderItem={renderBookItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id || `book-${index}`}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
