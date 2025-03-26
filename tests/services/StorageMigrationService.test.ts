@@ -200,51 +200,68 @@ describe("StorageMigrationService", () => {
 
   describe("clearLocalData", () => {
     it("LocalStorageService.clearAllDataが呼ばれること", async () => {
+      // localStorageServiceのフィールドをモック
       const mockClearAllData = jest.fn().mockResolvedValue(undefined);
-      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
-        clearAllData: mockClearAllData,
-      }));
+      const originalService = StorageMigrationService["localStorageService"];
 
-      const consoleSpy = jest
-        .spyOn(console, "log")
-        .mockImplementation(() => {});
+      try {
+        // 元のserviceを退避して、モック版に差し替え
+        StorageMigrationService["localStorageService"] = {
+          clearAllData: mockClearAllData,
+        } as any;
 
-      await StorageMigrationService.clearLocalData();
+        const consoleSpy = jest
+          .spyOn(console, "log")
+          .mockImplementation(() => {});
 
-      // clearAllDataが呼ばれることを確認
-      expect(mockClearAllData).toHaveBeenCalled();
-      // ログが出力されたことを確認
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "最後に選択した書籍情報をクリアしました"
-      );
+        await StorageMigrationService.clearLocalData();
 
-      // クリーンアップ
-      consoleSpy.mockRestore();
+        // clearAllDataが呼ばれることを確認
+        expect(mockClearAllData).toHaveBeenCalled();
+        // ログが出力されたことを確認
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "最後に選択した書籍情報をクリアしました"
+        );
+
+        // クリーンアップ
+        consoleSpy.mockRestore();
+      } finally {
+        // 元のserviceに戻す
+        StorageMigrationService["localStorageService"] = originalService;
+      }
     });
 
     it("エラーが発生した場合、エラーログを出力しエラーを再スローすること", async () => {
       const mockError = new Error("Clear data failed");
       const mockClearAllData = jest.fn().mockRejectedValue(mockError);
-      (LocalStorageService as jest.Mock).mockImplementationOnce(() => ({
-        clearAllData: mockClearAllData,
-      }));
+      const originalService = StorageMigrationService["localStorageService"];
 
-      const consoleSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
+      try {
+        // 元のserviceを退避して、モック版に差し替え
+        StorageMigrationService["localStorageService"] = {
+          clearAllData: mockClearAllData,
+        } as any;
 
-      await expect(StorageMigrationService.clearLocalData()).rejects.toThrow(
-        mockError
-      );
+        const consoleSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
 
-      // エラーログが出力されたことを確認
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "ローカルデータのクリアに失敗しました:",
-        mockError
-      );
+        await expect(StorageMigrationService.clearLocalData()).rejects.toThrow(
+          mockError
+        );
 
-      // クリーンアップ
-      consoleSpy.mockRestore();
+        // エラーログが出力されたことを確認
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "ローカルデータのクリアに失敗しました:",
+          mockError
+        );
+
+        // クリーンアップ
+        consoleSpy.mockRestore();
+      } finally {
+        // 元のserviceに戻す
+        StorageMigrationService["localStorageService"] = originalService;
+      }
     });
   });
 

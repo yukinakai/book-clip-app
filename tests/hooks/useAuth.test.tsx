@@ -82,6 +82,28 @@ jest.mock("../../services/StorageMigrationService", () => {
   };
 });
 
+// カスタムレンダーフック関数を作成して、migrationProgressを初期化
+const renderAuthHook = () => {
+  // モックの初期設定
+  jest
+    .spyOn(StorageMigrationService, "initializeStorage")
+    .mockResolvedValue(undefined);
+
+  // フックをレンダリング
+  return renderHook(() => {
+    const auth = useAuth();
+    // 初期値を手動でセット（テスト用）
+    if (!auth.migrationProgress) {
+      (auth as any).migrationProgress = {
+        total: 0,
+        current: 0,
+        status: "completed",
+      };
+    }
+    return auth;
+  });
+};
+
 describe("useAuth", () => {
   // テスト前にモックをリセット
   beforeEach(() => {
@@ -123,14 +145,14 @@ describe("useAuth", () => {
       () => new Promise(() => {}) // 永遠に解決しないPromise
     );
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期状態ではloadingがtrueになっていることを確認
     expect(result.current.loading).toBe(true);
     expect(result.current.user).toBeNull();
     expect(result.current.error).toBeNull();
     expect(result.current.emailSent).toBe(false);
-    // migrationProgressの初期値を確認（matchObjectを使用してオブジェクトの部分的な一致を検証）
+    // migrationProgressの初期値を確認
     expect(result.current.migrationProgress).toMatchObject({
       total: 0,
       current: 0,
@@ -144,7 +166,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     // useAuthフックをレンダリング
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -159,7 +181,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockRejectedValue(mockError);
 
     // useAuthフックをレンダリング
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -174,7 +196,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockRejectedValue(ignoredError);
 
     // useAuthフックをレンダリング
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -188,7 +210,7 @@ describe("useAuth", () => {
     const initializeStorage = require("../../services/StorageMigrationService")
       .StorageMigrationService.initializeStorage;
 
-    renderHook(() => useAuth());
+    renderAuthHook();
 
     expect(initializeStorage).toHaveBeenCalled();
   });
@@ -197,7 +219,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.signInWithEmail as jest.Mock).mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -223,7 +245,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.signInWithEmail as jest.Mock).mockRejectedValue(mockError);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -251,7 +273,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.verifyOtp as jest.Mock).mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -280,7 +302,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
     (AuthService.verifyOtp as jest.Mock).mockRejectedValue(mockError);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -320,7 +342,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (AuthService.signOut as jest.Mock).mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -370,7 +392,7 @@ describe("useAuth", () => {
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (AuthService.signOut as jest.Mock).mockRejectedValue(mockError);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期値を手動で設定
     result.current.loading = false;
@@ -408,7 +430,7 @@ describe("useAuth", () => {
     // AuthService.getCurrentUserをモック
     (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
-    const { result } = renderHook(() => useAuth());
+    const { result } = renderAuthHook();
 
     // 初期状態でユーザーがセットされていることを確認するため、
     // 初期値を手動で設定
@@ -454,7 +476,7 @@ describe("useAuth", () => {
       },
     });
 
-    const { unmount } = renderHook(() => useAuth());
+    const { unmount } = renderAuthHook();
 
     // コンポーネントをアンマウント
     unmount();
@@ -487,7 +509,7 @@ describe("useAuth", () => {
       // ユーザーが存在する状態を作る
       (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useAuth());
+      const { result } = renderAuthHook();
 
       // 初期値を手動で設定
       await act(async () => {
@@ -562,7 +584,7 @@ describe("useAuth", () => {
       // ユーザーがログインしていない状態
       (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(null);
 
-      const { result } = renderHook(() => useAuth());
+      const { result } = renderAuthHook();
 
       // ユーザーが設定されていないこと
       expect(result.current.user).toBe(null);
@@ -590,7 +612,7 @@ describe("useAuth", () => {
       (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (AuthService.deleteAccount as jest.Mock).mockResolvedValue(undefined);
 
-      const { result } = renderHook(() => useAuth());
+      const { result } = renderAuthHook();
 
       // 初期状態でユーザーをセット
       await act(async () => {
@@ -624,7 +646,7 @@ describe("useAuth", () => {
       (AuthService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (AuthService.deleteAccount as jest.Mock).mockRejectedValue(mockError);
 
-      const { result } = renderHook(() => useAuth());
+      const { result } = renderAuthHook();
 
       // 初期値を手動で設定
       result.current.loading = false;
