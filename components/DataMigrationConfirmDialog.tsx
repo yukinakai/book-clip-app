@@ -55,7 +55,7 @@ export default function DataMigrationConfirmDialog({
               style={[
                 styles.button,
                 styles.cancelButton,
-                { borderColor: colors.border },
+                { borderColor: colors.divider },
               ]}
               onPress={onClose}
               disabled={loading}

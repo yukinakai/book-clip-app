@@ -120,7 +120,6 @@
 │   ├── LocalStorageService.ts
 │   ├── OCRService.ts
 │   ├── RakutenBookService.ts
-│   ├── StorageInterface.ts
 │   ├── StorageMigrationService.ts
 │   ├── SupabaseStorageService.ts
 │   ├── auth.ts
@@ -146,8 +145,10 @@
 │           └── functions
 ├── tests
 │   ├── __mocks__
-│   │   └── @react-native-async-storage
-│   │       └── async-storage.js
+│   │   ├── @react-native-async-storage
+│   │   │   └── async-storage.js
+│   │   └── @supabase
+│   │       └── supabase-js.ts
 │   ├── app
 │   │   ├── (auth)
 │   │   │   └── login.test.tsx
@@ -191,7 +192,6 @@
 │   │   ├── LocalStorageService.test.ts
 │   │   ├── OCRService.test.ts
 │   │   ├── RakutenBookService.test.ts
-│   │   ├── StorageInterface.test.ts
 │   │   ├── StorageMigrationService.test.ts
 │   │   ├── SupabaseStorageService.test.ts
 │   │   └── auth.test.ts
@@ -201,4 +201,4 @@
 └── types
     └── env.d.ts
 
-48 directories, 154 files
+49 directories, 153 files

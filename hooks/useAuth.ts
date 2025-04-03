@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthService, supabase } from "../services/auth";
 import { User } from "@supabase/supabase-js";
-import {
-  StorageMigrationService,
-  MigrationProgress,
-} from "../services/StorageMigrationService";
-import { LocalStorageService } from "../services/LocalStorageService";
+import { StorageMigrationService } from "../services/StorageMigrationService";
 
 // 無視するエラーメッセージのリスト
 const IGNORED_ERROR_MESSAGES = ["auth session missing", "session not found"];
@@ -16,21 +12,10 @@ export function useAuth() {
   const [error, setError] = useState<Error | null>(null);
   const [emailSent, setEmailSent] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   // 会員登録検出のための状態
   const [isNewUser, setIsNewUser] = useState(false);
-  const [hasLocalData, setHasLocalData] = useState(false);
-  const [showMigrationConfirm, setShowMigrationConfirm] = useState(false);
-
-  // データ移行の状態
-  const [migrationProgress, setMigrationProgress] = useState<MigrationProgress>(
-    {
-      total: 0,
-      current: 0,
-      status: "completed", // 初期状態では完了状態
-    }
-  );
-  const [showMigrationProgress, setShowMigrationProgress] = useState(false);
 
   // エラーをフィルタリングする関数
   const filterError = (error: Error | null): Error | null => {
@@ -49,16 +34,36 @@ export function useAuth() {
     return error;
   };
 
-  // ローカルデータの存在確認
-  const checkLocalData = async () => {
+  // 自動匿名サインイン
+  const autoSignInAnonymously = async () => {
     try {
-      const localStorage = new LocalStorageService();
-      const books = await localStorage.getAllBooks();
-      const clips = await localStorage.getAllClips();
-      return books.length > 0 || clips.length > 0;
+      console.log("匿名サインインを試行中...");
+      const data = await AuthService.signInAnonymously();
+      console.log("匿名サインイン成功:", data);
+      // 認証状態の変更はonAuthStateChangeで管理するため、ここではユーザー状態を更新しない
+      setIsAnonymous(true);
     } catch (error) {
-      console.error("Failed to check local data:", error);
-      return false;
+      console.error("匿名サインイン自動実行エラー:", error);
+      const filteredError = filterError(error as Error);
+      if (filteredError) {
+        setError(filteredError);
+      }
+    }
+  };
+
+  // 匿名ユーザーにメールアドレスを紐付ける
+  const linkEmailToUser = async (email: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      setEmailSent(false);
+      await AuthService.linkEmailToAnonymousUser(email);
+      setEmailSent(true);
+    } catch (error) {
+      setError(filterError(error as Error));
+      setEmailSent(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,13 +81,24 @@ export function useAuth() {
     // 初期状態の取得
     AuthService.getCurrentUser()
       .then((user) => {
-        setUser(user);
+        console.log("現在のユーザー:", user);
+        if (user) {
+          setUser(user);
+          // JWT内のis_anonymousクレームでユーザーが匿名かどうかを判断
+          setIsAnonymous(!!user.app_metadata?.is_anonymous);
+        } else {
+          // ユーザーがいない場合は匿名サインインを実行
+          autoSignInAnonymously();
+        }
         setLoading(false);
       })
       .catch((error) => {
+        console.error("ユーザー取得エラー:", error);
         // 無視すべきエラーはセットしない
         setError(filterError(error));
         setLoading(false);
+        // エラーの場合でも匿名サインインを試行
+        autoSignInAnonymously();
       });
 
     // 認証状態の変更を監視
@@ -92,18 +108,21 @@ export function useAuth() {
       const newUser = session?.user ?? null;
       const previousUser = user;
 
+      console.log("認証状態変更イベント:", event, "新しいユーザー:", !!newUser);
+
+      // 匿名サインインの検出
+      if (newUser && event === "SIGNED_IN") {
+        const isAnonymousUser = !!newUser.app_metadata?.is_anonymous;
+        setIsAnonymous(isAnonymousUser);
+
+        if (isAnonymousUser) {
+          console.log("匿名ユーザーでサインインしました");
+        }
+      }
+
       // 新規会員登録の検出（ユーザーが不在→存在に変わった場合）
       if (!previousUser && newUser && event === "SIGNED_IN") {
         setIsNewUser(true);
-
-        // ローカルデータがあるか確認
-        const hasData = await checkLocalData();
-        setHasLocalData(hasData);
-
-        if (hasData) {
-          // データ移行確認ダイアログを表示
-          setShowMigrationConfirm(true);
-        }
       }
 
       // ユーザー状態の変更があった場合の処理
@@ -149,6 +168,8 @@ export function useAuth() {
       setError(null);
       await AuthService.verifyOtp(email, otp);
       setVerificationSuccess(true);
+      // OTP検証が成功したら匿名状態を解除
+      setIsAnonymous(false);
     } catch (error) {
       setError(filterError(error as Error));
     } finally {
@@ -162,7 +183,16 @@ export function useAuth() {
       setLoading(true);
       setError(null);
       setEmailSent(false);
-      await AuthService.signInWithEmail(email);
+
+      // ユーザーが匿名ですでにログインしている場合
+      if (user && isAnonymous) {
+        // メールアドレスの紐付けを行う
+        await linkEmailToUser(email);
+      } else {
+        // 通常のメールサインイン
+        await AuthService.signInWithEmail(email);
+      }
+
       setEmailSent(true);
     } catch (error) {
       setError(filterError(error as Error));
@@ -187,6 +217,7 @@ export function useAuth() {
       console.log("ユーザー状態をクリア");
       setUser(null);
       setVerificationSuccess(false);
+      setIsAnonymous(false);
 
       // 3. ストレージ切り替え処理
       console.log("ローカルストレージに切り替え");
@@ -203,6 +234,9 @@ export function useAuth() {
         console.error("ストレージ切り替えエラー:", storageError);
         // ストレージエラーが発生しても認証自体は続行
       }
+
+      // 4. 自動的に新しい匿名アカウントでサインイン
+      await autoSignInAnonymously();
 
       console.log("ログアウト処理が完了");
     } catch (error) {
@@ -223,7 +257,11 @@ export function useAuth() {
 
       // アカウント削除が成功した場合、ユーザー状態をクリア
       setUser(null);
+      setIsAnonymous(false);
       setLoading(false);
+
+      // 自動的に新しい匿名アカウントでサインイン
+      await autoSignInAnonymously();
 
       // 明示的に成功を返す
       return true;
@@ -238,40 +276,10 @@ export function useAuth() {
     }
   };
 
-  // データ移行のキャンセル
-  const cancelMigration = () => {
-    setShowMigrationConfirm(false);
-  };
-
   // 会員登録時のデータ移行処理
+  // 匿名認証を使用する場合は常に成功を返す
   const migrateLocalDataToSupabase = async () => {
-    if (!user) return false;
-
-    try {
-      setShowMigrationConfirm(false);
-      setShowMigrationProgress(true);
-
-      const result = await StorageMigrationService.migrateLocalToSupabase(
-        user.id,
-        (progress) => {
-          setMigrationProgress(progress);
-        }
-      );
-
-      // 移行が完了したらローカルデータをクリア
-      if (result.processed > 0) {
-        await StorageMigrationService.clearLocalData();
-      }
-
-      setTimeout(() => {
-        setShowMigrationProgress(false);
-      }, 2000); // 完了メッセージを2秒間表示
-
-      return true;
-    } catch (error) {
-      console.error("Data migration error:", error);
-      return false;
-    }
+    return true;
   };
 
   return {
@@ -284,12 +292,9 @@ export function useAuth() {
     verifyOtp,
     signOut,
     deleteAccount,
-    migrationProgress,
-    showMigrationProgress,
     migrateLocalDataToSupabase,
     isNewUser,
-    hasLocalData,
-    showMigrationConfirm,
-    cancelMigration,
+    isAnonymous,
+    linkEmailToUser,
   };
 }

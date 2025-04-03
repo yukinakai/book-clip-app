@@ -1,11 +1,10 @@
 import { Book, Clip } from "../constants/MockData";
-import { StorageInterface } from "./StorageInterface";
 import { supabase } from "./auth";
 
 /**
  * Supabaseを使用したストレージの実装
  */
-export class SupabaseStorageService implements StorageInterface {
+export class SupabaseStorageService {
   private readonly BOOKS_TABLE = "books";
   private readonly CLIPS_TABLE = "clips";
   private readonly userId: string;
@@ -291,7 +290,12 @@ export class SupabaseStorageService implements StorageInterface {
    */
   async getClipById(clipId: string): Promise<Clip | null> {
     try {
-      if (!this.userId) return null;
+      if (!this.userId) {
+        console.warn(
+          "匿名認証環境ではクリップの取得はSupabaseから直接行われます"
+        );
+        return null;
+      }
 
       console.log("Supabaseからクリップを単一取得 - ID:", clipId);
       const startTime = Date.now();
@@ -329,7 +333,12 @@ export class SupabaseStorageService implements StorageInterface {
 
   async removeClip(clipId: string): Promise<void> {
     try {
-      if (!this.userId) throw new Error("認証されていません");
+      if (!this.userId) {
+        console.warn(
+          "匿名認証環境ではクリップの削除はSupabaseで直接行われます"
+        );
+        throw new Error("認証されていません");
+      }
 
       const { error } = await supabase
         .from(this.CLIPS_TABLE)
@@ -368,7 +377,12 @@ export class SupabaseStorageService implements StorageInterface {
 
   async deleteClipsByBookId(bookId: string): Promise<void> {
     try {
-      if (!this.userId) throw new Error("認証されていません");
+      if (!this.userId) {
+        console.warn(
+          "匿名認証環境ではクリップの削除はSupabaseで直接行われます"
+        );
+        throw new Error("認証されていません");
+      }
 
       const { error } = await supabase
         .from(this.CLIPS_TABLE)

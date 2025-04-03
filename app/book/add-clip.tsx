@@ -51,6 +51,7 @@ export default function AddClipScreen() {
   );
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isLoadingBook, setIsLoadingBook] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
   const { lastClipBook, setLastClipBook } = useLastClipBook();
@@ -60,6 +61,67 @@ export default function AddClipScreen() {
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const borderColor = Colors[colorScheme].tabIconDefault;
 
+  // 書籍データの初期ロード
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadBooks() {
+      try {
+        setIsLoadingBook(true);
+        const loadedBooks = await BookStorageService.getAllBooks();
+
+        if (!isMounted) return;
+
+        // 書籍の選択優先順位:
+        // 1. URL指定のbookId
+        // 2. 最後に使用した書籍（コンテキストから）
+        // 3. 最初の書籍（書籍がある場合）
+        let bookToSet: Book | null = null;
+
+        if (params?.bookId) {
+          bookToSet = loadedBooks.find((b) => b.id === params.bookId) || null;
+          console.log("URLパラメータから書籍を設定:", bookToSet?.title);
+        }
+
+        if (!bookToSet && lastClipBook) {
+          const lastBook =
+            loadedBooks.find((b) => b.id === lastClipBook.id) || null;
+          if (lastBook) {
+            bookToSet = lastBook;
+            console.log("最後に使用した書籍を設定:", lastBook.title);
+          }
+        }
+
+        if (!bookToSet && loadedBooks.length > 0) {
+          bookToSet = loadedBooks[0];
+          console.log("最初の書籍を設定:", loadedBooks[0].title);
+        }
+
+        if (isMounted) {
+          setSelectedBook(bookToSet);
+        }
+      } catch (error) {
+        console.error("書籍データの読み込みに失敗:", error);
+        if (isMounted) {
+          Alert.alert(
+            "エラー",
+            "書籍データの読み込みに失敗しました。\n画面を再読み込みしてください。"
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingBook(false);
+        }
+      }
+    }
+
+    loadBooks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // URLパラメータのクリップテキストを設定
   useEffect(() => {
     if (params?.clipText) {
@@ -67,74 +129,17 @@ export default function AddClipScreen() {
     }
   }, [params?.clipText]);
 
-  // URLパラメータのbookIdが変更されたときに書籍情報を更新
+  // 書籍選択画面から戻ってきたときの処理
   useEffect(() => {
-    if (params?.bookId) {
-      console.log("書籍IDが変更されました:", params.bookId);
-
-      async function updateSelectedBook() {
-        try {
-          const books = await BookStorageService.getAllBooks();
-          const foundBook = books.find((b) => b.id === params.bookId);
-
-          if (foundBook) {
-            console.log("選択された書籍を更新:", foundBook.title);
-            setSelectedBook(foundBook);
-          }
-        } catch (error) {
-          console.error("書籍情報の更新に失敗:", error);
-        }
-      }
-
-      updateSelectedBook();
-    }
-  }, [params?.bookId]);
-
-  // 書籍情報をロード(初期ロードのみに使用)
-  useEffect(() => {
-    async function loadInitialBook() {
-      // 書籍がすでに選択されている場合は何もしない
-      if (selectedBook) return;
-
+    if (params?.selectedBook) {
       try {
-        setIsLoadingBook(true);
-
-        // 書籍の読み込み優先順位:
-        // 1. URL指定のbookId
-        // 2. 最後に使用した書籍（コンテキストから）
-        // 3. 最初に見つかった書籍（書籍がない場合はnull）
-
-        let bookToSet: Book | null = null;
-        const books = await BookStorageService.getAllBooks();
-
-        if (params?.bookId) {
-          // URLで指定された書籍を探す
-          bookToSet = books.find((b) => b.id === params.bookId) || null;
-          console.log("URLパラメータから書籍を設定:", bookToSet?.title);
-        }
-
-        if (!bookToSet && lastClipBook) {
-          // コンテキストから最後に使用した書籍を使用
-          bookToSet = lastClipBook;
-          console.log("最後に使用した書籍を設定:", lastClipBook.title);
-        }
-
-        if (!bookToSet && books.length > 0) {
-          // どの書籍も見つからなかった場合は最初の書籍を使用
-          bookToSet = books[0];
-          console.log("最初の書籍を設定:", books[0].title);
-        }
-
-        setSelectedBook(bookToSet);
+        const book = JSON.parse(params.selectedBook) as Book;
+        setSelectedBook(book);
       } catch (error) {
-        console.error("Error loading book:", error);
-      } finally {
-        setIsLoadingBook(false);
+        console.error("書籍データのパースに失敗:", error);
       }
     }
-
-    loadInitialBook();
-  }, []);
+  }, [params?.selectedBook]);
 
   // 画像が渡された場合の処理
   useEffect(() => {
@@ -181,6 +186,8 @@ export default function AddClipScreen() {
   };
 
   const handleSaveClip = async () => {
+    if (isSaving) return; // 保存中は処理をスキップ
+
     if (!clipText.trim()) {
       Alert.alert("エラー", "クリップするテキストを入力してください");
       return;
@@ -199,6 +206,8 @@ export default function AddClipScreen() {
     }
 
     try {
+      setIsSaving(true); // 保存開始
+
       await ClipStorageService.saveClip({
         id: Date.now().toString(),
         bookId: selectedBook.id!,
@@ -223,6 +232,8 @@ export default function AddClipScreen() {
     } catch (error) {
       console.error("Failed to save clip:", error);
       Alert.alert("エラー", "クリップの保存に失敗しました");
+    } finally {
+      setIsSaving(false); // 保存完了
     }
   };
 
@@ -272,14 +283,6 @@ export default function AddClipScreen() {
     setShowOCRResult(false);
     setShowImageSelection(true);
   };
-
-  // 書籍選択画面から戻ってきたときの処理
-  useEffect(() => {
-    if (params?.selectedBook) {
-      const book = JSON.parse(params.selectedBook) as Book;
-      setSelectedBook(book);
-    }
-  }, [params?.selectedBook]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -447,12 +450,16 @@ export default function AddClipScreen() {
             style={[
               styles.saveButton,
               { backgroundColor: Colors[colorScheme].primary },
+              isSaving && styles.saveButtonDisabled,
             ]}
             onPress={handleSaveClip}
             activeOpacity={0.8}
+            disabled={isSaving}
             testID="save-clip-button"
           >
-            <Text style={styles.saveButtonText}>保存する</Text>
+            <Text style={styles.saveButtonText}>
+              {isSaving ? "保存中..." : "保存する"}
+            </Text>
           </TouchableOpacity>
 
           {/* 追加の余白 */}
@@ -648,6 +655,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
     marginTop: 24,
+  },
+  saveButtonDisabled: {
+    opacity: 0.5,
   },
   saveButtonText: {
     color: "white",

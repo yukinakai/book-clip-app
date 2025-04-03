@@ -2,6 +2,12 @@
 const React = require("react");
 const { View } = require("react-native");
 
+// テスト用の環境変数を設定
+process.env.EXPO_PUBLIC_SUPABASE_URL = "http://localhost:54321";
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+process.env.EXPO_PUBLIC_GOOGLE_CLOUD_VISION_API_KEY = "test-vision-api-key";
+process.env.EXPO_PUBLIC_RAKUTEN_APP_ID = "test-rakuten-app-id";
+
 // AsyncStorageのモック
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(() => Promise.resolve()),
