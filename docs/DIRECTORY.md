@@ -145,8 +145,10 @@
 │           └── functions
 ├── tests
 │   ├── __mocks__
-│   │   └── @react-native-async-storage
-│   │       └── async-storage.js
+│   │   ├── @react-native-async-storage
+│   │   │   └── async-storage.js
+│   │   └── @supabase
+│   │       └── supabase-js.ts
 │   ├── app
 │   │   ├── (auth)
 │   │   │   └── login.test.tsx
@@ -199,4 +201,4 @@
 └── types
     └── env.d.ts
 
-48 directories, 152 files
+49 directories, 153 files
