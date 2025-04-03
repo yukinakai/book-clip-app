@@ -76,11 +76,15 @@ export class BookStorageService {
    */
   static async getBookById(bookId: string): Promise<Book | null> {
     try {
-      const service = await this.getSupabaseService();
-      return await service.getBookById(bookId);
+      const user = await this.getSupabaseService();
+      if (!user) {
+        console.warn("匿名認証環境では書籍の取得はSupabaseから直接行われます");
+        return null;
+      }
+      return await user.getBookById(bookId);
     } catch (error) {
-      console.error("書籍取得エラー:", error);
-      return null;
+      console.error("Error getting book by ID:", error);
+      throw error;
     }
   }
 
