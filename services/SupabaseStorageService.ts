@@ -290,7 +290,12 @@ export class SupabaseStorageService {
    */
   async getClipById(clipId: string): Promise<Clip | null> {
     try {
-      if (!this.userId) return null;
+      if (!this.userId) {
+        console.warn(
+          "匿名認証環境ではクリップの取得はSupabaseから直接行われます"
+        );
+        return null;
+      }
 
       console.log("Supabaseからクリップを単一取得 - ID:", clipId);
       const startTime = Date.now();
@@ -328,7 +333,12 @@ export class SupabaseStorageService {
 
   async removeClip(clipId: string): Promise<void> {
     try {
-      if (!this.userId) throw new Error("認証されていません");
+      if (!this.userId) {
+        console.warn(
+          "匿名認証環境ではクリップの削除はSupabaseで直接行われます"
+        );
+        throw new Error("認証されていません");
+      }
 
       const { error } = await supabase
         .from(this.CLIPS_TABLE)
@@ -367,7 +377,12 @@ export class SupabaseStorageService {
 
   async deleteClipsByBookId(bookId: string): Promise<void> {
     try {
-      if (!this.userId) throw new Error("認証されていません");
+      if (!this.userId) {
+        console.warn(
+          "匿名認証環境ではクリップの削除はSupabaseで直接行われます"
+        );
+        throw new Error("認証されていません");
+      }
 
       const { error } = await supabase
         .from(this.CLIPS_TABLE)
