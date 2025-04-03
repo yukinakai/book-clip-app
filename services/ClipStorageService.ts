@@ -23,7 +23,11 @@ export class ClipStorageService {
       // 現在のユーザーIDを取得
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        throw new Error("ユーザーが認証されていません");
+        console.warn(
+          "匿名認証環境ではクリップの取得はSupabaseから直接行われます"
+        );
+        this.supabaseService = new SupabaseStorageService("anonymous");
+        return this.supabaseService;
       }
 
       // 新しいインスタンスを作成
@@ -40,6 +44,11 @@ export class ClipStorageService {
    */
   static async saveClip(clip: Clip): Promise<void> {
     try {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        console.warn("匿名認証環境ではクリップの保存はできません");
+        return;
+      }
       const service = await this.getSupabaseService();
       await service.saveClip(clip);
     } catch (error) {
@@ -92,6 +101,11 @@ export class ClipStorageService {
    */
   static async removeClip(clipId: string): Promise<void> {
     try {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        console.warn("匿名認証環境ではクリップの削除はできません");
+        return;
+      }
       const service = await this.getSupabaseService();
       await service.removeClip(clipId);
     } catch (error) {
@@ -105,6 +119,11 @@ export class ClipStorageService {
    */
   static async updateClip(clip: Clip): Promise<void> {
     try {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        console.warn("匿名認証環境ではクリップの更新はできません");
+        return;
+      }
       const service = await this.getSupabaseService();
       await service.updateClip(clip);
     } catch (error) {
@@ -118,6 +137,11 @@ export class ClipStorageService {
    */
   static async deleteClipsByBookId(bookId: string): Promise<void> {
     try {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        console.warn("匿名認証環境ではクリップの削除はできません");
+        return;
+      }
       const service = await this.getSupabaseService();
       await service.deleteClipsByBookId(bookId);
     } catch (error) {

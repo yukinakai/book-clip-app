@@ -26,7 +26,9 @@ export class BookStorageService {
       // 現在のユーザーIDを取得
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        throw new Error("ユーザーが認証されていません");
+        console.warn("匿名認証環境では書籍の取得はSupabaseから直接行われます");
+        this.supabaseService = new SupabaseStorageService("anonymous");
+        return this.supabaseService;
       }
 
       // 新しいインスタンスを作成
@@ -43,6 +45,11 @@ export class BookStorageService {
    */
   static async saveBook(book: Book): Promise<void> {
     try {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        console.warn("匿名認証環境では書籍の保存はできません");
+        return;
+      }
       const service = await this.getSupabaseService();
       await service.saveBook(book);
     } catch (error) {
@@ -82,6 +89,11 @@ export class BookStorageService {
    */
   static async updateBook(book: Book): Promise<void> {
     try {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        console.warn("匿名認証環境では書籍の更新はできません");
+        return;
+      }
       const service = await this.getSupabaseService();
       await service.updateBook(book);
     } catch (error) {
@@ -95,6 +107,11 @@ export class BookStorageService {
    */
   static async removeBook(bookId: string): Promise<void> {
     try {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
+        console.warn("匿名認証環境では書籍の削除はできません");
+        return;
+      }
       const service = await this.getSupabaseService();
       await service.removeBook(bookId);
     } catch (error) {
