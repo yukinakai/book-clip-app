@@ -52,7 +52,6 @@ export default function AddClipScreen() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isLoadingBook, setIsLoadingBook] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [books, setBooks] = useState<Book[]>([]);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
   const { lastClipBook, setLastClipBook } = useLastClipBook();
@@ -72,8 +71,6 @@ export default function AddClipScreen() {
         const loadedBooks = await BookStorageService.getAllBooks();
 
         if (!isMounted) return;
-
-        setBooks(loadedBooks);
 
         // 書籍の選択優先順位:
         // 1. URL指定のbookId
