@@ -51,6 +51,7 @@ export default function AddClipScreen() {
   );
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isLoadingBook, setIsLoadingBook] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
   const { lastClipBook, setLastClipBook } = useLastClipBook();
@@ -181,6 +182,8 @@ export default function AddClipScreen() {
   };
 
   const handleSaveClip = async () => {
+    if (isSaving) return; // 保存中は処理をスキップ
+
     if (!clipText.trim()) {
       Alert.alert("エラー", "クリップするテキストを入力してください");
       return;
@@ -199,6 +202,8 @@ export default function AddClipScreen() {
     }
 
     try {
+      setIsSaving(true); // 保存開始
+
       await ClipStorageService.saveClip({
         id: Date.now().toString(),
         bookId: selectedBook.id!,
@@ -223,6 +228,8 @@ export default function AddClipScreen() {
     } catch (error) {
       console.error("Failed to save clip:", error);
       Alert.alert("エラー", "クリップの保存に失敗しました");
+    } finally {
+      setIsSaving(false); // 保存完了
     }
   };
 
@@ -447,12 +454,16 @@ export default function AddClipScreen() {
             style={[
               styles.saveButton,
               { backgroundColor: Colors[colorScheme].primary },
+              isSaving && styles.saveButtonDisabled,
             ]}
             onPress={handleSaveClip}
             activeOpacity={0.8}
+            disabled={isSaving}
             testID="save-clip-button"
           >
-            <Text style={styles.saveButtonText}>保存する</Text>
+            <Text style={styles.saveButtonText}>
+              {isSaving ? "保存中..." : "保存する"}
+            </Text>
           </TouchableOpacity>
 
           {/* 追加の余白 */}
@@ -648,6 +659,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
     marginTop: 24,
+  },
+  saveButtonDisabled: {
+    opacity: 0.5,
   },
   saveButtonText: {
     color: "white",
