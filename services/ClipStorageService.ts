@@ -77,14 +77,15 @@ export class ClipStorageService {
    */
   static async getClipsByBookId(bookId: string): Promise<Clip[]> {
     try {
-      const user = await this.getSupabaseService();
-      if (!user) {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
         console.warn(
           "匿名認証環境ではクリップの取得はSupabaseから直接行われます"
         );
         return [];
       }
-      return await user.getClipsByBookId(bookId);
+      const service = await this.getSupabaseService();
+      return await service.getClipsByBookId(bookId);
     } catch (error) {
       console.error("Error getting clips by book ID:", error);
       throw error;
@@ -96,14 +97,15 @@ export class ClipStorageService {
    */
   static async getClipById(clipId: string): Promise<Clip | null> {
     try {
-      const user = await this.getSupabaseService();
-      if (!user) {
+      const user = await AuthService.getCurrentUser();
+      if (!user || !user.id) {
         console.warn(
           "匿名認証環境ではクリップの取得はSupabaseから直接行われます"
         );
         return null;
       }
-      return await user.getClipById(clipId);
+      const service = await this.getSupabaseService();
+      return await service.getClipById(clipId);
     } catch (error) {
       console.error("Error getting clip by ID:", error);
       throw error;
