@@ -46,7 +46,9 @@ export class ClipStorageService {
     try {
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        console.warn("匿名認証環境ではクリップの保存はできません");
+        console.warn(
+          "匿名認証環境ではクリップの保存はSupabaseに直接行われます"
+        );
         return;
       }
       const service = await this.getSupabaseService();
@@ -103,7 +105,9 @@ export class ClipStorageService {
     try {
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        console.warn("匿名認証環境ではクリップの削除はできません");
+        console.warn(
+          "匿名認証環境ではクリップの削除はSupabaseで直接行われます"
+        );
         return;
       }
       const service = await this.getSupabaseService();
@@ -121,7 +125,9 @@ export class ClipStorageService {
     try {
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        console.warn("匿名認証環境ではクリップの更新はできません");
+        console.warn(
+          "匿名認証環境ではクリップの更新はSupabaseで直接行われます"
+        );
         return;
       }
       const service = await this.getSupabaseService();
@@ -139,7 +145,9 @@ export class ClipStorageService {
     try {
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        console.warn("匿名認証環境ではクリップの削除はできません");
+        console.warn(
+          "匿名認証環境ではクリップの削除はSupabaseで直接行われます"
+        );
         return;
       }
       const service = await this.getSupabaseService();

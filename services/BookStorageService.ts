@@ -47,7 +47,7 @@ export class BookStorageService {
     try {
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        console.warn("匿名認証環境では書籍の保存はできません");
+        console.warn("匿名認証環境では書籍の保存はSupabaseに直接行われます");
         return;
       }
       const service = await this.getSupabaseService();
@@ -91,7 +91,7 @@ export class BookStorageService {
     try {
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        console.warn("匿名認証環境では書籍の更新はできません");
+        console.warn("匿名認証環境では書籍の更新はSupabaseで直接行われます");
         return;
       }
       const service = await this.getSupabaseService();
@@ -109,7 +109,7 @@ export class BookStorageService {
     try {
       const user = await AuthService.getCurrentUser();
       if (!user || !user.id) {
-        console.warn("匿名認証環境では書籍の削除はできません");
+        console.warn("匿名認証環境では書籍の削除はSupabaseで直接行われます");
         return;
       }
       const service = await this.getSupabaseService();
